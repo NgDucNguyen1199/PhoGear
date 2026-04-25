@@ -19,7 +19,7 @@ export async function getAllOrders() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching all orders:', error)
+    console.error('Error fetching all orders:', error.message, error.details, error.hint)
     return []
   }
 

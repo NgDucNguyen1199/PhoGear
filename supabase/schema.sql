@@ -42,7 +42,7 @@ CREATE TABLE public.products (
 -- Orders
 CREATE TABLE public.orders (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     total_amount NUMERIC NOT NULL CHECK (total_amount >= 0),
     status TEXT CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')) DEFAULT 'pending',
     shipping_address TEXT,
