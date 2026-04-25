@@ -29,11 +29,12 @@ export async function createProductWithVariants(data: any) {
 
   // 2. Chèn hàng loạt biến thể vào bảng product_variants
   if (data.variants && data.variants.length > 0) {
+    // Xử lý SKU: Nếu trống thì để null, đảm bảo không bị lỗi Unique constraint
     const variantsToInsert = data.variants.map((v: any) => ({
       product_id: product.id,
       variant_name: v.variant_name,
       switch_type: v.switch_type || '',
-      sku: v.sku || null, // Sử dụng null nếu không có để tránh lỗi Unique trống
+      sku: (v.sku && v.sku.trim() !== '') ? v.sku.trim() : null,
       image_url: v.image_url || '',
       price: parseFloat(v.price) || 0,
       stock_quantity: parseInt(v.stock_quantity) || 0,
@@ -46,7 +47,7 @@ export async function createProductWithVariants(data: any) {
     if (variantsError) {
       console.error('Error creating variants:', variantsError)
       await supabase.from('products').delete().eq('id', product.id)
-      return { error: `Lỗi tạo biến thể: ${variantsError.message}` }
+      return { error: `Lỗi tạo biến thể (Có thể do trùng mã SKU): ${variantsError.message}` }
     }
   }
 
@@ -58,7 +59,6 @@ export async function createProductWithVariants(data: any) {
 export async function updateProduct(id: string, data: any) {
   const supabase = await createClient()
   
-  // Tính toán tổng kho từ các biến thể mới
   const totalStock = data.variants 
     ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0) 
     : 0
@@ -83,8 +83,9 @@ export async function updateProduct(id: string, data: any) {
     return { error: `Lỗi cập nhật sản phẩm: ${productError.message}` }
   }
 
-  // Cập nhật biến thể: Xóa trắng và chèn lại
+  // Cập nhật biến thể
   if (data.variants && data.variants.length > 0) {
+    // Xóa trắng biến thể cũ của sản phẩm này
     const { error: deleteError } = await supabase
       .from('product_variants')
       .delete()
@@ -92,14 +93,15 @@ export async function updateProduct(id: string, data: any) {
     
     if (deleteError) {
       console.error('Error deleting old variants:', deleteError)
-      return { error: `Lỗi xử lý biến thể cũ: ${deleteError.message}` }
+      return { error: `Lỗi dọn dẹp biến thể cũ: ${deleteError.message}` }
     }
 
+    // Chuẩn bị dữ liệu chèn mới
     const variantsToInsert = data.variants.map((v: any) => ({
       product_id: id,
       variant_name: v.variant_name,
       switch_type: v.switch_type || '',
-      sku: v.sku || null,
+      sku: (v.sku && v.sku.trim() !== '') ? v.sku.trim() : null,
       image_url: v.image_url || '',
       price: parseFloat(v.price) || 0,
       stock_quantity: parseInt(v.stock_quantity) || 0,
@@ -111,7 +113,7 @@ export async function updateProduct(id: string, data: any) {
 
     if (variantsError) {
       console.error('Error inserting new variants:', variantsError)
-      return { error: `Lỗi cập nhật biến thể mới: ${variantsError.message}` }
+      return { error: `Lỗi cập nhật biến thể (Mã SKU bị trùng lặp với sản phẩm khác): ${variantsError.message}` }
     }
   }
 
