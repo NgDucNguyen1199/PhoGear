@@ -83,6 +83,7 @@ export function Navbar({ user }: { user: any }) {
           <nav className="hidden md:flex gap-6 text-sm font-medium">
             <Link href="/products" className="transition-colors hover:text-primary">Sản phẩm</Link>
             <Link href="/categories" className="transition-colors hover:text-primary">Danh mục</Link>
+            <Link href="/photype" className="transition-colors hover:text-primary font-bold text-orange-500">Pho Type</Link>
             <Link href="/about" className="transition-colors hover:text-primary">Giới thiệu</Link>
           </nav>
         </div>
