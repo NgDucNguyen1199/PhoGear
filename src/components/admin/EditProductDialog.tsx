@@ -40,17 +40,17 @@ import { Badge } from '@/components/ui/badge'
 
 const productSchema = z.object({
   name: z.string().min(2, 'Tên sản phẩm quá ngắn'),
-  brand: z.string().min(2, 'Thương hiệu không được để trống'),
-  description: z.string().optional(),
-  category_id: z.string().uuid('Vui lòng chọn danh mục'),
-  base_price: z.coerce.number(),
+  brand: z.string().min(1, 'Thương hiệu không được để trống'),
+  description: z.string().optional().nullable(),
+  category_id: z.string().min(1, 'Vui lòng chọn danh mục'), // Bỏ .uuid() để linh hoạt hơn nếu data cũ không chuẩn
+  base_price: z.coerce.number().min(0, 'Giá không được âm'),
   variants: z.array(z.object({
     variant_name: z.string().min(1, 'Tên biến thể bắt buộc'),
-    switch_type: z.string().optional(),
-    sku: z.string().optional(),
-    image_url: z.string().optional(),
-    price: z.coerce.number(),
-    stock_quantity: z.coerce.number(),
+    switch_type: z.string().optional().nullable(),
+    sku: z.string().optional().nullable(),
+    image_url: z.string().optional().nullable(),
+    price: z.coerce.number().min(0),
+    stock_quantity: z.coerce.number().min(0),
   })).min(1, 'Cần ít nhất 1 biến thể')
 })
 
@@ -92,14 +92,16 @@ export function EditProductDialog({ product, categories }: { product: Product, c
       description: product.description || '',
       category_id: product.category_id || '',
       base_price: product.price || 0,
-      variants: product.product_variants?.map(v => ({
-        variant_name: v.variant_name,
-        switch_type: v.switch_type || '',
-        sku: v.sku || '',
-        image_url: v.image_url || '',
-        price: v.price,
-        stock_quantity: v.stock_quantity
-      })) || [{ variant_name: '', switch_type: '', sku: '', image_url: '', price: 0, stock_quantity: 0 }]
+      variants: product.product_variants && product.product_variants.length > 0 
+        ? product.product_variants.map(v => ({
+            variant_name: v.variant_name,
+            switch_type: v.switch_type || '',
+            sku: v.sku || '',
+            image_url: v.image_url || '',
+            price: v.price,
+            stock_quantity: v.stock_quantity
+          })) 
+        : [{ variant_name: 'Mặc định', price: product.price || 0, stock_quantity: product.stock_quantity || 0, switch_type: '', sku: '', image_url: '' }]
     }
   })
 
@@ -119,10 +121,11 @@ export function EditProductDialog({ product, categories }: { product: Product, c
     }
   }
 
-  // Log validation errors for debugging
+  // Log validation errors for debugging - Cải thiện để thấy rõ lỗi
   const onInvalid = (errors: any) => {
-    console.error('Form Validation Errors:', errors)
-    toast.error('Vui lòng kiểm tra lại các thông tin nhập liệu.')
+    console.error('Chi tiết lỗi nhập liệu:', JSON.stringify(errors, null, 2))
+    const firstErrorField = Object.keys(errors)[0]
+    toast.error(`Lỗi tại trường: ${firstErrorField}. Vui lòng kiểm tra lại.`)
   }
 
   return (
