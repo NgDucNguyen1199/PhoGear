@@ -10,7 +10,7 @@ import {
   DialogTrigger,
   DialogFooter
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -37,10 +37,8 @@ export function EditCategoryDialog({ category }: { category: Category | any }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Pencil size={16} />
-        </Button>
+      <DialogTrigger className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+        <Pencil size={16} />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>

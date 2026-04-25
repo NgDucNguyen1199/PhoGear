@@ -71,10 +71,8 @@ export function EditProductDialog({ product, categories }: { product: Product, c
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Pencil size={16} />
-        </Button>
+      <DialogTrigger className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+        <Pencil size={16} />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
