@@ -119,6 +119,12 @@ export function EditProductDialog({ product, categories }: { product: Product, c
     }
   }
 
+  // Log validation errors for debugging
+  const onInvalid = (errors: any) => {
+    console.error('Form Validation Errors:', errors)
+    toast.error('Vui lòng kiểm tra lại các thông tin nhập liệu.')
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
@@ -132,7 +138,7 @@ export function EditProductDialog({ product, categories }: { product: Product, c
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 py-6">
+          <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-10 py-6">
             
             {/* THÔNG TIN CHUNG */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-muted/20 rounded-3xl border shadow-inner text-left">
