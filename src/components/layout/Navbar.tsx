@@ -3,10 +3,11 @@
 import { useState, useEffect, FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ShoppingCart, User, Search, Menu, LogOut } from 'lucide-react'
+import { ShoppingCart, User, Search, Menu, LogOut, Heart } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { logout } from '@/actions/auth'
 import { useCartStore } from '@/store/cartStore'
+import { useWishlistStore } from '@/store/wishlistStore'
 import { CartSidebar } from '@/components/shop/CartSidebar'
 import {
   DropdownMenu,
@@ -20,6 +21,7 @@ export function Navbar({ user }: { user: any }) {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const getTotalItems = useCartStore((state) => state.getTotalItems)
+  const wishlistItems = useWishlistStore((state) => state.items)
   const [mounted, setMounted] = useState(false)
 
   // Fix hydration mismatch
@@ -60,6 +62,22 @@ export function Navbar({ user }: { user: any }) {
             />
           </form>
 
+          {/* Wishlist Icon */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative"
+            onClick={() => router.push('/wishlist')}
+          >
+            <Heart className="h-5 w-5" />
+            {mounted && wishlistItems.length > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+                {wishlistItems.length}
+              </span>
+            )}
+          </Button>
+
+          {/* Cart Icon */}
           <Button 
             variant="ghost" 
             size="icon" 

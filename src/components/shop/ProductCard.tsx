@@ -6,17 +6,28 @@ import { Product } from '@/types'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Star, ShoppingCart } from 'lucide-react'
+import { Star, ShoppingCart, Heart } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
+import { useWishlistStore } from '@/store/wishlistStore'
 import { toast } from 'sonner'
 
 export function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((state) => state.addItem)
+  const { toggleItem, isInWishlist } = useWishlistStore()
+  const isLiked = isInWishlist(product.id)
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     addItem(product)
     toast.success(`Đã thêm ${product.name} vào giỏ hàng`)
+  }
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault()
+    toggleItem(product)
+    if (!isLiked) {
+      toast.success(`Đã thêm ${product.name} vào danh sách yêu thích`)
+    }
   }
 
   const formattedPrice = new Intl.NumberFormat('vi-VN', {
@@ -25,7 +36,16 @@ export function ProductCard({ product }: { product: Product }) {
   }).format(product.price)
 
   return (
-    <Card className="group overflow-hidden transition-all hover:shadow-lg">
+    <Card className="group overflow-hidden transition-all hover:shadow-lg relative">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute right-2 top-2 z-10 bg-background/50 backdrop-blur-sm rounded-full hover:bg-background"
+        onClick={handleToggleWishlist}
+      >
+        <Heart className={`h-5 w-5 transition-colors ${isLiked ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
+      </Button>
+      
       <Link href={`/products/${product.id}`}>
         <div className="relative aspect-square overflow-hidden bg-muted">
           {product.images_url?.[0] ? (
