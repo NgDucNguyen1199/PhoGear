@@ -33,7 +33,7 @@ export async function createProductWithVariants(data: any) {
       product_id: product.id,
       variant_name: v.variant_name,
       switch_type: v.switch_type || '',
-      sku: v.sku || '',
+      sku: v.sku || null, // Sử dụng null nếu không có để tránh lỗi Unique trống
       image_url: v.image_url || '',
       price: parseFloat(v.price) || 0,
       stock_quantity: parseInt(v.stock_quantity) || 0,
@@ -69,7 +69,7 @@ export async function updateProduct(id: string, data: any) {
     description: data.description,
     category_id: data.category_id,
     price: data.base_price,
-    stock_quantity: totalStock, // Cập nhật lại tổng kho cho sản phẩm chính
+    stock_quantity: totalStock,
     options: data.options || []
   }
 
@@ -99,7 +99,7 @@ export async function updateProduct(id: string, data: any) {
       product_id: id,
       variant_name: v.variant_name,
       switch_type: v.switch_type || '',
-      sku: v.sku || '',
+      sku: v.sku || null,
       image_url: v.image_url || '',
       price: parseFloat(v.price) || 0,
       stock_quantity: parseInt(v.stock_quantity) || 0,
