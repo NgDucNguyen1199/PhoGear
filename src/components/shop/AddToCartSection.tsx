@@ -6,12 +6,16 @@ import { Product, ProductVariant } from '@/types'
 import { useCartStore } from '@/store/cartStore'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ShoppingCart, Plus, Minus, Check, CreditCard, Box, LayoutGrid, Image as ImageIcon } from 'lucide-react'
+import { ShoppingCart, Plus, Minus, Check, CreditCard, Box, LayoutGrid } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
 
-export function AddToCartSection({ product }: { product: Product }) {
+interface AddToCartSectionProps {
+  product: Product
+  onVariantChange?: (variant: ProductVariant) => void
+}
+
+export function AddToCartSection({ product, onVariantChange }: AddToCartSectionProps) {
   const router = useRouter()
   const [quantity, setQuantity] = useState(1)
   
@@ -21,16 +25,24 @@ export function AddToCartSection({ product }: { product: Product }) {
   const addItem = useCartStore((state) => state.addItem)
   const variants = product.product_variants || []
 
-  // Khởi tạo mặc định: Chọn phiên bản đầu tiên
+  // Khởi tạo mặc định
   useEffect(() => {
     if (variants.length > 0) {
-      setSelectedVariant(variants[0])
+      const defaultVariant = variants[0]
+      setSelectedVariant(defaultVariant)
+      if (onVariantChange) onVariantChange(defaultVariant)
     }
   }, [variants])
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.price
   const currentStock = selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity
   const isOutOfStock = currentStock === 0
+
+  const handleVariantClick = (variant: ProductVariant) => {
+    setSelectedVariant(variant)
+    setQuantity(1)
+    if (onVariantChange) onVariantChange(variant)
+  }
 
   const handleAddToCart = () => {
     const options: Record<string, string> = selectedVariant 
@@ -96,10 +108,7 @@ export function AddToCartSection({ product }: { product: Product }) {
                 <button
                   key={variant.id}
                   disabled={vOutOfStock}
-                  onClick={() => {
-                    setSelectedVariant(variant)
-                    setQuantity(1)
-                  }}
+                  onClick={() => handleVariantClick(variant)}
                   className={cn(
                     "group flex flex-col p-2 rounded-2xl border-2 transition-all relative overflow-hidden bg-background",
                     isSelected
@@ -108,18 +117,16 @@ export function AddToCartSection({ product }: { product: Product }) {
                     vOutOfStock && "opacity-40 grayscale cursor-not-allowed"
                   )}
                 >
-                  {/* Thumbnail Image */}
                   <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-muted mb-2 border border-white/5">
                     {variant.image_url ? (
-                      <Image 
+                      <img 
                         src={variant.image_url} 
                         alt={variant.variant_name} 
-                        fill 
-                        className="object-cover transition-transform group-hover:scale-110" 
+                        className="object-cover w-full h-full transition-transform group-hover:scale-110" 
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">
-                        <ImageIcon className="h-6 w-6 text-muted-foreground opacity-20" />
+                        <Box className="h-6 w-6 text-muted-foreground opacity-20" />
                       </div>
                     )}
                     {isSelected && (
