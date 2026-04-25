@@ -9,6 +9,13 @@ export type ProductOption = {
   values: string[]
 }
 
+export type ProductVariant = {
+  id: string
+  name: string
+  price: number
+  stock: number
+}
+
 export type Product = {
   id: string
   name: string
@@ -22,6 +29,7 @@ export type Product = {
   connectivity: string | null
   average_rating: number
   options: ProductOption[]
+  variants?: ProductVariant[]
   created_at: string
   categories?: Category
 }

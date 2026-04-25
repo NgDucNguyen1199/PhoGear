@@ -95,7 +95,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 {product.name}
               </h1>
 
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-4 mb-8">
                 <div className="flex items-center gap-1 bg-yellow-400/10 text-yellow-600 px-2 py-1 rounded-md">
                   <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
                   <span className="font-bold text-sm">{product.average_rating}</span>
@@ -104,10 +104,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <span className="text-sm text-muted-foreground hover:underline cursor-pointer">
                   (128 đánh giá)
                 </span>
-              </div>
-
-              <div className="text-4xl font-bold text-primary mb-6">
-                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
               </div>
 
               <p className="text-muted-foreground mb-8 leading-relaxed">

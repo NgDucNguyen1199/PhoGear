@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Product } from '@/types'
+import { Product, ProductVariant } from '@/types'
 import { useCartStore } from '@/store/cartStore'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -13,37 +13,29 @@ import { cn } from '@/lib/utils'
 export function AddToCartSection({ product }: { product: Product }) {
   const router = useRouter()
   const [quantity, setQuantity] = useState(1)
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
+  
+  // Quản lý biến thể đang chọn
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
+  
   const addItem = useCartStore((state) => state.addItem)
 
-  const isOutOfStock = product.stock_quantity === 0
-
-  // Tự động chọn tùy chọn đầu tiên của mỗi nhóm khi tải trang
+  // Khởi tạo biến thể mặc định (Option đầu tiên)
   useEffect(() => {
-    if (product.options && product.options.length > 0) {
-      const initialOptions: Record<string, string> = {}
-      product.options.forEach(opt => {
-        if (opt.values && opt.values.length > 0) {
-          initialOptions[opt.name] = opt.values[0]
-        }
-      })
-      setSelectedOptions(initialOptions)
+    if (product.variants && product.variants.length > 0) {
+      setSelectedVariant(product.variants[0])
     }
-  }, [product.options])
+  }, [product.variants])
 
-  const handleOptionSelect = (optionName: string, value: string) => {
-    // Đảm bảo chỉ chọn 1 giá trị duy nhất cho mỗi nhóm (optionName)
-    setSelectedOptions(prev => ({
-      ...prev,
-      [optionName]: value
-    }))
-  }
+  // Lấy giá tiền và tồn kho hiện tại (ưu tiên biến thể, nếu không có lấy của sản phẩm chính)
+  const currentPrice = selectedVariant ? selectedVariant.price : product.price
+  const currentStock = selectedVariant ? selectedVariant.stock : product.stock_quantity
+  const isOutOfStock = currentStock === 0
 
   const handleIncrease = () => {
-    if (quantity < product.stock_quantity) {
+    if (quantity < currentStock) {
       setQuantity(q => q + 1)
     } else {
-      toast.warning(`Chỉ còn ${product.stock_quantity} sản phẩm trong kho.`)
+      toast.warning(`Chỉ còn ${currentStock} sản phẩm trong kho.`)
     }
   }
 
@@ -54,107 +46,131 @@ export function AddToCartSection({ product }: { product: Product }) {
   }
 
   const handleAddToCart = () => {
-    if (product.options && Object.keys(selectedOptions).length < product.options.length) {
-      toast.error('Vui lòng chọn đầy đủ các tùy chọn sản phẩm.')
-      return
-    }
-
-    addItem(product, selectedOptions, quantity)
+    const options = selectedVariant ? { "Phiên bản": selectedVariant.name } : {}
+    // Tạo bản copy sản phẩm với giá của biến thể để lưu vào giỏ
+    const productWithVariantPrice = { ...product, price: currentPrice }
+    
+    addItem(productWithVariantPrice, options, quantity)
     toast.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`)
   }
 
   const handleBuyNow = () => {
-    if (product.options && Object.keys(selectedOptions).length < product.options.length) {
-      toast.error('Vui lòng chọn đầy đủ các tùy chọn sản phẩm.')
-      return
-    }
-
-    addItem(product, selectedOptions, quantity)
+    const options = selectedVariant ? { "Phiên bản": selectedVariant.name } : {}
+    const productWithVariantPrice = { ...product, price: currentPrice }
+    
+    addItem(productWithVariantPrice, options, quantity)
     router.push('/checkout')
   }
 
-  if (isOutOfStock) {
-    return (
-      <div className="mt-6 space-y-4">
-        <Badge variant="destructive" className="h-10 px-6 text-base font-bold uppercase">Hết hàng</Badge>
-        <p className="text-sm text-muted-foreground italic italic">Sản phẩm này hiện đang tạm hết, vui lòng quay lại sau.</p>
-      </div>
-    )
+  const formatVND = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(amount)
   }
 
   return (
-    <div className="space-y-8 mt-6">
-      {/* KHU VỰC CHỌN TÙY CHỌN (OPTIONS) */}
-      {product.options && product.options.length > 0 && (
-        <div className="space-y-6">
-          {product.options.map((option) => (
-            <div key={option.name} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-black uppercase tracking-widest text-muted-foreground">
-                  {option.name}
-                </label>
-                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                  {selectedOptions[option.name]}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {option.values.map((val) => {
-                  const isSelected = selectedOptions[option.name] === val
-                  return (
-                    <button
-                      key={val}
-                      onClick={() => handleOptionSelect(option.name, val)}
-                      className={cn(
-                        "px-6 py-3 rounded-xl border-2 text-sm font-bold transition-all flex items-center gap-2 relative group",
-                        isSelected
-                          ? "border-primary bg-primary/5 text-primary ring-2 ring-primary/20 shadow-md scale-[1.02]"
-                          : "border-muted bg-background hover:border-primary/40 text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {val}
-                      {isSelected && (
-                        <div className="absolute top-0 right-0">
-                           <div className="bg-primary text-primary-foreground p-0.5 rounded-bl-lg shadow-sm">
-                             <Check className="h-3 w-3" strokeWidth={4} />
-                           </div>
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
+    <div className="space-y-8">
+      {/* HIỂN THỊ GIÁ TIẾN ĐỘNG THEO VARIANT */}
+      <div className="flex flex-col gap-1">
+        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Giá bán hiện tại</span>
+        <div className="text-4xl font-black text-primary drop-shadow-sm">
+          {formatVND(currentPrice)}
+        </div>
+      </div>
+
+      {/* KHU VỰC CHỌN BIẾN THỂ (VARIANTS) */}
+      {product.variants && product.variants.length > 0 && (
+        <div className="space-y-4">
+          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+            Lựa chọn phiên bản
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {product.variants.map((variant) => {
+              const isSelected = selectedVariant?.id === variant.id
+              return (
+                <div key={variant.id} className="flex flex-col gap-2">
+                  <span className={cn(
+                    "text-[10px] font-bold uppercase transition-colors px-1",
+                    isSelected ? "text-primary" : "text-muted-foreground/60"
+                  )}>
+                    {variant.name}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setSelectedVariant(variant)
+                      setQuantity(1) // Reset số lượng khi đổi biến thể
+                    }}
+                    className={cn(
+                      "group flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative overflow-hidden h-20 bg-background",
+                      isSelected
+                        ? "border-primary bg-primary/[0.03] ring-4 ring-primary/10 scale-[1.02] shadow-md"
+                        : "border-muted hover:border-primary/40 hover:bg-muted/30"
+                    )}
+                  >
+                    <div className={cn(
+                      "text-base font-black transition-colors",
+                      isSelected ? "text-primary" : "text-foreground"
+                    )}>
+                      {formatVND(variant.price)}
+                    </div>
+                    
+                    {/* Icon Checkmark ở góc */}
+                    {isSelected && (
+                      <div className="absolute top-0 right-0">
+                         <div className="bg-primary text-primary-foreground p-1 rounded-bl-xl shadow-sm animate-in fade-in zoom-in duration-300">
+                           <Check className="h-3.5 w-3.5" strokeWidth={4} />
+                         </div>
+                      </div>
+                    )}
+
+                    {/* Trạng thái hết hàng cho variant */}
+                    {variant.stock === 0 && (
+                      <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px] flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-destructive uppercase tracking-tighter">Hết hàng</span>
+                      </div>
+                    )}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 
       {/* KHU VỰC CHỌN SỐ LƯỢNG VÀ NÚT MUA */}
-      <div className="space-y-6 pt-4 border-t border-dashed">
+      <div className="space-y-6 pt-6 border-t border-dashed border-muted-foreground/20">
         <div className="flex items-center gap-6">
-          <span className="font-black text-sm uppercase tracking-widest text-muted-foreground">Số lượng</span>
-          <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-white/5 shadow-inner">
+          <span className="font-black text-xs uppercase tracking-widest text-muted-foreground">Số lượng</span>
+          <div className="flex items-center gap-1 bg-muted/40 p-1.5 rounded-2xl border border-white/5 shadow-inner">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 rounded-lg hover:bg-background" 
+              className="h-10 w-10 rounded-xl hover:bg-background hover:shadow-sm" 
               onClick={handleDecrease} 
-              disabled={quantity <= 1}
+              disabled={quantity <= 1 || isOutOfStock}
             >
               <Minus className="h-4 w-4" />
             </Button>
-            <span className="w-10 text-center font-black text-xl tabular-nums">{quantity}</span>
+            <span className="w-12 text-center font-black text-2xl tabular-nums">{quantity}</span>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 rounded-lg hover:bg-background" 
+              className="h-10 w-10 rounded-xl hover:bg-background hover:shadow-sm" 
               onClick={handleIncrease} 
-              disabled={quantity >= product.stock_quantity}
+              disabled={quantity >= currentStock || isOutOfStock}
             >
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          <div className="text-xs font-bold text-muted-foreground uppercase bg-muted/30 px-3 py-2 rounded-lg">
-            Sẵn có: <span className="text-foreground">{product.stock_quantity}</span>
+          <div className="flex flex-col">
+             <span className="text-[10px] font-bold text-muted-foreground uppercase">Trạng thái kho</span>
+             <span className={cn(
+               "text-sm font-black",
+               isOutOfStock ? "text-destructive" : "text-green-600"
+             )}>
+                {isOutOfStock ? "HẾT HÀNG" : `SẴN CÓ: ${currentStock}`}
+             </span>
           </div>
         </div>
 
@@ -162,30 +178,20 @@ export function AddToCartSection({ product }: { product: Product }) {
           <Button 
             onClick={handleAddToCart} 
             variant="outline"
+            disabled={isOutOfStock}
             className="flex-1 h-16 text-lg font-black gap-3 border-2 border-primary text-primary hover:bg-primary/5 rounded-2xl transition-all shadow-lg shadow-primary/5 active:scale-95"
           >
             <ShoppingCart className="h-6 w-6" /> THÊM VÀO GIỎ
           </Button>
           <Button 
             onClick={handleBuyNow} 
-            className="flex-1 h-16 text-lg font-black gap-3 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all bg-primary hover:bg-primary/90"
+            disabled={isOutOfStock}
+            className="flex-1 h-16 text-lg font-black gap-3 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.03] active:scale-95 transition-all bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <CreditCard className="h-6 w-6" /> MUA NGAY
           </Button>
         </div>
       </div>
-    </div>
-  )
-}
-
-function Badge({ className, children, variant = 'default' }: { className?: string, children: React.ReactNode, variant?: 'default' | 'destructive' }) {
-  const variants = {
-    default: 'bg-primary text-primary-foreground',
-    destructive: 'bg-destructive text-destructive-foreground'
-  }
-  return (
-    <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors ${variants[variant]} ${className}`}>
-      {children}
     </div>
   )
 }
