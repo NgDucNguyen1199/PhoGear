@@ -35,7 +35,7 @@ function handleInternalSkuDuplicates(variants: any[]) {
 export async function createProductWithVariants(data: any) {
   const supabase = await createClient()
 
-  // 1. Chèn thông tin chung vào bảng products
+  // 1. Chèn thông tin chung vào bảng products (Đã bỏ trường options)
   const { data: product, error: productError } = await supabase
     .from('products')
     .insert({
@@ -45,8 +45,7 @@ export async function createProductWithVariants(data: any) {
       category_id: data.category_id,
       price: data.base_price, 
       stock_quantity: data.variants ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0) : 0,
-      images_url: [], 
-      options: data.options || []
+      images_url: []
     })
     .select()
     .single()
@@ -89,7 +88,6 @@ export async function createProductWithVariants(data: any) {
 export async function updateProduct(id: string, data: any) {
   const supabase = await createClient()
   
-  // Tính toán tổng kho từ các biến thể mới
   const totalStock = data.variants 
     ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0) 
     : 0
@@ -100,8 +98,7 @@ export async function updateProduct(id: string, data: any) {
     description: data.description,
     category_id: data.category_id,
     price: data.base_price,
-    stock_quantity: totalStock,
-    options: data.options || []
+    stock_quantity: totalStock
   }
 
   const { error: productError } = await supabase
@@ -118,15 +115,7 @@ export async function updateProduct(id: string, data: any) {
   if (data.variants && data.variants.length > 0) {
     const processedVariants = handleInternalSkuDuplicates(data.variants);
 
-    const { error: deleteError } = await supabase
-      .from('product_variants')
-      .delete()
-      .eq('product_id', id)
-    
-    if (deleteError) {
-      console.error('Error deleting old variants:', deleteError)
-      return { error: `Lỗi dọn dẹp biến thể cũ: ${deleteError.message}` }
-    }
+    await supabase.from('product_variants').delete().eq('product_id', id)
 
     const variantsToInsert = processedVariants.map((v: any) => ({
       product_id: id,

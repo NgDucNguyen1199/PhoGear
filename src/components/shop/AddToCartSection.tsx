@@ -6,9 +6,10 @@ import { Product, ProductVariant } from '@/types'
 import { useCartStore } from '@/store/cartStore'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ShoppingCart, Plus, Minus, Check, CreditCard, Box, Tag, LayoutGrid } from 'lucide-react'
+import { ShoppingCart, Plus, Minus, Check, CreditCard, LayoutGrid, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 interface AddToCartSectionProps {
   product: Product
@@ -19,37 +20,21 @@ export function AddToCartSection({ product, onVariantChange }: AddToCartSectionP
   const router = useRouter()
   const [quantity, setQuantity] = useState(1)
   
-  // 1. Quản lý Biến thể (Variants Table)
+  // Quản lý duy nhất 1 lựa chọn biến thể
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
-  
-  // 2. Quản lý Tùy chọn (JSONB Options)
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
   
   const addItem = useCartStore((state) => state.addItem)
   const variants = product.product_variants || []
 
-  // Khởi tạo mặc định
+  // Khởi tạo mặc định: Chọn phiên bản đầu tiên
   useEffect(() => {
-    // Mặc định cho Biến thể
     if (variants.length > 0) {
       const defaultVariant = variants[0]
       setSelectedVariant(defaultVariant)
       if (onVariantChange) onVariantChange(defaultVariant)
     }
-    
-    // Mặc định cho Tùy chọn JSONB
-    if (product.options && product.options.length > 0) {
-      const initialOptions: Record<string, string> = {}
-      product.options.forEach(opt => {
-        if (opt.values && opt.values.length > 0) {
-          initialOptions[opt.name] = opt.values[0]
-        }
-      })
-      setSelectedOptions(initialOptions)
-    }
-  }, [variants, product.options, onVariantChange])
+  }, [variants, onVariantChange])
 
-  // Lấy giá và kho hiện tại
   const currentPrice = selectedVariant ? selectedVariant.price : product.price
   const currentStock = selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity
   const isOutOfStock = currentStock === 0
@@ -60,40 +45,31 @@ export function AddToCartSection({ product, onVariantChange }: AddToCartSectionP
     if (onVariantChange) onVariantChange(variant)
   }
 
-  const handleOptionSelect = (optionName: string, value: string) => {
-    setSelectedOptions(prev => ({ ...prev, [optionName]: value }))
-  }
-
   const handleAddToCart = () => {
-    // Kiểm tra xem đã chọn đủ các Options JSONB chưa
-    if (product.options && Object.keys(selectedOptions).length < product.options.length) {
-      toast.error('Vui lòng chọn đầy đủ các tùy chọn sản phẩm.')
+    if (!selectedVariant && variants.length > 0) {
+      toast.error('Vui lòng chọn một phiên bản sản phẩm.')
       return
     }
 
-    const combinedOptions: Record<string, string> = { ...selectedOptions }
-    if (selectedVariant) {
-      combinedOptions["Phiên bản"] = selectedVariant.variant_name
-    }
-
+    const options: Record<string, string> = selectedVariant 
+      ? { "Phiên bản": selectedVariant.variant_name } 
+      : {}
     const productWithPrice = { ...product, price: currentPrice }
-    addItem(productWithPrice, combinedOptions, quantity)
+    addItem(productWithPrice, options, quantity)
     toast.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`)
   }
 
   const handleBuyNow = () => {
-    if (product.options && Object.keys(selectedOptions).length < product.options.length) {
-      toast.error('Vui lòng chọn đầy đủ các tùy chọn sản phẩm.')
+    if (!selectedVariant && variants.length > 0) {
+      toast.error('Vui lòng chọn một phiên bản sản phẩm.')
       return
     }
 
-    const combinedOptions: Record<string, string> = { ...selectedOptions }
-    if (selectedVariant) {
-      combinedOptions["Phiên bản"] = selectedVariant.variant_name
-    }
-
+    const options: Record<string, string> = selectedVariant 
+      ? { "Phiên bản": selectedVariant.variant_name } 
+      : {}
     const productWithPrice = { ...product, price: currentPrice }
-    addItem(productWithPrice, combinedOptions, quantity)
+    addItem(productWithPrice, options, quantity)
     router.push('/checkout')
   }
 
@@ -119,55 +95,16 @@ export function AddToCartSection({ product, onVariantChange }: AddToCartSectionP
         )}
       </div>
 
-      {/* 1. HIỂN THỊ TÙY CHỌN (OPTIONS JSONB) - Chỉ chọn 1 trong mỗi nhóm */}
-      {product.options && product.options.length > 0 && (
-        <div className="space-y-6">
-          {product.options.map((option) => (
-            <div key={option.name} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <Tag size={14} className="text-primary" /> {option.name}
-                </label>
-                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                  {selectedOptions[option.name]}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {option.values.map((val) => {
-                  const isSelected = selectedOptions[option.name] === val
-                  return (
-                    <button
-                      key={val}
-                      onClick={() => handleOptionSelect(option.name, val)}
-                      className={cn(
-                        "px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all flex items-center gap-2 relative",
-                        isSelected
-                          ? "border-primary bg-primary/5 text-primary ring-2 ring-primary/10 scale-[1.02]"
-                          : "border-muted bg-background hover:border-primary/40 text-muted-foreground"
-                      )}
-                    >
-                      {val}
-                      {isSelected && (
-                        <div className="absolute top-0 right-0 bg-primary text-primary-foreground p-0.5 rounded-bl-lg shadow-sm">
-                          <Check className="h-3 w-3" strokeWidth={4} />
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* 2. HIỂN THỊ BIẾN THỂ (VARIANTS TABLE) - Chọn 1 phiên bản duy nhất */}
+      {/* DANH SÁCH BIẾN THỂ (CHỈ CHỌN 1 TRONG NHIỀU) */}
       {variants.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-               <LayoutGrid size={14} className="text-primary" /> Lựa chọn phiên bản
+               <LayoutGrid size={14} className="text-primary" /> Lựa chọn phiên bản & Màu sắc
             </label>
+            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase">
+               {selectedVariant?.variant_name}
+            </span>
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -197,7 +134,7 @@ export function AddToCartSection({ product, onVariantChange }: AddToCartSectionP
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">
-                        <Box className="h-6 w-6 text-muted-foreground opacity-20" />
+                        <ImageIcon className="h-6 w-6 text-muted-foreground opacity-20" />
                       </div>
                     )}
                     {isSelected && (
@@ -237,11 +174,11 @@ export function AddToCartSection({ product, onVariantChange }: AddToCartSectionP
           <div className="flex items-center gap-4">
             <span className="font-black text-xs uppercase tracking-widest text-muted-foreground">Số lượng</span>
             <div className="flex items-center gap-1 bg-muted/40 p-1.5 rounded-2xl border border-white/5 shadow-inner">
-              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-background" onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1 || isOutOfStock}>
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg" onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1 || isOutOfStock}>
                 <Minus className="h-4 w-4" />
               </Button>
-              <span className="w-12 text-center font-black text-2xl tabular-nums">{quantity}</span>
-              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-background" onClick={() => setQuantity(q => q + 1)} disabled={quantity >= currentStock || isOutOfStock}>
+              <span className="w-10 text-center font-black text-xl tabular-nums">{quantity}</span>
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg" onClick={() => setQuantity(q => q + 1)} disabled={quantity >= currentStock || isOutOfStock}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
