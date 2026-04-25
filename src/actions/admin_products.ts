@@ -14,10 +14,10 @@ export async function createProductWithVariants(data: any) {
       brand: data.brand,
       description: data.description,
       category_id: data.category_id,
-      price: data.base_price, // Giá tham khảo hoặc giá thấp nhất
+      price: data.base_price, 
       stock_quantity: data.variants ? data.variants.reduce((acc: number, v: any) => acc + parseInt(v.stock_quantity), 0) : 0,
       images_url: [], 
-      options: data.options || []
+      options: data.options || [] // Đảm bảo lưu trường options JSONB
     })
     .select()
     .single()
@@ -54,16 +54,13 @@ export async function createProductWithVariants(data: any) {
 export async function updateProduct(id: string, data: any) {
   const supabase = await createClient()
   
-  // Hỗ trợ cả FormData và Object
-  const isFormData = data instanceof FormData
-  
   const updates = {
-    name: isFormData ? data.get('name') : data.name,
-    brand: isFormData ? data.get('brand') : data.brand,
-    description: isFormData ? data.get('description') : data.description,
-    category_id: isFormData ? data.get('category_id') : data.category_id,
-    price: isFormData ? parseFloat(data.get('price') as string) : data.base_price,
-    options: isFormData ? JSON.parse(data.get('options') as string || '[]') : (data.options || [])
+    name: data.name,
+    brand: data.brand,
+    description: data.description,
+    category_id: data.category_id,
+    price: data.base_price,
+    options: data.options || [] // Cập nhật trường options JSONB
   }
 
   const { error: productError } = await supabase
@@ -73,14 +70,11 @@ export async function updateProduct(id: string, data: any) {
 
   if (productError) return { error: `Lỗi cập nhật sản phẩm: ${productError.message}` }
 
-  // Cập nhật biến thể nếu có
-  const variants = isFormData ? [] : (data.variants || [])
-  
-  if (variants.length > 0) {
-    // Xóa các biến thể cũ và chèn lại
+  // Cập nhật biến thể
+  if (data.variants && data.variants.length > 0) {
     await supabase.from('product_variants').delete().eq('product_id', id)
 
-    const variantsToInsert = variants.map((v: any) => ({
+    const variantsToInsert = data.variants.map((v: any) => ({
       product_id: id,
       variant_name: v.variant_name,
       switch_type: v.switch_type || '',

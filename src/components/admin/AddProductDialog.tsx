@@ -32,9 +32,11 @@ import {
   FormLabel, 
   FormMessage 
 } from '@/components/ui/form'
-import { Plus, Loader2, Box, Zap } from 'lucide-react'
+import { Plus, Loader2, Box, Zap, Tag, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { VariantManager } from './VariantManager'
+import { Badge } from '@/components/ui/badge'
+import { ProductOption } from '@/types'
 
 const productSchema = z.object({
   name: z.string().min(2, 'Tên sản phẩm quá ngắn'),
@@ -58,6 +60,30 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
+  // Quản lý Simple Options (JSONB)
+  const [options, setOptions] = useState<ProductOption[]>([])
+
+  const addOption = () => setOptions([...options, { name: '', values: [] }])
+  const removeOption = (index: number) => setOptions(options.filter((_, i) => i !== index))
+  const updateOptionName = (index: number, name: string) => {
+    const newOptions = [...options]
+    newOptions[index].name = name
+    setOptions(newOptions)
+  }
+  const addOptionValue = (index: number, value: string) => {
+    if (!value.trim()) return
+    const newOptions = [...options]
+    if (!newOptions[index].values.includes(value.trim())) {
+      newOptions[index].values.push(value.trim())
+      setOptions(newOptions)
+    }
+  }
+  const removeOptionValue = (optIndex: number, valIndex: number) => {
+    const newOptions = [...options]
+    newOptions[optIndex].values = newOptions[optIndex].values.filter((_, i) => i !== valIndex)
+    setOptions(newOptions)
+  }
+
   const form = useForm<ProductFormInput>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -73,7 +99,9 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
 
   async function onSubmit(values: ProductFormInput) {
     setIsLoading(true)
-    const result = await createProductWithVariants(values)
+    // Gộp cả options JSONB vào data gửi lên
+    const finalData = { ...values, options }
+    const result = await createProductWithVariants(finalData)
     setIsLoading(false)
 
     if (result.error) {
@@ -82,6 +110,7 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
       toast.success(result.success)
       setOpen(false)
       reset()
+      setOptions([])
     }
   }
 
@@ -170,6 +199,52 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
                     </FormItem>
                   )}
                 />
+              </div>
+            </div>
+
+            {/* QUẢN LÝ SIMPLE OPTIONS (JSONB) - Đã thêm lại phần này */}
+            <div className="space-y-4 p-8 border rounded-3xl bg-primary/[0.02] text-left">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg uppercase tracking-tight flex items-center gap-2">
+                  <Tag className="text-primary h-5 w-5" /> Tùy chọn nhanh (Màu, Switch...)
+                </h3>
+                <Button type="button" variant="outline" size="sm" onClick={addOption} className="gap-1 border-primary text-primary">
+                  <Plus size={14} /> Thêm loại tùy chọn
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {options.map((opt, optIndex) => (
+                  <div key={optIndex} className="space-y-4 p-4 border rounded-2xl bg-background relative shadow-sm">
+                    <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-2 h-8 w-8 text-destructive" onClick={() => removeOption(optIndex)}>
+                      <X size={16} />
+                    </Button>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground">Tên tùy chọn</Label>
+                      <Input placeholder="VD: Màu sắc" value={opt.name} onChange={(e) => updateOptionName(optIndex, e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground">Các giá trị (Nhấn Enter để thêm)</Label>
+                      <div className="flex flex-wrap gap-2 mb-2 min-h-[30px]">
+                        {opt.values.map((val, valIndex) => (
+                          <Badge key={valIndex} variant="secondary" className="gap-1 pr-1 bg-primary/10 text-primary border-none">
+                            {val}
+                            <button type="button" onClick={() => removeOptionValue(optIndex, valIndex)}><X size={12} /></button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <Input 
+                        placeholder="Gõ giá trị..." 
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            addOptionValue(optIndex, e.currentTarget.value)
+                            e.currentTarget.value = ''
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
