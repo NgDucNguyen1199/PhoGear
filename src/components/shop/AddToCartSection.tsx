@@ -48,7 +48,10 @@ export function AddToCartSection({ product }: { product: Product }) {
   }
 
   const handleAddToCart = () => {
-    const options = selectedVariant ? { "Phiên bản": selectedVariant.variant_name } : {}
+    const options: Record<string, string> = selectedVariant 
+      ? { "Phiên bản": selectedVariant.variant_name } 
+      : {}
+      
     const productWithVariantPrice = { ...product, price: currentPrice }
     
     addItem(productWithVariantPrice, options, quantity)
@@ -56,7 +59,10 @@ export function AddToCartSection({ product }: { product: Product }) {
   }
 
   const handleBuyNow = () => {
-    const options = selectedVariant ? { "Phiên bản": selectedVariant.variant_name } : {}
+    const options: Record<string, string> = selectedVariant 
+      ? { "Phiên bản": selectedVariant.variant_name } 
+      : {}
+      
     const productWithVariantPrice = { ...product, price: currentPrice }
     
     addItem(productWithVariantPrice, options, quantity)
@@ -73,7 +79,7 @@ export function AddToCartSection({ product }: { product: Product }) {
   return (
     <div className="space-y-8">
       {/* HIỂN THỊ GIÁ TIẾN ĐỘNG THEO VARIANT */}
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 text-left">
         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Giá bán hiện tại</span>
         <div className="text-4xl font-black text-primary drop-shadow-sm transition-all duration-300">
           {formatVND(currentPrice)}
@@ -97,7 +103,7 @@ export function AddToCartSection({ product }: { product: Product }) {
               return (
                 <div key={variant.id} className="flex flex-col gap-2">
                   <span className={cn(
-                    "text-[10px] font-bold uppercase transition-colors px-1 truncate",
+                    "text-[10px] font-bold uppercase transition-colors px-1 truncate text-left",
                     isSelected ? "text-primary" : "text-muted-foreground/60"
                   )}>
                     {variant.variant_name}
@@ -163,7 +169,7 @@ export function AddToCartSection({ product }: { product: Product }) {
             >
               <Minus className="h-4 w-4" />
             </Button>
-            <span className="w-12 text-center font-black text-2xl tabular-nums">{quantity}</span>
+            <span className="w-12 text-center font-black text-2xl tabular-nums text-foreground">{quantity}</span>
             <Button 
               variant="ghost" 
               size="icon" 
@@ -174,7 +180,7 @@ export function AddToCartSection({ product }: { product: Product }) {
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col text-left">
              <span className="text-[10px] font-bold text-muted-foreground uppercase">Trạng thái kho</span>
              <span className={cn(
                "text-sm font-black transition-colors duration-300",

@@ -47,6 +47,46 @@ export async function createProductWithVariants(data: any) {
   return { success: 'Đã thêm sản phẩm và các biến thể thành công!' }
 }
 
+export async function updateProduct(id: string, data: any) {
+  const supabase = await createClient()
+  
+  const updates = {
+    name: data.name,
+    brand: data.brand,
+    description: data.description,
+    category_id: data.category_id,
+    price: data.base_price,
+    options: data.options || []
+  }
+
+  const { error: productError } = await supabase
+    .from('products')
+    .update(updates)
+    .eq('id', id)
+
+  if (productError) return { error: `Lỗi cập nhật sản phẩm: ${productError.message}` }
+
+  // Xóa các biến thể cũ và chèn lại (Logic đơn giản cho đồ án)
+  await supabase.from('product_variants').delete().eq('product_id', id)
+
+  const variantsToInsert = data.variants.map((v: any) => ({
+    product_id: id,
+    variant_name: v.variant_name,
+    price: parseFloat(v.price),
+    stock_quantity: parseInt(v.stock_quantity),
+  }))
+
+  const { error: variantsError } = await supabase
+    .from('product_variants')
+    .insert(variantsToInsert)
+
+  if (variantsError) return { error: `Lỗi cập nhật biến thể: ${variantsError.message}` }
+
+  revalidatePath('/admin/products')
+  revalidatePath('/')
+  return { success: 'Đã cập nhật sản phẩm thành công!' }
+}
+
 export async function deleteProduct(id: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('products').delete().eq('id', id)
