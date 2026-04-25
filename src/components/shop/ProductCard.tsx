@@ -11,6 +11,7 @@ import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
 export function ProductCard({ product }: { product: Product }) {
   const router = useRouter()
