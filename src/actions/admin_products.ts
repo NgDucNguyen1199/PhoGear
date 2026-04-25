@@ -3,81 +3,54 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function createProduct(formData: FormData) {
+export async function createProductWithVariants(data: any) {
   const supabase = await createClient()
-  
-  const name = formData.get('name') as string
-  const brand = formData.get('brand') as string
-  const description = formData.get('description') as string
-  const price = parseFloat(formData.get('price') as string)
-  const stock_quantity = parseInt(formData.get('stock_quantity') as string)
-  const category_id = formData.get('category_id') as string
-  const layout = formData.get('layout') as string
-  const connectivity = formData.get('connectivity') as string
-  const options = JSON.parse(formData.get('options') as string || '[]')
-  
-  const images_url: string[] = []
 
-  const { error } = await supabase.from('products').insert({
-    name,
-    brand,
-    description,
-    price,
-    stock_quantity,
-    category_id: category_id || null,
-    layout,
-    connectivity,
-    images_url,
-    options
-  })
+  // 1. Chèn thông tin chung vào bảng products
+  const { data: product, error: productError } = await supabase
+    .from('products')
+    .insert({
+      name: data.name,
+      brand: data.brand,
+      description: data.description,
+      category_id: data.category_id,
+      price: data.base_price, // Giá tham khảo hoặc giá thấp nhất
+      stock_quantity: data.variants.reduce((acc: number, v: any) => acc + parseInt(v.stock_quantity), 0),
+      images_url: [], // Sẽ cập nhật logic upload sau
+      options: data.options || []
+    })
+    .select()
+    .single()
 
-  if (error) {
-    return { error: error.message }
+  if (productError) return { error: `Lỗi tạo sản phẩm: ${productError.message}` }
+
+  // 2. Chèn hàng loạt biến thể vào bảng product_variants
+  const variantsToInsert = data.variants.map((v: any) => ({
+    product_id: product.id,
+    variant_name: v.variant_name,
+    price: parseFloat(v.price),
+    stock_quantity: parseInt(v.stock_quantity),
+  }))
+
+  const { error: variantsError } = await supabase
+    .from('product_variants')
+    .insert(variantsToInsert)
+
+  if (variantsError) {
+    // Trong thực tế nên xóa product vừa tạo nếu biến thể lỗi (Rollback)
+    await supabase.from('products').delete().eq('id', product.id)
+    return { error: `Lỗi tạo biến thể: ${variantsError.message}` }
   }
 
   revalidatePath('/admin/products')
   revalidatePath('/')
-  return { success: 'Đã thêm sản phẩm thành công!' }
+  return { success: 'Đã thêm sản phẩm và các biến thể thành công!' }
 }
 
 export async function deleteProduct(id: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('products').delete().eq('id', id)
-
-  if (error) {
-    return { error: error.message }
-  }
-
+  if (error) return { error: error.message }
   revalidatePath('/admin/products')
-  revalidatePath('/')
   return { success: 'Đã xóa sản phẩm thành công!' }
-}
-
-export async function updateProduct(id: string, formData: FormData) {
-  const supabase = await createClient()
-  
-  const updates = {
-    name: formData.get('name') as string,
-    brand: formData.get('brand') as string,
-    description: formData.get('description') as string,
-    price: parseFloat(formData.get('price') as string),
-    stock_quantity: parseInt(formData.get('stock_quantity') as string),
-    category_id: (formData.get('category_id') as string) || null,
-    layout: formData.get('layout') as string,
-    connectivity: formData.get('connectivity') as string,
-    options: JSON.parse(formData.get('options') as string || '[]')
-  }
-
-  const { error } = await supabase
-    .from('products')
-    .update(updates)
-    .eq('id', id)
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  revalidatePath('/admin/products')
-  revalidatePath('/')
-  return { success: 'Đã cập nhật sản phẩm thành công!' }
 }

@@ -2,6 +2,8 @@ export type Category = {
   id: string
   name: string
   slug: string
+  description?: string
+  created_at?: string
 }
 
 export type ProductOption = {
@@ -11,9 +13,12 @@ export type ProductOption = {
 
 export type ProductVariant = {
   id: string
-  name: string
+  product_id: string
+  variant_name: string
   price: number
-  stock: number
+  stock_quantity: number
+  image_url?: string | null
+  created_at?: string
 }
 
 export type Product = {
@@ -29,7 +34,7 @@ export type Product = {
   connectivity: string | null
   average_rating: number
   options: ProductOption[]
-  variants?: ProductVariant[]
+  product_variants?: ProductVariant[]
   created_at: string
   categories?: Category
 }

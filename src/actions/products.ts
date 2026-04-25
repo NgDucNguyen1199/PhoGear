@@ -31,7 +31,7 @@ export async function getProductById(id: string) {
 
   const { data, error } = await supabase
     .from('products')
-    .select('*, categories(*)')
+    .select('*, categories(*), product_variants(*)')
     .eq('id', id)
     .maybeSingle()
 

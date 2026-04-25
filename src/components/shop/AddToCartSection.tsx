@@ -6,7 +6,7 @@ import { Product, ProductVariant } from '@/types'
 import { useCartStore } from '@/store/cartStore'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ShoppingCart, Plus, Minus, Check, CreditCard } from 'lucide-react'
+import { ShoppingCart, Plus, Minus, Check, CreditCard, Box } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -14,21 +14,23 @@ export function AddToCartSection({ product }: { product: Product }) {
   const router = useRouter()
   const [quantity, setQuantity] = useState(1)
   
-  // Quản lý biến thể đang chọn
+  // Quản lý biến thể đang chọn (Sử dụng product_variants từ database)
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
   
   const addItem = useCartStore((state) => state.addItem)
 
-  // Khởi tạo biến thể mặc định (Option đầu tiên)
-  useEffect(() => {
-    if (product.variants && product.variants.length > 0) {
-      setSelectedVariant(product.variants[0])
-    }
-  }, [product.variants])
+  const variants = product.product_variants || []
 
-  // Lấy giá tiền và tồn kho hiện tại (ưu tiên biến thể, nếu không có lấy của sản phẩm chính)
+  // Khởi tạo biến thể mặc định (Phiên bản đầu tiên)
+  useEffect(() => {
+    if (variants.length > 0) {
+      setSelectedVariant(variants[0])
+    }
+  }, [variants])
+
+  // Lấy giá tiền và tồn kho hiện tại
   const currentPrice = selectedVariant ? selectedVariant.price : product.price
-  const currentStock = selectedVariant ? selectedVariant.stock : product.stock_quantity
+  const currentStock = selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity
   const isOutOfStock = currentStock === 0
 
   const handleIncrease = () => {
@@ -46,8 +48,7 @@ export function AddToCartSection({ product }: { product: Product }) {
   }
 
   const handleAddToCart = () => {
-    const options = selectedVariant ? { "Phiên bản": selectedVariant.name } : {}
-    // Tạo bản copy sản phẩm với giá của biến thể để lưu vào giỏ
+    const options = selectedVariant ? { "Phiên bản": selectedVariant.variant_name } : {}
     const productWithVariantPrice = { ...product, price: currentPrice }
     
     addItem(productWithVariantPrice, options, quantity)
@@ -55,7 +56,7 @@ export function AddToCartSection({ product }: { product: Product }) {
   }
 
   const handleBuyNow = () => {
-    const options = selectedVariant ? { "Phiên bản": selectedVariant.name } : {}
+    const options = selectedVariant ? { "Phiên bản": selectedVariant.variant_name } : {}
     const productWithVariantPrice = { ...product, price: currentPrice }
     
     addItem(productWithVariantPrice, options, quantity)
@@ -74,45 +75,54 @@ export function AddToCartSection({ product }: { product: Product }) {
       {/* HIỂN THỊ GIÁ TIẾN ĐỘNG THEO VARIANT */}
       <div className="flex flex-col gap-1">
         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Giá bán hiện tại</span>
-        <div className="text-4xl font-black text-primary drop-shadow-sm">
+        <div className="text-4xl font-black text-primary drop-shadow-sm transition-all duration-300">
           {formatVND(currentPrice)}
         </div>
       </div>
 
       {/* KHU VỰC CHỌN BIẾN THỂ (VARIANTS) */}
-      {product.variants && product.variants.length > 0 && (
+      {variants.length > 0 && (
         <div className="space-y-4">
-          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-            Lựa chọn phiên bản
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+              Lựa chọn phiên bản
+            </label>
+            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+              {variants.length} Phiên bản có sẵn
+            </span>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {product.variants.map((variant) => {
+            {variants.map((variant) => {
               const isSelected = selectedVariant?.id === variant.id
               return (
                 <div key={variant.id} className="flex flex-col gap-2">
                   <span className={cn(
-                    "text-[10px] font-bold uppercase transition-colors px-1",
+                    "text-[10px] font-bold uppercase transition-colors px-1 truncate",
                     isSelected ? "text-primary" : "text-muted-foreground/60"
                   )}>
-                    {variant.name}
+                    {variant.variant_name}
                   </span>
                   <button
                     onClick={() => {
                       setSelectedVariant(variant)
-                      setQuantity(1) // Reset số lượng khi đổi biến thể
+                      setQuantity(1)
                     }}
                     className={cn(
-                      "group flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative overflow-hidden h-20 bg-background",
+                      "group flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative overflow-hidden h-24 bg-background",
                       isSelected
-                        ? "border-primary bg-primary/[0.03] ring-4 ring-primary/10 scale-[1.02] shadow-md"
+                        ? "border-primary bg-primary/[0.03] ring-4 ring-primary/10 scale-[1.02] shadow-lg"
                         : "border-muted hover:border-primary/40 hover:bg-muted/30"
                     )}
                   >
                     <div className={cn(
-                      "text-base font-black transition-colors",
+                      "text-lg font-black transition-colors",
                       isSelected ? "text-primary" : "text-foreground"
                     )}>
                       {formatVND(variant.price)}
+                    </div>
+                    
+                    <div className="mt-1 text-[10px] font-bold text-muted-foreground opacity-60">
+                       KHO: {variant.stock_quantity}
                     </div>
                     
                     {/* Icon Checkmark ở góc */}
@@ -125,8 +135,9 @@ export function AddToCartSection({ product }: { product: Product }) {
                     )}
 
                     {/* Trạng thái hết hàng cho variant */}
-                    {variant.stock === 0 && (
-                      <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px] flex items-center justify-center">
+                    {variant.stock_quantity === 0 && (
+                      <div className="absolute inset-0 bg-background/80 backdrop-blur-[1px] flex flex-col items-center justify-center">
+                        <Box className="h-4 w-4 text-destructive mb-1" />
                         <span className="text-[10px] font-bold text-destructive uppercase tracking-tighter">Hết hàng</span>
                       </div>
                     )}
@@ -166,15 +177,15 @@ export function AddToCartSection({ product }: { product: Product }) {
           <div className="flex flex-col">
              <span className="text-[10px] font-bold text-muted-foreground uppercase">Trạng thái kho</span>
              <span className={cn(
-               "text-sm font-black",
+               "text-sm font-black transition-colors duration-300",
                isOutOfStock ? "text-destructive" : "text-green-600"
              )}>
-                {isOutOfStock ? "HẾT HÀNG" : `SẴN CÓ: ${currentStock}`}
+                {isOutOfStock ? "TẠM HẾT HÀNG" : `SẴN CÓ: ${currentStock}`}
              </span>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 pt-2">
           <Button 
             onClick={handleAddToCart} 
             variant="outline"
@@ -186,7 +197,7 @@ export function AddToCartSection({ product }: { product: Product }) {
           <Button 
             onClick={handleBuyNow} 
             disabled={isOutOfStock}
-            className="flex-1 h-16 text-lg font-black gap-3 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.03] active:scale-95 transition-all bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="flex-1 h-16 text-lg font-black gap-3 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.03] active:scale-95 transition-all bg-primary hover:bg-primary/90 text-primary-foreground border-none"
           >
             <CreditCard className="h-6 w-6" /> MUA NGAY
           </Button>
