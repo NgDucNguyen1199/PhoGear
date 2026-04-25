@@ -15,6 +15,8 @@ export type ProductVariant = {
   id: string
   product_id: string
   variant_name: string
+  switch_type?: string | null
+  sku?: string | null
   price: number
   stock_quantity: number
   image_url?: string | null

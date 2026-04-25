@@ -7,14 +7,13 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Plus, Trash2, Hash, Zap, Image as ImageIcon, Box } from 'lucide-react'
 import { generateSKU } from '@/lib/utils/sku'
-import { useEffect } from 'react'
 import Image from 'next/image'
 
 interface VariantManagerProps {
-  control: Control<any>
-  register: UseFormRegister<any>
-  watch: UseFormWatch<any>
-  setValue: UseFormSetValue<any>
+  control: any
+  register: any
+  watch: any
+  setValue: any
 }
 
 export function VariantManager({ control, register, watch, setValue }: VariantManagerProps) {
@@ -53,12 +52,11 @@ export function VariantManager({ control, register, watch, setValue }: VariantMa
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {fields.map((field, index) => {
           const watchImageUrl = watch(`variants.${index}.image_url`)
-          const watchSku = watch(`variants.${index}.sku`)
 
           return (
-            <Card key={field.id} className="relative overflow-hidden border-2 transition-all hover:border-primary/20 bg-background/50">
+            <Card key={field.id} className="relative overflow-hidden border-2 transition-all hover:border-primary/20 bg-background/50 text-left">
               <CardContent className="p-5 space-y-4">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-4 text-left">
                   {/* Image Preview / Thumbnail */}
                   <div className="h-20 w-20 rounded-xl border-2 border-dashed flex flex-col items-center justify-center bg-muted shrink-0 overflow-hidden relative group">
                     {watchImageUrl ? (
@@ -67,7 +65,7 @@ export function VariantManager({ control, register, watch, setValue }: VariantMa
                       <ImageIcon className="h-6 w-6 text-muted-foreground opacity-20" />
                     )}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                       <span className="text-[8px] text-white font-bold">CHANGE</span>
+                       <span className="text-[8px] text-white font-bold uppercase">Preview</span>
                     </div>
                   </div>
 
@@ -77,7 +75,7 @@ export function VariantManager({ control, register, watch, setValue }: VariantMa
                       <Input 
                         placeholder="VD: White Heart" 
                         {...register(`variants.${index}.variant_name` as const, {
-                          onChange: (e) => handleVariantNameChange(index, e.target.value)
+                          onChange: (e: any) => handleVariantNameChange(index, e.target.value)
                         })} 
                       />
                     </div>
@@ -91,7 +89,7 @@ export function VariantManager({ control, register, watch, setValue }: VariantMa
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 text-left">
                   <div className="grid gap-1.5">
                     <Label className="text-[10px] uppercase font-black text-muted-foreground">Loại Switch</Label>
                     <div className="relative">
@@ -105,7 +103,7 @@ export function VariantManager({ control, register, watch, setValue }: VariantMa
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-dashed">
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-dashed text-left">
                    <div className="grid gap-1.5">
                       <Label className="text-[10px] uppercase font-black text-muted-foreground">Giá bán lẻ</Label>
                       <Input type="number" {...register(`variants.${index}.price` as const)} />

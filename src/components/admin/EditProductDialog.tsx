@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 import { updateProduct } from '@/actions/admin_products'
 import { 
   Dialog, 
@@ -21,44 +24,65 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select'
-import { Pencil, Loader2, Plus, X } from 'lucide-react'
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from '@/components/ui/form'
+import { Pencil, Loader2, Box, Zap } from 'lucide-react'
 import { toast } from 'sonner'
-import { Product, ProductOption } from '@/types'
-import { Badge } from '@/components/ui/badge'
+import { Product } from '@/types'
+import { VariantManager } from './VariantManager'
+
+const productSchema = z.object({
+  name: z.string().min(2, 'Tên sản phẩm quá ngắn'),
+  brand: z.string().min(2, 'Thương hiệu không được để trống'),
+  description: z.string().optional(),
+  category_id: z.string().uuid('Vui lòng chọn danh mục'),
+  base_price: z.coerce.number(),
+  variants: z.array(z.object({
+    variant_name: z.string().min(1, 'Tên biến thể bắt buộc'),
+    switch_type: z.string().optional(),
+    sku: z.string().optional(),
+    image_url: z.string().optional(),
+    price: z.coerce.number(),
+    stock_quantity: z.coerce.number(),
+  })).min(1, 'Cần ít nhất 1 biến thể')
+})
+
+type ProductFormInput = z.input<typeof productSchema>
 
 export function EditProductDialog({ product, categories }: { product: Product, categories: any[] }) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [options, setOptions] = useState<ProductOption[]>(product.options || [])
 
-  const addOption = () => setOptions([...options, { name: '', values: [] }])
-  const removeOption = (index: number) => setOptions(options.filter((_, i) => i !== index))
-  const updateOptionName = (index: number, name: string) => {
-    const newOptions = [...options]
-    newOptions[index].name = name
-    setOptions(newOptions)
-  }
-  const addOptionValue = (index: number, value: string) => {
-    if (!value.trim()) return
-    const newOptions = [...options]
-    if (!newOptions[index].values.includes(value.trim())) {
-      newOptions[index].values.push(value.trim())
-      setOptions(newOptions)
+  const form = useForm<ProductFormInput>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: product.name || '',
+      brand: product.brand || '',
+      description: product.description || '',
+      category_id: product.category_id || '',
+      base_price: product.price || 0,
+      variants: product.product_variants?.map(v => ({
+        variant_name: v.variant_name,
+        switch_type: v.switch_type || '',
+        sku: v.sku || '',
+        image_url: v.image_url || '',
+        price: v.price,
+        stock_quantity: v.stock_quantity
+      })) || [{ variant_name: '', switch_type: '', sku: '', image_url: '', price: 0, stock_quantity: 0 }]
     }
-  }
-  const removeOptionValue = (optIndex: number, valIndex: number) => {
-    const newOptions = [...options]
-    newOptions[optIndex].values = newOptions[optIndex].values.filter((_, i) => i !== valIndex)
-    setOptions(newOptions)
-  }
+  })
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  const { control, register, watch, setValue, handleSubmit } = form
+
+  async function onSubmit(values: ProductFormInput) {
     setIsLoading(true)
-    const formData = new FormData(event.currentTarget)
-    formData.append('options', JSON.stringify(options))
-
-    const result = await updateProduct(product.id, formData)
+    const result = await updateProduct(product.id, values)
     setIsLoading(false)
 
     if (result.error) {
@@ -74,90 +98,106 @@ export function EditProductDialog({ product, categories }: { product: Product, c
       <DialogTrigger className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
         <Pencil size={16} />
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[1000px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Chỉnh sửa sản phẩm</DialogTitle>
+          <DialogTitle className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
+             <Zap className="text-primary fill-primary" /> Chỉnh sửa sản phẩm Pho Gear
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2 text-left">
-              <Label htmlFor="name">Tên sản phẩm</Label>
-              <Input id="name" name="name" defaultValue={product.name} required />
-            </div>
-            <div className="grid gap-2 text-left">
-              <Label htmlFor="brand">Thương hiệu</Label>
-              <Input id="brand" name="brand" defaultValue={product.brand || ''} required />
-            </div>
-          </div>
-
-          <div className="grid gap-2 text-left">
-            <Label htmlFor="category_id">Danh mục</Label>
-            <Select name="category_id" defaultValue={product.category_id || undefined}>
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn danh mục" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* OPTIONS */}
-          <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
-            <div className="flex items-center justify-between">
-              <Label className="text-base font-bold">Tùy chọn sản phẩm</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addOption} className="gap-1">
-                <Plus size={14} /> Thêm loại
-              </Button>
-            </div>
-            {options.map((opt, optIndex) => (
-              <div key={optIndex} className="space-y-3 p-3 border rounded bg-background relative">
-                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1 h-7 w-7 text-destructive" onClick={() => removeOption(optIndex)}>
-                  <X size={14} />
-                </Button>
-                <Input placeholder="Tên tùy chọn" value={opt.name} onChange={(e) => updateOptionName(optIndex, e.target.value)} />
-                <div className="flex flex-wrap gap-2">
-                  {opt.values.map((val, valIndex) => (
-                    <Badge key={valIndex} variant="secondary" className="gap-1 pr-1">
-                      {val}
-                      <button type="button" onClick={() => removeOptionValue(optIndex, valIndex)}><X size={12} /></button>
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input placeholder="Giá trị" id={`edit-opt-val-${optIndex}`} onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); addOptionValue(optIndex, e.currentTarget.value); e.currentTarget.value = '' } }} />
-                  <Button type="button" variant="secondary" onClick={() => { const input = document.getElementById(`edit-opt-val-${optIndex}`) as HTMLInputElement; addOptionValue(optIndex, input.value); input.value = '' }}>Thêm</Button>
-                </div>
+        
+        <Form {...form}>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 py-6">
+            
+            {/* THÔNG TIN CHUNG */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-muted/20 rounded-3xl border shadow-inner text-left">
+               <div className="col-span-full font-black text-xs uppercase tracking-[0.3em] text-primary flex items-center gap-2 mb-2">
+                 <Box size={14} /> Thông tin cơ bản
+               </div>
+              <FormField
+                control={control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tên sản phẩm</FormLabel>
+                    <FormControl><Input placeholder="Ví dụ: Yunzii B75 Pro" {...field} value={field.value as string} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="brand"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Thương hiệu</FormLabel>
+                    <FormControl><Input placeholder="Ví dụ: Yunzii" {...field} value={field.value as string} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="category_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Danh mục</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value as string}>
+                      <FormControl>
+                        <SelectTrigger><SelectValue placeholder="Chọn danh mục" /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="base_price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Giá tham khảo (VNĐ)</FormLabel>
+                    <FormControl><Input type="number" {...field} value={field.value as number} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="col-span-full">
+                <FormField
+                  control={control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mô tả chi tiết</FormLabel>
+                      <FormControl><Textarea rows={3} {...field} value={field.value as string} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="price">Giá bán (VNĐ)</Label>
-              <Input id="price" name="price" type="number" defaultValue={product.price} required />
             </div>
-            <div className="grid gap-2 text-left">
-              <Label htmlFor="stock_quantity">Tồn kho</Label>
-              <Input id="stock_quantity" name="stock_quantity" type="number" defaultValue={product.stock_quantity} required />
-            </div>
-          </div>
 
-          <div className="grid gap-2 text-left">
-            <Label htmlFor="description">Mô tả</Label>
-            <Textarea id="description" name="description" defaultValue={product.description || ''} rows={4} />
-          </div>
+            {/* QUẢN LÝ BIẾN THỂ */}
+            <VariantManager 
+              control={control} 
+              register={register} 
+              watch={watch} 
+              setValue={setValue} 
+            />
 
-          <DialogFooter>
-            <Button variant="outline" type="button" onClick={() => setOpen(false)}>Hủy</Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Lưu thay đổi
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter className="pt-8 border-t">
+              <Button variant="outline" type="button" onClick={() => setOpen(false)}>Hủy</Button>
+              <Button type="submit" disabled={isLoading} className="px-8 font-bold h-12">
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Pencil size={18} className="mr-2" />}
+                LƯU THAY ĐỔI SẢN PHẨM
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
