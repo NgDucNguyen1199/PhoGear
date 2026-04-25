@@ -4,6 +4,17 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 /**
+ * Hàm hỗ trợ sửa lỗi URL Unsplash bị thiếu dấu '?' trước query params
+ */
+function fixUnsplashUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (url.includes('images.unsplash.com') && url.includes('auto=') && !url.includes('?')) {
+    return url.replace('auto=', '?auto=');
+  }
+  return url;
+}
+
+/**
  * Hàm kiểm tra và xử lý trùng lặp SKU trong nội bộ danh sách gửi lên
  */
 function handleInternalSkuDuplicates(variants: any[]) {
@@ -12,9 +23,7 @@ function handleInternalSkuDuplicates(variants: any[]) {
     let sku = (v.sku && v.sku.trim() !== '') ? v.sku.trim() : null;
     
     if (sku) {
-      // Nếu SKU đã xuất hiện trong danh sách này rồi
       if (seenSkus.has(sku)) {
-        // Tự động thêm hậu tố để tránh trùng nội bộ
         sku = `${sku}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
       }
       seenSkus.add(sku);
@@ -56,7 +65,7 @@ export async function createProductWithVariants(data: any) {
       variant_name: v.variant_name,
       switch_type: v.switch_type || '',
       sku: v.sku,
-      image_url: v.image_url || '',
+      image_url: fixUnsplashUrl(v.image_url) || '',
       price: parseFloat(v.price) || 0,
       stock_quantity: parseInt(v.stock_quantity) || 0,
     }))
@@ -68,7 +77,7 @@ export async function createProductWithVariants(data: any) {
     if (variantsError) {
       console.error('Error creating variants:', variantsError)
       await supabase.from('products').delete().eq('id', product.id)
-      return { error: `Lỗi tạo biến thể (Có thể do trùng mã SKU với sản phẩm khác): ${variantsError.message}` }
+      return { error: `Lỗi tạo biến thể (Có thể do trùng mã SKU): ${variantsError.message}` }
     }
   }
 
@@ -80,6 +89,7 @@ export async function createProductWithVariants(data: any) {
 export async function updateProduct(id: string, data: any) {
   const supabase = await createClient()
   
+  // Tính toán tổng kho từ các biến thể mới
   const totalStock = data.variants 
     ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0) 
     : 0
@@ -106,10 +116,8 @@ export async function updateProduct(id: string, data: any) {
 
   // Cập nhật biến thể
   if (data.variants && data.variants.length > 0) {
-    // 1. Xử lý trùng lặp SKU nội bộ trong danh sách gửi lên
     const processedVariants = handleInternalSkuDuplicates(data.variants);
 
-    // 2. Xóa trắng biến thể cũ của sản phẩm này
     const { error: deleteError } = await supabase
       .from('product_variants')
       .delete()
@@ -120,13 +128,12 @@ export async function updateProduct(id: string, data: any) {
       return { error: `Lỗi dọn dẹp biến thể cũ: ${deleteError.message}` }
     }
 
-    // 3. Chuẩn bị dữ liệu chèn mới
     const variantsToInsert = processedVariants.map((v: any) => ({
       product_id: id,
       variant_name: v.variant_name,
       switch_type: v.switch_type || '',
       sku: v.sku,
-      image_url: v.image_url || '',
+      image_url: fixUnsplashUrl(v.image_url) || '',
       price: parseFloat(v.price) || 0,
       stock_quantity: parseInt(v.stock_quantity) || 0,
     }))
@@ -137,7 +144,7 @@ export async function updateProduct(id: string, data: any) {
 
     if (variantsError) {
       console.error('Error inserting new variants:', variantsError)
-      return { error: `Lỗi cập nhật biến thể (Mã SKU bị trùng lặp với sản phẩm khác trên hệ thống): ${variantsError.message}` }
+      return { error: `Lỗi cập nhật biến thể (Mã SKU bị trùng lặp): ${variantsError.message}` }
     }
   }
 
