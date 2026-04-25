@@ -7,6 +7,7 @@ export type OrderItemInput = {
   product_id: string
   quantity: number
   price_at_time: number
+  selected_options?: Record<string, string>
 }
 
 export async function createOrder(formData: FormData, items: OrderItemInput[]) {
@@ -46,7 +47,8 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
     order_id: order.id,
     product_id: item.product_id,
     quantity: item.quantity,
-    price_at_time: item.price_at_time
+    price_at_time: item.price_at_time,
+    selected_options: item.selected_options || {}
   }))
 
   const { error: itemsError } = await supabase
@@ -54,11 +56,10 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
     .insert(orderItems)
 
   if (itemsError) {
-    // Trong thực tế nên có logic rollback ở đây
     return { error: `Lỗi lưu chi tiết đơn hàng: ${itemsError.message}` }
   }
 
-  // 5. (Tùy chọn) Cập nhật số lượng kho hàng
+  // 5. Cập nhật số lượng kho hàng
   for (const item of items) {
     const { data: product } = await supabase
       .from('products')

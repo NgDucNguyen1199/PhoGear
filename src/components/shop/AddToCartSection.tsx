@@ -1,17 +1,39 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Product } from '@/types'
 import { useCartStore } from '@/store/cartStore'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, Plus, Minus } from 'lucide-react'
+import { ShoppingCart, Plus, Minus, Check } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 export function AddToCartSection({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1)
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
   const addItem = useCartStore((state) => state.addItem)
 
   const isOutOfStock = product.stock_quantity === 0
+
+  // Khởi tạo tùy chọn mặc định nếu có
+  useEffect(() => {
+    if (product.options && product.options.length > 0) {
+      const initialOptions: Record<string, string> = {}
+      product.options.forEach(opt => {
+        if (opt.values && opt.values.length > 0) {
+          initialOptions[opt.name] = opt.values[0]
+        }
+      })
+      setSelectedOptions(initialOptions)
+    }
+  }, [product.options])
+
+  const handleOptionSelect = (optionName: string, value: string) => {
+    setSelectedOptions(prev => ({
+      ...prev,
+      [optionName]: value
+    }))
+  }
 
   const handleIncrease = () => {
     if (quantity < product.stock_quantity) {
@@ -28,20 +50,13 @@ export function AddToCartSection({ product }: { product: Product }) {
   }
 
   const handleAddToCart = () => {
-    // Add multiples items by calling addItem multiple times or update logic.
-    // However, our cartStore `addItem` adds 1 item per call. 
-    // To fix this quickly without changing cartStore logic for multiple quantity at once:
-    // We update cartStore if item exists, or we add one, then update quantity.
-    
-    // Better way: cartStore updateQuantity handles setting exact quantity if item is already in cart.
-    // Let's add 1 first, then if quantity > 1, get current items and increase.
-    
-    // For simplicity, we just add the product once, then use updateQuantity logic if needed.
-    // Actually, I'll loop it for now since addItem handles incrementing if exists:
-    for(let i = 0; i < quantity; i++) {
-      addItem(product)
+    // Kiểm tra xem đã chọn đủ options chưa (nếu cần bắt buộc)
+    if (product.options && Object.keys(selectedOptions).length < product.options.length) {
+      toast.error('Vui lòng chọn đầy đủ các tùy chọn sản phẩm.')
+      return
     }
 
+    addItem(product, selectedOptions, quantity)
     toast.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`)
   }
 
@@ -54,26 +69,56 @@ export function AddToCartSection({ product }: { product: Product }) {
   }
 
   return (
-    <div className="space-y-4 mt-6">
+    <div className="space-y-6 mt-6">
+      {/* HIỂN THỊ CÁC TÙY CHỌN (OPTIONS) */}
+      {product.options && product.options.length > 0 && (
+        <div className="space-y-4">
+          {product.options.map((option) => (
+            <div key={option.name} className="space-y-2">
+              <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                {option.name}: <span className="text-foreground">{selectedOptions[option.name]}</span>
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {option.values.map((val) => (
+                  <button
+                    key={val}
+                    onClick={() => handleOptionSelect(option.name, val)}
+                    className={cn(
+                      "px-4 py-2 rounded-md border text-sm font-medium transition-all flex items-center gap-2",
+                      selectedOptions[option.name] === val
+                        ? "border-primary bg-primary/5 text-primary ring-1 ring-primary"
+                        : "border-muted bg-background hover:border-primary/50 text-muted-foreground"
+                    )}
+                  >
+                    {selectedOptions[option.name] === val && <Check className="h-3 w-3" />}
+                    {val}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="flex items-center gap-4">
         <span className="font-medium text-sm">Số lượng:</span>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handleDecrease} disabled={quantity <= 1}>
-            <Minus className="h-4 w-4" />
+        <div className="flex items-center gap-2 border rounded-md p-1 bg-muted/20">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDecrease} disabled={quantity <= 1}>
+            <Minus className="h-3 w-3" />
           </Button>
           <span className="w-8 text-center font-bold">{quantity}</span>
-          <Button variant="outline" size="icon" onClick={handleIncrease} disabled={quantity >= product.stock_quantity}>
-            <Plus className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleIncrease} disabled={quantity >= product.stock_quantity}>
+            <Plus className="h-3 w-3" />
           </Button>
         </div>
-        <span className="text-sm text-muted-foreground ml-2">
-          (Còn {product.stock_quantity} sản phẩm)
+        <span className="text-xs text-muted-foreground ml-2">
+          (Kho: {product.stock_quantity})
         </span>
       </div>
 
       <div className="flex gap-4">
-        <Button onClick={handleAddToCart} className="flex-1 h-12 text-lg font-bold gap-2">
-          <ShoppingCart className="h-5 w-5" /> Thêm vào giỏ
+        <Button onClick={handleAddToCart} className="flex-1 h-12 text-lg font-bold gap-2 shadow-lg shadow-primary/20 transition-transform active:scale-95">
+          <ShoppingCart className="h-5 w-5" /> Thêm vào giỏ hàng
         </Button>
       </div>
     </div>

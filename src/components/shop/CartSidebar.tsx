@@ -1,6 +1,6 @@
 'use client'
 
-import { useCartStore } from '@/store/cartStore'
+import { useCartStore, getCartItemId } from '@/store/cartStore'
 import {
   Sheet,
   SheetContent,
@@ -46,54 +46,69 @@ export function CartSidebar({ open, setOpen }: { open: boolean; setOpen: (open: 
           {items.length > 0 ? (
             <ScrollArea className="h-full pr-4">
               <div className="space-y-4">
-                {items.map((item) => (
-                  <div key={item.id} className="flex gap-4 items-start">
-                    <div className="relative h-20 w-20 rounded-md overflow-hidden bg-muted border">
-                      {item.images_url?.[0] ? (
-                        <Image src={item.images_url[0]} alt={item.name} fill className="object-cover" />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">No img</div>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 space-y-1">
-                      <h4 className="font-medium text-sm line-clamp-1">{item.name}</h4>
-                      <p className="text-xs text-muted-foreground uppercase">{item.brand}</p>
-                      <p className="text-sm font-bold text-primary">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}
-                      </p>
-                      
-                      <div className="flex items-center gap-2 mt-2">
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          className="h-7 w-7" 
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="text-sm w-4 text-center">{item.quantity}</span>
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          className="h-7 w-7" 
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
+                {items.map((item) => {
+                  const cartId = getCartItemId(item.id, item.selectedOptions)
+                  return (
+                    <div key={cartId} className="flex gap-4 items-start">
+                      <div className="relative h-20 w-20 rounded-md overflow-hidden bg-muted border flex-shrink-0">
+                        {item.images_url?.[0] ? (
+                          <Image src={item.images_url[0]} alt={item.name} fill className="object-cover" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">No img</div>
+                        )}
                       </div>
-                    </div>
+                      
+                      <div className="flex-1 space-y-1">
+                        <h4 className="font-medium text-sm line-clamp-1">{item.name}</h4>
+                        <p className="text-xs text-muted-foreground uppercase">{item.brand}</p>
+                        
+                        {/* HIỂN THỊ CÁC OPTION ĐÃ CHỌN */}
+                        {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                          <div className="flex flex-wrap gap-x-2 gap-y-1 mt-1">
+                            {Object.entries(item.selectedOptions).map(([key, val]) => (
+                              <span key={key} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                                {key}: <span className="text-foreground font-medium">{val}</span>
+                              </span>
+                            ))}
+                          </div>
+                        )}
 
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-muted-foreground hover:text-destructive h-8 w-8"
-                      onClick={() => removeItem(item.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                        <p className="text-sm font-bold text-primary mt-1">
+                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}
+                        </p>
+                        
+                        <div className="flex items-center gap-2 mt-2">
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-7 w-7" 
+                            onClick={() => updateQuantity(cartId, item.quantity - 1)}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="text-sm w-4 text-center font-mono">{item.quantity}</span>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-7 w-7" 
+                            onClick={() => updateQuantity(cartId, item.quantity + 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-muted-foreground hover:text-destructive h-8 w-8"
+                        onClick={() => removeItem(cartId)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )
+                })}
               </div>
             </ScrollArea>
           ) : (
@@ -109,7 +124,7 @@ export function CartSidebar({ open, setOpen }: { open: boolean; setOpen: (open: 
 
         {items.length > 0 && (
           <div className="space-y-4 pt-4 border-t">
-            <div className="flex items-center justify-between font-bold text-lg">
+            <div className="flex items-center justify-between font-bold text-lg px-2">
               <span>Tổng cộng:</span>
               <span className="text-primary">{totalPrice}</span>
             </div>

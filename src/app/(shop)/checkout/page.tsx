@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useCartStore } from '@/store/cartStore'
+import { useCartStore, getCartItemId } from '@/store/cartStore'
 import { createOrder, OrderItemInput } from '@/actions/orders'
 import { getUser } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
@@ -86,7 +86,8 @@ export default function CheckoutPage() {
     const orderItems: OrderItemInput[] = items.map(item => ({
       product_id: item.id,
       quantity: item.quantity,
-      price_at_time: item.price
+      price_at_time: item.price,
+      selected_options: item.selectedOptions
     }))
 
     const result = await createOrder(formData, orderItems)
@@ -168,22 +169,32 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="max-h-[400px] overflow-y-auto pr-2 space-y-4">
-                {items.map((item) => (
-                  <div key={item.id} className="flex gap-4">
-                    <div className="relative h-16 w-16 rounded border bg-muted flex-shrink-0">
-                      {item.images_url?.[0] && (
-                        <Image src={item.images_url[0]} alt={item.name} fill className="object-cover" />
-                      )}
+                {items.map((item) => {
+                  const cartId = getCartItemId(item.id, item.selectedOptions)
+                  return (
+                    <div key={cartId} className="flex gap-4">
+                      <div className="relative h-16 w-16 rounded border bg-muted flex-shrink-0">
+                        {item.images_url?.[0] && (
+                          <Image src={item.images_url[0]} alt={item.name} fill className="object-cover" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm line-clamp-1">{item.name}</p>
+                        {item.selectedOptions && (
+                          <div className="flex flex-wrap gap-x-2 text-[10px] text-muted-foreground">
+                            {Object.entries(item.selectedOptions).map(([k, v]) => (
+                              <span key={k}>{k}: {v}</span>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1 text-primary font-bold">SL: {item.quantity}</p>
+                      </div>
+                      <p className="text-sm font-semibold">
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price * item.quantity)}
+                      </p>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm line-clamp-1">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">SL: {item.quantity}</p>
-                    </div>
-                    <p className="text-sm font-semibold">
-                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price * item.quantity)}
-                    </p>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
               
               <Separator />
