@@ -50,11 +50,21 @@ export function TypingGame({ profile, initialLeaderboard }: TypingGameProps) {
   const [switchType, setSwitchType] = useState<'linear' | 'clicky'>('linear')
   const [isMuted, setIsMuted] = useState(false)
   const [mode, setMode] = useState<'normal' | 'advanced'>('normal')
+  const [hasSoundFiles, setHasSoundFiles] = useState(true)
 
   // Sounds (Expects these to be in /public/sounds/)
-  const [playLinear] = useSound('/sounds/creamy_linear.mp3', { volume: 0.5 })
-  const [playClicky] = useSound('/sounds/blue_clicky.mp3', { volume: 0.5 })
-  const [playSpace] = useSound('/sounds/spacebar.mp3', { volume: 0.6 })
+  const [playLinear] = useSound('/sounds/creamy_linear.mp3', { 
+    volume: 0.5,
+    onloaderror: () => setHasSoundFiles(false)
+  })
+  const [playClicky] = useSound('/sounds/blue_clicky.mp3', { 
+    volume: 0.5,
+    onloaderror: () => setHasSoundFiles(false)
+  })
+  const [playSpace] = useSound('/sounds/spacebar.mp3', { 
+    volume: 0.6,
+    onloaderror: () => setHasSoundFiles(false)
+  })
 
   const inputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -156,6 +166,14 @@ export function TypingGame({ profile, initialLeaderboard }: TypingGameProps) {
 
   return (
     <div className="w-full max-w-5xl space-y-12 py-10">
+      {/* Sound Warning */}
+      {!hasSoundFiles && !isMuted && (
+        <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-lg text-center text-xs text-red-400 animate-pulse">
+          Cảnh báo: Không tìm thấy file âm thanh tại /public/sounds/. 
+          Vui lòng thêm creamy_linear.mp3, blue_clicky.mp3 và spacebar.mp3 để có trải nghiệm tốt nhất.
+        </div>
+      )}
+
       {/* Settings Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-[#1a1a11] p-4 rounded-xl border border-white/5">
         <div className="flex items-center gap-6">
