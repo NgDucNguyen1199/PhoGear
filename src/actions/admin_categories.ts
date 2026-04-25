@@ -32,3 +32,22 @@ export async function deleteCategory(id: string) {
   revalidatePath('/admin/categories')
   return { success: 'Xóa danh mục thành công!' }
 }
+
+export async function updateCategory(id: string, formData: FormData) {
+  const supabase = await createClient()
+  const name = formData.get('name') as string
+  const slug = formData.get('slug') as string
+  const description = formData.get('description') as string
+
+  const { error } = await supabase
+    .from('categories')
+    .update({ name, slug, description })
+    .eq('id', id)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin/categories')
+  return { success: 'Cập nhật danh mục thành công!' }
+}

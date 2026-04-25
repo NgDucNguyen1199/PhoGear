@@ -10,8 +10,9 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Pencil, Trash2, Search } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Settings2 } from 'lucide-react'
 import { AddProductDialog } from '@/components/admin/AddProductDialog'
+import { EditProductDialog } from '@/components/admin/EditProductDialog'
 
 export default async function AdminProductsPage() {
   const products = await getProducts(50)
@@ -43,7 +44,7 @@ export default async function AdminProductsPage() {
               <TableHead>Danh mục</TableHead>
               <TableHead>Giá</TableHead>
               <TableHead>Tồn kho</TableHead>
-              <TableHead>Trạng thái</TableHead>
+              <TableHead>Tùy chọn</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
@@ -61,24 +62,30 @@ export default async function AdminProductsPage() {
                   <TableCell>
                     {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
                   </TableCell>
-                  <TableCell>{product.stock_quantity}</TableCell>
                   <TableCell>
                     {product.stock_quantity > 0 ? (
-                      <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100">Còn hàng</Badge>
+                      <span className="font-medium">{product.stock_quantity}</span>
                     ) : (
                       <Badge variant="destructive">Hết hàng</Badge>
                     )}
                   </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1 max-w-[150px]">
+                      {product.options?.map((opt, i) => (
+                        <Badge key={i} variant="outline" className="text-[10px] px-1 py-0 h-4">
+                          {opt.name}
+                        </Badge>
+                      )) || <span className="text-xs text-muted-foreground italic">None</span>}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
+                    <div className="flex justify-end gap-1">
+                      <EditProductDialog product={product} categories={categories} />
                       <form action={async () => {
                         'use server'
                         await deleteProduct(product.id)
                       }}>
-                        <Button variant="ghost" size="icon" className="text-destructive">
+                        <Button variant="ghost" size="icon" className="text-destructive h-8 w-8">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </form>

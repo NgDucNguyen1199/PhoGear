@@ -14,7 +14,8 @@ export async function createProduct(formData: FormData) {
   const category_id = formData.get('category_id') as string
   const layout = formData.get('layout') as string
   const connectivity = formData.get('connectivity') as string
-  // Tạm thời để mảng ảnh trống, logic upload ảnh sẽ xử lý sau
+  const options = JSON.parse(formData.get('options') as string || '[]')
+  
   const images_url: string[] = []
 
   const { error } = await supabase.from('products').insert({
@@ -26,7 +27,8 @@ export async function createProduct(formData: FormData) {
     category_id: category_id || null,
     layout,
     connectivity,
-    images_url
+    images_url,
+    options
   })
 
   if (error) {
@@ -63,6 +65,7 @@ export async function updateProduct(id: string, formData: FormData) {
     category_id: (formData.get('category_id') as string) || null,
     layout: formData.get('layout') as string,
     connectivity: formData.get('connectivity') as string,
+    options: JSON.parse(formData.get('options') as string || '[]')
   }
 
   const { error } = await supabase

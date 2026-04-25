@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AddCategoryDialog } from '@/components/admin/AddCategoryDialog'
+import { EditCategoryDialog } from '@/components/admin/EditCategoryDialog'
 import { Layers, Trash2, Calendar, Pencil } from 'lucide-react'
 
 export default async function AdminCategoriesPage() {
@@ -65,15 +66,13 @@ export default async function AdminCategoriesPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" disabled>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+                        <div className="flex justify-end gap-1">
+                          <EditCategoryDialog category={category} />
                           <form action={async () => {
                             'use server'
                             await deleteCategory(category.id)
                           }}>
-                            <Button variant="ghost" size="icon" className="text-destructive">
+                            <Button variant="ghost" size="icon" className="text-destructive h-8 w-8">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </form>
