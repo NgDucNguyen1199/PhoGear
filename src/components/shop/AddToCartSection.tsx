@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Product, ProductVariant } from '@/types'
 import { useCartStore } from '@/store/cartStore'
@@ -9,41 +9,22 @@ import { Separator } from '@/components/ui/separator'
 import { ShoppingCart, Plus, Minus, Check, CreditCard, LayoutGrid, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
 
 interface AddToCartSectionProps {
   product: Product
-  onVariantChange?: (variant: ProductVariant) => void
+  selectedVariant: ProductVariant | null
+  onVariantClick: (variant: ProductVariant) => void
 }
 
-export function AddToCartSection({ product, onVariantChange }: AddToCartSectionProps) {
+export function AddToCartSection({ product, selectedVariant, onVariantClick }: AddToCartSectionProps) {
   const router = useRouter()
   const [quantity, setQuantity] = useState(1)
-  
-  // Quản lý duy nhất 1 lựa chọn biến thể
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
-  
   const addItem = useCartStore((state) => state.addItem)
   const variants = product.product_variants || []
-
-  // Khởi tạo mặc định: Chọn phiên bản đầu tiên
-  useEffect(() => {
-    if (variants.length > 0) {
-      const defaultVariant = variants[0]
-      setSelectedVariant(defaultVariant)
-      if (onVariantChange) onVariantChange(defaultVariant)
-    }
-  }, [variants, onVariantChange])
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.price
   const currentStock = selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity
   const isOutOfStock = currentStock === 0
-
-  const handleVariantClick = (variant: ProductVariant) => {
-    setSelectedVariant(variant)
-    setQuantity(1)
-    if (onVariantChange) onVariantChange(variant)
-  }
 
   const handleAddToCart = () => {
     if (!selectedVariant && variants.length > 0) {
@@ -115,8 +96,12 @@ export function AddToCartSection({ product, onVariantChange }: AddToCartSectionP
               return (
                 <button
                   key={variant.id}
+                  type="button"
                   disabled={vOutOfStock}
-                  onClick={() => handleVariantClick(variant)}
+                  onClick={() => {
+                    onVariantClick(variant)
+                    setQuantity(1)
+                  }}
                   className={cn(
                     "group flex flex-col p-2 rounded-2xl border-2 transition-all relative overflow-hidden bg-background",
                     isSelected
@@ -173,7 +158,7 @@ export function AddToCartSection({ product, onVariantChange }: AddToCartSectionP
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span className="font-black text-xs uppercase tracking-widest text-muted-foreground">Số lượng</span>
-            <div className="flex items-center gap-1 bg-muted/40 p-1.5 rounded-2xl border border-white/5 shadow-inner">
+            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-white/5 shadow-inner">
               <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg" onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1 || isOutOfStock}>
                 <Minus className="h-4 w-4" />
               </Button>

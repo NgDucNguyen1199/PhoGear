@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { Product, ProductVariant } from '@/types'
 import { AddToCartSection } from '@/components/shop/AddToCartSection'
@@ -10,28 +10,32 @@ import { Star, ShieldCheck, Truck, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function ProductDetailView({ product }: { product: Product }) {
+  const variants = product.product_variants || []
+  
+  // Quản lý trạng thái DUY NHẤT ở đây
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
   const [mainImage, setMainImage] = useState(product.images_url?.[0] || '')
 
-  const variants = product.product_variants || []
-
-  // Khởi tạo mặc định
+  // Khởi tạo mặc định một lần duy nhất khi product thay đổi
   useEffect(() => {
     if (variants.length > 0) {
-      setSelectedVariant(variants[0])
-      if (variants[0].image_url) {
-        setMainImage(variants[0].image_url)
+      const defaultVariant = variants[0]
+      setSelectedVariant(defaultVariant)
+      if (defaultVariant.image_url) {
+        setMainImage(defaultVariant.image_url)
       }
+    } else {
+      setMainImage(product.images_url?.[0] || '')
     }
-  }, [variants])
+  }, [product.id]) // Chỉ chạy lại khi đổi sản phẩm khác
 
-  // Cập nhật ảnh chính khi đổi biến thể
-  const handleVariantChange = (variant: ProductVariant) => {
+  // Hàm xử lý click chọn biến thể
+  const handleVariantClick = useCallback((variant: ProductVariant) => {
     setSelectedVariant(variant)
     if (variant.image_url) {
       setMainImage(variant.image_url)
     }
-  }
+  }, [])
 
   return (
     <div className="bg-background rounded-2xl shadow-sm border p-6 md:p-10 mb-12">
@@ -56,12 +60,13 @@ export function ProductDetailView({ product }: { product: Product }) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
           </div>
           
-          {/* Danh sách ảnh nhỏ nếu sản phẩm có nhiều ảnh gốc */}
+          {/* Gallery Thumbnails */}
           {product.images_url && product.images_url.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {product.images_url.map((img, i) => (
                 <button 
                   key={i} 
+                  type="button"
                   onClick={() => setMainImage(img)}
                   className={cn(
                     "relative h-20 w-20 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0",
@@ -88,12 +93,12 @@ export function ProductDetailView({ product }: { product: Product }) {
             )}
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-4 text-foreground">
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-4 text-foreground leading-tight">
             {product.name}
           </h1>
 
           <div className="flex items-center gap-4 mb-8">
-            <div className="flex items-center gap-1 bg-yellow-400/10 text-yellow-600 px-2 py-1 rounded-md">
+            <div className="flex items-center gap-1 bg-yellow-400/10 text-yellow-600 px-2 py-1 rounded-md border border-yellow-400/20">
               <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
               <span className="font-bold text-sm">{product.average_rating}</span>
             </div>
@@ -108,40 +113,44 @@ export function ProductDetailView({ product }: { product: Product }) {
           </p>
 
           <div className="grid grid-cols-2 gap-4 mb-8 text-sm text-left">
-            <div className="p-3 bg-muted/50 rounded-lg border">
-              <p className="text-muted-foreground mb-1">Layout</p>
-              <p className="font-semibold">{product.layout || 'Không áp dụng'}</p>
+            <div className="p-4 bg-muted/30 rounded-2xl border border-white/5">
+              <p className="text-[10px] uppercase font-black text-muted-foreground mb-1 tracking-widest">Layout</p>
+              <p className="font-bold">{product.layout || 'Không áp dụng'}</p>
             </div>
-            <div className="p-3 bg-muted/50 rounded-lg border">
-              <p className="text-muted-foreground mb-1">Kết nối</p>
-              <p className="font-semibold">{product.connectivity || 'Không áp dụng'}</p>
+            <div className="p-4 bg-muted/30 rounded-2xl border border-white/5">
+              <p className="text-[10px] uppercase font-black text-muted-foreground mb-1 tracking-widest">Kết nối</p>
+              <p className="font-bold">{product.connectivity || 'Không áp dụng'}</p>
             </div>
           </div>
 
-          <Separator className="mb-6" />
+          <Separator className="mb-6 opacity-50" />
 
-          {/* Logic chọn Variant và Thêm vào giỏ đã được tích hợp lại */}
-          <AddToCartSection product={product} onVariantChange={handleVariantChange} />
+          {/* Truyền State và hàm xử lý xuống trang con */}
+          <AddToCartSection 
+            product={product} 
+            selectedVariant={selectedVariant}
+            onVariantClick={handleVariantClick}
+          />
 
           {/* Trust Badges */}
-          <div className="mt-8 grid grid-cols-3 gap-4 border-t pt-8">
+          <div className="mt-8 grid grid-cols-3 gap-4 border-t border-dashed pt-8">
             <div className="flex flex-col items-center text-center gap-2">
-              <div className="p-2 bg-green-100 text-green-700 rounded-full">
+              <div className="p-2 bg-green-100/50 text-green-700 rounded-full border border-green-200">
                 <ShieldCheck className="h-5 w-5" />
               </div>
-              <span className="text-[10px] font-medium text-muted-foreground uppercase">Bảo hành 24 tháng</span>
+              <span className="text-[9px] font-black text-muted-foreground uppercase">Bảo hành 24 tháng</span>
             </div>
             <div className="flex flex-col items-center text-center gap-2">
-              <div className="p-2 bg-blue-100 text-blue-700 rounded-full">
+              <div className="p-2 bg-blue-100/50 text-blue-700 rounded-full border border-blue-200">
                 <Truck className="h-5 w-5" />
               </div>
-              <span className="text-[10px] font-medium text-muted-foreground uppercase">Giao hàng hỏa tốc</span>
+              <span className="text-[9px] font-black text-muted-foreground uppercase">Giao hàng hỏa tốc</span>
             </div>
             <div className="flex flex-col items-center text-center gap-2">
-              <div className="p-2 bg-orange-100 text-orange-700 rounded-full">
+              <div className="p-2 bg-orange-100/50 text-orange-700 rounded-full border border-orange-200">
                 <RotateCcw className="h-5 w-5" />
               </div>
-              <span className="text-[10px] font-medium text-muted-foreground uppercase">Đổi trả 7 ngày</span>
+              <span className="text-[9px] font-black text-muted-foreground uppercase">Đổi trả 7 ngày</span>
             </div>
           </div>
         </div>
