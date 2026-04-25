@@ -15,14 +15,17 @@ export async function createProductWithVariants(data: any) {
       description: data.description,
       category_id: data.category_id,
       price: data.base_price, 
-      stock_quantity: data.variants ? data.variants.reduce((acc: number, v: any) => acc + parseInt(v.stock_quantity), 0) : 0,
+      stock_quantity: data.variants ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0) : 0,
       images_url: [], 
-      options: data.options || [] // Đảm bảo lưu trường options JSONB
+      options: data.options || []
     })
     .select()
     .single()
 
-  if (productError) return { error: `Lỗi tạo sản phẩm: ${productError.message}` }
+  if (productError) {
+    console.error('Error creating product:', productError)
+    return { error: `Lỗi tạo sản phẩm: ${productError.message}` }
+  }
 
   // 2. Chèn hàng loạt biến thể vào bảng product_variants
   if (data.variants && data.variants.length > 0) {
@@ -32,8 +35,8 @@ export async function createProductWithVariants(data: any) {
       switch_type: v.switch_type || '',
       sku: v.sku || '',
       image_url: v.image_url || '',
-      price: parseFloat(v.price),
-      stock_quantity: parseInt(v.stock_quantity),
+      price: parseFloat(v.price) || 0,
+      stock_quantity: parseInt(v.stock_quantity) || 0,
     }))
 
     const { error: variantsError } = await supabase
@@ -41,6 +44,7 @@ export async function createProductWithVariants(data: any) {
       .insert(variantsToInsert)
 
     if (variantsError) {
+      console.error('Error creating variants:', variantsError)
       await supabase.from('products').delete().eq('id', product.id)
       return { error: `Lỗi tạo biến thể: ${variantsError.message}` }
     }
@@ -54,13 +58,19 @@ export async function createProductWithVariants(data: any) {
 export async function updateProduct(id: string, data: any) {
   const supabase = await createClient()
   
+  // Tính toán tổng kho từ các biến thể mới
+  const totalStock = data.variants 
+    ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0) 
+    : 0
+
   const updates = {
     name: data.name,
     brand: data.brand,
     description: data.description,
     category_id: data.category_id,
     price: data.base_price,
-    options: data.options || [] // Cập nhật trường options JSONB
+    stock_quantity: totalStock, // Cập nhật lại tổng kho cho sản phẩm chính
+    options: data.options || []
   }
 
   const { error: productError } = await supabase
@@ -68,11 +78,22 @@ export async function updateProduct(id: string, data: any) {
     .update(updates)
     .eq('id', id)
 
-  if (productError) return { error: `Lỗi cập nhật sản phẩm: ${productError.message}` }
+  if (productError) {
+    console.error('Error updating product:', productError)
+    return { error: `Lỗi cập nhật sản phẩm: ${productError.message}` }
+  }
 
-  // Cập nhật biến thể
+  // Cập nhật biến thể: Xóa trắng và chèn lại
   if (data.variants && data.variants.length > 0) {
-    await supabase.from('product_variants').delete().eq('product_id', id)
+    const { error: deleteError } = await supabase
+      .from('product_variants')
+      .delete()
+      .eq('product_id', id)
+    
+    if (deleteError) {
+      console.error('Error deleting old variants:', deleteError)
+      return { error: `Lỗi xử lý biến thể cũ: ${deleteError.message}` }
+    }
 
     const variantsToInsert = data.variants.map((v: any) => ({
       product_id: id,
@@ -80,15 +101,18 @@ export async function updateProduct(id: string, data: any) {
       switch_type: v.switch_type || '',
       sku: v.sku || '',
       image_url: v.image_url || '',
-      price: parseFloat(v.price),
-      stock_quantity: parseInt(v.stock_quantity),
+      price: parseFloat(v.price) || 0,
+      stock_quantity: parseInt(v.stock_quantity) || 0,
     }))
 
     const { error: variantsError } = await supabase
       .from('product_variants')
       .insert(variantsToInsert)
 
-    if (variantsError) return { error: `Lỗi cập nhật biến thể: ${variantsError.message}` }
+    if (variantsError) {
+      console.error('Error inserting new variants:', variantsError)
+      return { error: `Lỗi cập nhật biến thể mới: ${variantsError.message}` }
+    }
   }
 
   revalidatePath('/admin/products')
@@ -99,7 +123,10 @@ export async function updateProduct(id: string, data: any) {
 export async function deleteProduct(id: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('products').delete().eq('id', id)
-  if (error) return { error: error.message }
+  if (error) {
+    console.error('Error deleting product:', error)
+    return { error: error.message }
+  }
   revalidatePath('/admin/products')
   return { success: 'Đã xóa sản phẩm thành công!' }
 }
