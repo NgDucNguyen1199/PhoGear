@@ -74,6 +74,7 @@ export async function seedProducts() {
 
   const products = [
     {
+      id: '22222222-2222-2222-2222-222222222221',
       name: 'Keychron Q1 Pro (Bản Full Nhôm)',
       brand: 'Keychron',
       description: 'Bàn phím cơ custom QMK/VIA không dây toàn thân nhôm cao cấp. Hỗ trợ Bluetooth 5.1 và cáp Type-C. Trải nghiệm gõ phím đỉnh cao với thiết kế Double-Gasket.',
@@ -86,6 +87,7 @@ export async function seedProducts() {
       average_rating: 4.8
     },
     {
+      id: '22222222-2222-2222-2222-222222222222',
       name: 'NuPhy Halo75 V2',
       brand: 'NuPhy',
       description: 'Bàn phím cơ Low-profile không dây thiết kế hiện đại, hoàn hảo cho dân văn phòng và lập trình viên. Đèn LED RGB viền "Halo" độc đáo.',
@@ -98,6 +100,7 @@ export async function seedProducts() {
       average_rating: 4.5
     },
     {
+      id: '22222222-2222-2222-2222-222222222223',
       name: 'Wooting 60HE+',
       brand: 'Wooting',
       description: 'Bàn phím cơ sử dụng switch từ tính (Magnetic switch) cho phép tùy chỉnh điểm nhận phím (actuation point). Vũ khí tối thượng cho game thủ chuyên nghiệp.',
@@ -110,6 +113,7 @@ export async function seedProducts() {
       average_rating: 5.0
     },
     {
+      id: '22222222-2222-2222-2222-222222222224',
       name: 'Bộ Keycap GMK Botanical',
       brand: 'GMK',
       description: 'Bộ keycap chất liệu ABS Doubleshot cao cấp, profile Cherry. Phối màu xanh lá cây mát mắt, mang thiên nhiên vào góc làm việc của bạn.',
@@ -118,10 +122,17 @@ export async function seedProducts() {
       category_id: keycapCategory?.id || null,
       layout: 'All',
       connectivity: 'N/A',
-      images_url: ['https://images.unsplash.com/photo-1642231268377-50b0ee564dc9?auto=format&fit=crop&w=800&q=80'],
+      images_url: [
+        'https://images.unsplash.com/photo-1642231268377-50b0ee564dc9?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1541140134513-85a161dc4a00?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1629131726692-1accd0c53ce0?auto=format&fit=crop&w=800&q=80'
+      ],
       average_rating: 4.9
     },
     {
+      id: '22222222-2222-2222-2222-222222222225',
       name: 'Switch Gateron Oil King (Pack 35)',
       brand: 'Gateron',
       description: 'Switch Linear siêu mượt, được lube sẵn từ nhà máy. Lực nhấn 55g, âm thanh trầm ấm (thocky).',
@@ -135,9 +146,9 @@ export async function seedProducts() {
     }
   ]
 
-  // Sử dụng vòng lặp để insert từng sản phẩm thay vì upsert để tránh lỗi phức tạp
+  // Sử dụng upsert để tránh trùng lặp và đảm bảo ID cố định
   for (const product of products) {
-    await supabase.from('products').insert(product)
+    await supabase.from('products').upsert(product, { onConflict: 'id' })
   }
 
   revalidatePath('/admin/products')

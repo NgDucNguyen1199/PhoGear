@@ -13,9 +13,9 @@ export const metadata = {
 
 export default async function ProductsPage() {
   // Lấy một số lượng lớn sản phẩm (ví dụ: 100) để hiển thị tất cả
-  const products = await getProducts(100)
+  const products = await getProducts(100) || []
   const profile = await getProfile()
-  const categories = await getCategories()
+  const categories = await getCategories() || []
 
   return (
     <div className="flex min-h-screen flex-col">

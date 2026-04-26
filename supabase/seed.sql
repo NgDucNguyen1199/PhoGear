@@ -57,7 +57,7 @@ VALUES
     'Bộ keycap chất liệu ABS Doubleshot cao cấp, profile Cherry. Phối màu xanh lá cây mát mắt, mang thiên nhiên vào góc làm việc của bạn.',
     3800000,
     10,
-    '{"https://images.unsplash.com/photo-1642231268377-50b0ee564dc9?auto=format&fit=crop&w=800&q=80"}',
+    '{"https://images.unsplash.com/photo-1642231268377-50b0ee564dc9?auto=format&fit=crop&w=800&q=80", "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=800&q=80", "https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80", "https://images.unsplash.com/photo-1541140134513-85a161dc4a00?auto=format&fit=crop&w=800&q=80", "https://images.unsplash.com/photo-1629131726692-1accd0c53ce0?auto=format&fit=crop&w=800&q=80"}',
     '11111111-1111-1111-1111-111111111112',
     'All',
     'N/A',

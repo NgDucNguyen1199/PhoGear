@@ -14,9 +14,10 @@ interface VariantManagerProps {
   register: any
   watch: any
   setValue: any
+  errors: any
 }
 
-export function VariantManager({ control, register, watch, setValue }: VariantManagerProps) {
+export function VariantManager({ control, register, watch, setValue, errors }: VariantManagerProps) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: "variants"
@@ -49,9 +50,16 @@ export function VariantManager({ control, register, watch, setValue }: VariantMa
         </Button>
       </div>
 
+      {errors?.variants?.message && (
+        <p className="text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
+          {errors.variants.message}
+        </p>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {fields.map((field, index) => {
           const watchImageUrl = watch(`variants.${index}.image_url`)
+          const variantErrors = errors?.variants?.[index]
 
           return (
             <Card key={field.id} className="relative overflow-hidden border-2 transition-all hover:border-primary/20 bg-background/50 text-left">
@@ -78,6 +86,9 @@ export function VariantManager({ control, register, watch, setValue }: VariantMa
                           onChange: (e: any) => handleVariantNameChange(index, e.target.value)
                         })} 
                       />
+                      {variantErrors?.variant_name && (
+                        <p className="text-[10px] font-medium text-destructive">{variantErrors.variant_name.message}</p>
+                      )}
                     </div>
                     <div className="grid gap-1.5">
                       <Label className="text-[10px] uppercase font-black text-muted-foreground">Mã SKU (Tự động)</Label>
@@ -107,10 +118,16 @@ export function VariantManager({ control, register, watch, setValue }: VariantMa
                    <div className="grid gap-1.5">
                       <Label className="text-[10px] uppercase font-black text-muted-foreground">Giá bán lẻ</Label>
                       <Input type="number" {...register(`variants.${index}.price` as const)} />
+                      {variantErrors?.price && (
+                        <p className="text-[10px] font-medium text-destructive">{variantErrors.price.message}</p>
+                      )}
                    </div>
                    <div className="grid gap-1.5">
                       <Label className="text-[10px] uppercase font-black text-muted-foreground">Số lượng</Label>
                       <Input type="number" {...register(`variants.${index}.stock_quantity` as const)} />
+                      {variantErrors?.stock_quantity && (
+                        <p className="text-[10px] font-medium text-destructive">{variantErrors.stock_quantity.message}</p>
+                      )}
                    </div>
                 </div>
 

@@ -69,7 +69,7 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
     }
   })
 
-  const { control, register, watch, setValue, handleSubmit, reset } = form
+  const { control, register, watch, setValue, handleSubmit, reset, formState: { errors } } = form
 
   async function onSubmit(values: ProductFormInput) {
     setIsLoading(true)
@@ -85,6 +85,11 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
     }
   }
 
+  const onInvalid = (errors: any) => {
+    console.error('Lỗi nhập liệu chi tiết:', JSON.parse(JSON.stringify(errors)))
+    toast.error('Vui lòng kiểm tra lại các thông tin sản phẩm và biến thể.')
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className={buttonVariants({ className: 'gap-2' })}>
@@ -98,7 +103,7 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 py-6">
+          <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-10 py-6">
             
             {/* THÔNG TIN CHUNG */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-muted/20 rounded-3xl border shadow-inner text-left">
@@ -179,6 +184,7 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
               register={register} 
               watch={watch} 
               setValue={setValue} 
+              errors={errors}
             />
 
             <DialogFooter className="pt-8 border-t">

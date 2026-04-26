@@ -80,7 +80,7 @@ export function EditProductDialog({ product, categories }: { product: Product, c
     }
   })
 
-  const { control, register, watch, setValue, handleSubmit } = form
+  const { control, register, watch, setValue, handleSubmit, formState: { errors } } = form
 
   async function onSubmit(values: ProductFormInput) {
     setIsLoading(true)
@@ -96,8 +96,8 @@ export function EditProductDialog({ product, categories }: { product: Product, c
   }
 
   const onInvalid = (errors: any) => {
-    console.error('Lỗi nhập liệu:', errors)
-    toast.error('Vui lòng kiểm tra lại các thông tin.')
+    console.error('Lỗi nhập liệu chi tiết:', JSON.parse(JSON.stringify(errors)))
+    toast.error('Vui lòng kiểm tra lại các thông tin sản phẩm và biến thể.')
   }
 
   return (
@@ -194,6 +194,7 @@ export function EditProductDialog({ product, categories }: { product: Product, c
               register={register} 
               watch={watch} 
               setValue={setValue} 
+              errors={errors}
             />
 
             <DialogFooter className="pt-8 border-t">
