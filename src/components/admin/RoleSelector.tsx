@@ -36,7 +36,7 @@ export function RoleSelector({ userId, currentRole }: { userId: string, currentR
   return (
     <div className="flex items-center gap-2">
       {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-      <Select defaultValue={currentRole} onValueChange={handleRoleChange} disabled={isLoading}>
+      <Select value={currentRole} onValueChange={handleRoleChange} disabled={isLoading}>
         <SelectTrigger className="w-[160px]">
           <SelectValue />
         </SelectTrigger>

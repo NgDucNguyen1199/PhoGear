@@ -1,6 +1,0 @@
-feat: implement PhoType "Bright Mode" UI and enhance gameplay logic
-
-- Redesigned PhoType page and TypingGame component with a clean, light aesthetic (Slate 50 background).
-- Added real-time WPM chart using Recharts.
-- Improved game mechanics: force correction, sound effects for different switches and spacebar, and automatic score saving to Supabase.
-- Enhanced leaderboard display with avatar support and modern styling.

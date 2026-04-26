@@ -1,33 +1,71 @@
-export const VI_WORDS = [
-  "bàn phím", "phím cơ", "switch", "keycap", "gõ phím", "tốc độ", "chính xác", "máy tính",
-  "lập trình", "thiết kế", "không gian", "làm việc", "đam mê", "công nghệ", "trải nghiệm",
-  "âm thanh", "mượt mà", "chiến thắng", "thử thách", "thần sấm", "rùa con", "tay đua",
-  "hạnh phúc", "thành công", "sáng tạo", "tương lai", "phát triển", "kỹ năng", "thói quen",
-  "tập trung", "kiên trì", "nỗ lực", "ước mơ", "khám phá", "học hỏi", "chia sẻ", "kết nối",
-  "cộng đồng", "người chơi", "game thủ", "văn phòng", "hiệu suất", "tối ưu", "phong cách",
-  "cá nhân", "tùy chỉnh", "độc đáo", "chất lượng", "uy tín", "tin cậy", "an toàn", "bảo mật",
-  "màn hình", "chuột", "tai nghe", "lót chuột", "dây cáp", "nguồn", "vỏ case", "tản nhiệt",
-  "ánh sáng", "hiệu ứng", "màu sắc", "rực rỡ", "tinh tế", "hiện đại", "cổ điển", "sang trọng",
-  "bền bỉ", "êm ái", "nhạy bén", "linh hoạt", "thông minh", "nhanh nhẹn", "mạnh mẽ", "vượt trội",
-  // ... thêm các từ thông dụng khác
-  "gia đình", "bạn bè", "cuộc sống", "thời gian", "kỷ niệm", "yêu thương", "trân trọng",
-  "học tập", "nghiên cứu", "kiến thức", "trí tuệ", "tâm hồn", "sức khỏe", "năng lượng",
-  "vận động", "thể thao", "âm nhạc", "nghệ thuật", "du lịch", "ẩm thực", "văn hóa", "lịch sử",
-  "thiên nhiên", "môi trường", "trái đất", "vũ trụ", "ngôi sao", "mặt trời", "mặt trăng"
+export const VIETNAMESE_WORDS = [
+  "bàn phím", "phím cơ", "switch", "keycap", "lube", "stabilizer", "linear", "tactile", "clicky",
+  "thocky", "clacky", "nhôm", "nhựa", "kết nối", "không dây", "bluetooth", "độ trễ", "phản hồi",
+  "trải nghiệm", "gõ phím", "tốc độ", "chính xác", "đam mê", "góc làm việc", "setup", "ánh sáng",
+  "rgb", "led", "cảm giác", "mượt mà", "âm thanh", "yên tĩnh", "văn phòng", "game thủ", "thiết kế",
+  "công việc", "lập trình", "sáng tạo", "tập trung", "thành công", "tình yêu", "hạnh phúc", "cười",
+  "công nghệ", "phần cứng", "phần mềm", "tối ưu", "hiệu suất", "tinh tế", "đẳng cấp", "phong cách"
 ];
 
-export function generateText(length: number = 50): string {
-  const words = [];
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * VI_WORDS.length);
-    words.push(VI_WORDS[randomIndex]);
-  }
-  return words.join(" ");
-}
+export const ENGLISH_WORDS = [
+  "keyboard", "mechanical", "switch", "keycap", "stabilizer", "linear", "tactile", "clicky",
+  "thocky", "clacky", "aluminum", "plastic", "connection", "wireless", "bluetooth", "latency",
+  "feedback", "experience", "typing", "speed", "accuracy", "passion", "workspace", "setup",
+  "lighting", "rgb", "led", "feeling", "smooth", "sound", "quiet", "office", "gamer", "design",
+  "work", "programming", "creative", "focus", "success", "love", "happiness", "smile",
+  "technology", "hardware", "software", "optimize", "performance", "elegant", "premium", "style"
+];
 
-export function getRank(wpm: number) {
-  if (wpm < 30) return { name: "Rùa Con", color: "text-gray-500", icon: "🐢" };
-  if (wpm < 60) return { name: "Tay Đua", color: "text-blue-500", icon: "🏎️" };
-  if (wpm < 90) return { name: "Thần Sấm", color: "text-purple-500", icon: "⚡" };
-  return { name: "Pho Master", color: "text-yellow-500", icon: "👑" };
-}
+export const QUOTES = {
+  vi: [
+    "Hành trình vạn dặm bắt đầu từ một bước chân đầu tiên.",
+    "Bàn phím cơ không chỉ là công cụ, nó là người bạn đồng hành trong sự nghiệp.",
+    "Tiếng thocky của switch linear giống như giai điệu của sự tập trung.",
+    "Đam mê phím cơ là nghệ thuật của sự kiên nhẫn và tỉ mỉ."
+  ],
+  en: [
+    "The only way to do great work is to love what you do.",
+    "Mechanical keyboards are the ultimate interface between humans and machines.",
+    "Precision is not just about speed, it is about every single keypress being intentional.",
+    "In the world of custom keyboards, there are no limits to creativity."
+  ]
+};
+
+const PUNCTUATIONS = [".", ",", "!", "?", ";", ":", "-", "(", ")", "\""];
+const NUMBERS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+export const generateText = (
+  count: number = 40, 
+  lang: 'vi' | 'en' = 'vi',
+  options?: { punctuation?: boolean, numbers?: boolean }
+): string => {
+  const dictionary = lang === 'vi' ? VIETNAMESE_WORDS : ENGLISH_WORDS;
+  let words = [...dictionary].sort(() => 0.5 - Math.random()).slice(0, count);
+
+  if (options?.punctuation) {
+    words = words.map(word => {
+      if (Math.random() > 0.8) {
+        const p = PUNCTUATIONS[Math.floor(Math.random() * PUNCTUATIONS.length)];
+        return word + p;
+      }
+      return word;
+    });
+  }
+
+  if (options?.numbers) {
+    words = words.map(word => {
+      if (Math.random() > 0.85) {
+        const n = NUMBERS[Math.floor(Math.random() * NUMBERS.length)];
+        return word + n;
+      }
+      return word;
+    });
+  }
+
+  return words.join(" ");
+};
+
+export const generateQuote = (lang: 'vi' | 'en' = 'vi'): string => {
+  const quotes = QUOTES[lang];
+  return quotes[Math.floor(Math.random() * quotes.length)];
+};

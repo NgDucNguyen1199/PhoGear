@@ -48,8 +48,8 @@ const productSchema = z.object({
     switch_type: z.string().optional().nullable(),
     sku: z.string().optional().nullable(),
     image_url: z.string().optional().nullable(),
-    price: z.coerce.number().min(0),
-    stock_quantity: z.coerce.number().min(0),
+    price: z.coerce.number().min(0, 'Giá không được âm'),
+    stock_quantity: z.coerce.number().min(0, 'Số lượng không được âm'),
   })).min(1, 'Cần ít nhất 1 biến thể')
 })
 
@@ -96,7 +96,12 @@ export function EditProductDialog({ product, categories }: { product: Product, c
   }
 
   const onInvalid = (errors: any) => {
-    console.error('Lỗi nhập liệu chi tiết:', JSON.parse(JSON.stringify(errors)))
+    console.group('Lỗi nhập liệu chi tiết (Chỉnh sửa)')
+    console.error('Đối tượng errors:', errors)
+    Object.keys(errors).forEach(key => {
+      console.error(`Lỗi tại trường [${key}]:`, errors[key])
+    })
+    console.groupEnd()
     toast.error('Vui lòng kiểm tra lại các thông tin sản phẩm và biến thể.')
   }
 
@@ -148,7 +153,7 @@ export function EditProductDialog({ product, categories }: { product: Product, c
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Danh mục</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value as string}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <FormControl>
                         <SelectTrigger><SelectValue placeholder="Chọn danh mục" /></SelectTrigger>
                       </FormControl>

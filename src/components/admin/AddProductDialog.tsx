@@ -40,15 +40,15 @@ const productSchema = z.object({
   name: z.string().min(2, 'Tên sản phẩm quá ngắn'),
   brand: z.string().min(2, 'Thương hiệu không được để trống'),
   description: z.string().optional(),
-  category_id: z.string().uuid('Vui lòng chọn danh mục'),
-  base_price: z.coerce.number(),
+  category_id: z.string().min(1, 'Vui lòng chọn danh mục'),
+  base_price: z.coerce.number().min(0, 'Giá không được âm'),
   variants: z.array(z.object({
     variant_name: z.string().min(1, 'Tên biến thể bắt buộc'),
     switch_type: z.string().optional(),
     sku: z.string().optional(),
     image_url: z.string().optional(),
-    price: z.coerce.number(),
-    stock_quantity: z.coerce.number(),
+    price: z.coerce.number().min(0, 'Giá không được âm'),
+    stock_quantity: z.coerce.number().min(0, 'Số lượng không được âm'),
   })).min(1, 'Cần ít nhất 1 biến thể')
 })
 
@@ -64,6 +64,7 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
       name: '',
       brand: '',
       description: '',
+      category_id: '',
       base_price: 0,
       variants: [{ variant_name: '', switch_type: '', sku: '', image_url: '', price: 0, stock_quantity: 0 }]
     }
@@ -86,7 +87,13 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
   }
 
   const onInvalid = (errors: any) => {
-    console.error('Lỗi nhập liệu chi tiết:', JSON.parse(JSON.stringify(errors)))
+    console.group('Lỗi nhập liệu chi tiết')
+    console.error('Đối tượng errors:', errors)
+    // Duyệt qua các lỗi để log chi tiết từng trường
+    Object.keys(errors).forEach(key => {
+      console.error(`Lỗi tại trường [${key}]:`, errors[key])
+    })
+    console.groupEnd()
     toast.error('Vui lòng kiểm tra lại các thông tin sản phẩm và biến thể.')
   }
 
@@ -138,7 +145,7 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Danh mục</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value as string}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <FormControl>
                         <SelectTrigger><SelectValue placeholder="Chọn danh mục" /></SelectTrigger>
                       </FormControl>
