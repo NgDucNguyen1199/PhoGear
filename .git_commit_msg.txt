@@ -1,7 +1,6 @@
-feat: enhance product gallery, fix routing, and improve validation
+feat: implement PhoType "Bright Mode" UI and enhance gameplay logic
 
-- Refactored ProductDetailView to use an Embla Carousel for a better image gallery with thumbnails.
-- Synced the gallery with product variant selection.
-- Fixed 404 error on /products by moving the products route outside of the (shop) group.
-- Improved validation error handling and logging in Admin product management (Add/Edit dialogs and VariantManager).
-- Updated seed data to use fixed IDs and include additional product images.
+- Redesigned PhoType page and TypingGame component with a clean, light aesthetic (Slate 50 background).
+- Added real-time WPM chart using Recharts.
+- Improved game mechanics: force correction, sound effects for different switches and spacebar, and automatic score saving to Supabase.
+- Enhanced leaderboard display with avatar support and modern styling.
