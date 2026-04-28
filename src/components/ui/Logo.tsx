@@ -25,7 +25,7 @@ export function Logo({
           alt="PhoGear Logo" 
           width={width} 
           height={height} 
-          className="object-contain drop-shadow-[0_0_15px_rgba(249,115,22,0.3)] filter brightness-110"
+          className="object-contain drop-shadow-[0_0_15px_rgba(249,115,22,0.3)]"
           priority
         />
       </div>
