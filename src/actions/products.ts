@@ -48,6 +48,26 @@ export async function getProductById(id: string) {
   return product as Product
 }
 
+export async function getRelatedProducts(productId: string, categoryId: string | null, limit = 4) {
+  if (!categoryId) return []
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, categories(*), product_variants(*)')
+    .eq('category_id', categoryId)
+    .neq('id', productId)
+    .limit(limit)
+
+  if (error) {
+    console.error('Error fetching related products:', error)
+    return []
+  }
+
+  return data as Product[]
+}
+
 export async function getCategories() {
   const supabase = await createClient()
 

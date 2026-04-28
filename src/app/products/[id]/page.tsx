@@ -1,7 +1,8 @@
-import { getProductById } from '@/actions/products'
+import { getProductById, getRelatedProducts } from '@/actions/products'
 import { getProfile } from '@/actions/auth'
 import { Navbar } from '@/components/layout/Navbar'
 import { ProductDetailView } from '@/components/shop/ProductDetailView'
+import { RelatedProducts } from '@/components/shop/RelatedProducts'
 import { ChevronRight, Home } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -32,6 +33,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     notFound()
   }
 
+  const relatedProducts = await getRelatedProducts(product.id, product.category_id)
+
   return (
     <div className="flex min-h-screen flex-col bg-muted/10">
       <Navbar user={profile} />
@@ -54,6 +57,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         {/* Cấu trúc hiển thị chi tiết sản phẩm (Client Component) */}
         <ProductDetailView product={product} userId={profile?.id} />
+
+        {/* Sản phẩm liên quan */}
+        <RelatedProducts products={relatedProducts} />
       </main>
     </div>
   )
