@@ -20,6 +20,63 @@ export async function getProducts(limit = 8) {
   return data as Product[]
 }
 
+export async function getFilteredProducts(filters: {
+  category?: string
+  brand?: string
+  minPrice?: number
+  maxPrice?: number
+  layout?: string
+  connectivity?: string
+  sort?: string
+}) {
+  const supabase = await createClient()
+
+  let query = supabase
+    .from('products')
+    .select('*, categories(*), product_variants(*)')
+
+  if (filters.category && filters.category !== 'all') {
+    query = query.eq('category_id', filters.category)
+  }
+
+  if (filters.brand && filters.brand !== 'all') {
+    query = query.eq('brand', filters.brand)
+  }
+
+  if (filters.minPrice !== undefined) {
+    query = query.gte('price', filters.minPrice)
+  }
+
+  if (filters.maxPrice !== undefined) {
+    query = query.lte('price', filters.maxPrice)
+  }
+
+  if (filters.layout && filters.layout !== 'all') {
+    query = query.eq('layout', filters.layout)
+  }
+
+  if (filters.connectivity && filters.connectivity !== 'all') {
+    query = query.eq('connectivity', filters.connectivity)
+  }
+
+  // Sorting
+  if (filters.sort) {
+    const [column, order] = filters.sort.split('-')
+    query = query.order(column, { ascending: order === 'asc' })
+  } else {
+    query = query.order('created_at', { ascending: false })
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching filtered products:', error)
+    return []
+  }
+
+  return data as Product[]
+}
+
 export async function getProductById(id: string) {
   // Validate UUID format to prevent invalid input syntax errors
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
