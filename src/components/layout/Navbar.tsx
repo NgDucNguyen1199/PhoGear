@@ -18,7 +18,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
 import { Logo } from '@/components/ui/Logo'
 
 export function Navbar({ user }: { user: any }) {
@@ -79,8 +78,8 @@ export function Navbar({ user }: { user: any }) {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between mx-auto px-4">
         <div className="flex items-center gap-8">
-          <Link href="/" className="text-2xl font-bold tracking-tighter text-primary">
-            PHO GEAR
+          <Link href="/">
+            <Logo width={32} height={32} textSize="text-2xl" />
           </Link>
           <nav className="hidden md:flex gap-6 text-sm font-medium">
             <Link href="/products" className="transition-colors hover:text-primary">Sản phẩm</Link>

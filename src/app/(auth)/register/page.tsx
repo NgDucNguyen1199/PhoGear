@@ -31,7 +31,7 @@ export default function RegisterPage() {
     <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <div className="mb-8">
         <Link href="/">
-          <Logo iconSize={40} textSize="text-4xl" />
+          <Logo width={80} height={80} textSize="text-4xl" />
         </Link>
       </div>
       <Card className="w-full max-w-md">

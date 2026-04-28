@@ -1,34 +1,38 @@
 'use client'
 
-import { Keyboard } from 'lucide-react'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 
 interface LogoProps {
   className?: string
-  iconSize?: number
-  textSize?: string
+  width?: number
+  height?: number
   showText?: boolean
+  textSize?: string
 }
 
 export function Logo({ 
   className, 
-  iconSize = 24, 
-  textSize = "text-xl", 
-  showText = true 
+  width = 40, 
+  height = 40,
+  showText = true,
+  textSize = "text-xl"
 }: LogoProps) {
   return (
-    <div className={cn("flex items-center gap-2 group cursor-pointer", className)}>
-      <div className="relative flex items-center justify-center">
-        {/* Background gear effect */}
-        <div className="absolute inset-0 bg-primary/20 rounded-lg blur-lg group-hover:bg-primary/30 transition-all duration-500" />
+    <div className={cn("flex items-center gap-3 group cursor-pointer", className)}>
+      <div className="relative transform transition-all duration-500 group-hover:scale-110">
+        {/* Glow effect behind the logo */}
+        <div className="absolute inset-0 bg-primary/20 rounded-full blur-md group-hover:bg-primary/40 transition-all" />
         
-        {/* Logo Container */}
-        <div className="relative bg-primary text-primary-foreground p-1.5 rounded-xl shadow-lg shadow-primary/20 transform transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110">
-          <Keyboard size={iconSize} strokeWidth={2.5} />
+        <div className="relative bg-background rounded-xl overflow-hidden border border-white/10 shadow-lg">
+          <Image 
+            src="/logo.png" 
+            alt="PhoGear Logo" 
+            width={width} 
+            height={height} 
+            className="object-contain"
+          />
         </div>
-        
-        {/* Small "gear" or "dot" accent */}
-        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-orange-400 rounded-full border-2 border-background animate-pulse" />
       </div>
 
       {showText && (
