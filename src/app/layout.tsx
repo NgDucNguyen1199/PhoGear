@@ -16,6 +16,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Pho Gear - Bàn phím cơ cao cấp",
   description: "Cửa hàng chuyên cung cấp bàn phím cơ, keycap và switch chất lượng cao.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  }
 };
 
 export default function RootLayout({

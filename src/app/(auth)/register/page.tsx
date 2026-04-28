@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { Logo } from '@/components/ui/Logo'
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -27,7 +28,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
+      <div className="mb-8">
+        <Link href="/">
+          <Logo iconSize={40} textSize="text-4xl" />
+        </Link>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Đăng ký tài khoản</CardTitle>

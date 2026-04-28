@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { Logo } from '@/components/ui/Logo'
 
 export default async function AdminLayout({
   children,
@@ -30,9 +31,10 @@ export default async function AdminLayout({
       {/* Admin Sidebar */}
       <aside className="w-64 border-r bg-background hidden md:block">
         <div className="flex h-16 items-center px-6 border-b">
-          <Link href="/admin" className="text-xl font-bold tracking-tighter">
-            PHO GEAR <span className="text-primary">ADMIN</span>
+          <Link href="/admin">
+            <Logo textSize="text-xl" />
           </Link>
+          <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-black bg-primary/10 text-primary uppercase">Admin</span>
         </div>
         <div className="p-4 space-y-2">
           <p className="text-xs font-semibold text-muted-foreground px-2 py-2 uppercase tracking-wider">Tổng quan</p>

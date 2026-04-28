@@ -19,6 +19,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+import { Logo } from '@/components/ui/Logo'
+
 export function Navbar({ user }: { user: any }) {
   const router = useRouter()
   const [isCartOpen, setIsCartOpen] = useState(false)
