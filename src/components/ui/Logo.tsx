@@ -13,33 +13,38 @@ interface LogoProps {
 
 export function Logo({ 
   className, 
-  width = 40, 
-  height = 40,
+  width = 50, 
+  height = 50,
   showText = true,
   textSize = "text-xl"
 }: LogoProps) {
   return (
     <div className={cn("flex items-center gap-3 group cursor-pointer", className)}>
-      <div className="relative transform transition-all duration-500 group-hover:scale-110">
-        {/* Glow effect behind the logo */}
-        <div className="absolute inset-0 bg-primary/20 rounded-full blur-md group-hover:bg-primary/40 transition-all" />
+      <div className="relative transform transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
+        {/* Subtle glow effect behind the logo */}
+        <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
         
-        <div className="relative bg-background rounded-xl overflow-hidden border border-white/10 shadow-lg">
+        <div className="relative flex items-center justify-center">
           <Image 
             src="/logo.png" 
             alt="PhoGear Logo" 
             width={width} 
             height={height} 
-            className="object-contain"
+            className="object-contain drop-shadow-md"
+            priority
           />
         </div>
       </div>
 
       {showText && (
-        <span className={cn("font-black tracking-tighter uppercase", textSize)}>
-          <span className="text-foreground">PHO</span>
-          <span className="text-primary group-hover:text-orange-400 transition-colors">GEAR</span>
-        </span>
+        <div className={cn("flex flex-col -space-y-1 justify-center", textSize)}>
+          <span className="font-black tracking-tighter uppercase text-foreground leading-none">
+            PHO
+          </span>
+          <span className="font-black tracking-tighter uppercase text-primary group-hover:text-orange-400 transition-colors leading-none">
+            GEAR
+          </span>
+        </div>
       )}
     </div>
   )

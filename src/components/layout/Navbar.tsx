@@ -79,7 +79,7 @@ export function Navbar({ user }: { user: any }) {
       <div className="container flex h-16 items-center justify-between mx-auto px-4">
         <div className="flex items-center gap-8">
           <Link href="/">
-            <Logo width={32} height={32} textSize="text-2xl" />
+            <Logo width={42} height={42} textSize="text-2xl" />
           </Link>
           <nav className="hidden md:flex gap-6 text-sm font-medium">
             <Link href="/products" className="transition-colors hover:text-primary">Sản phẩm</Link>

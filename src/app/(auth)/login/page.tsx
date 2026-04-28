@@ -27,7 +27,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
       <div className="mb-8">
         <Link href="/">
-          <Logo width={80} height={80} textSize="text-4xl" />
+          <Logo width={120} height={120} textSize="text-5xl" />
         </Link>
       </div>
       <Card className="w-full max-w-md">
