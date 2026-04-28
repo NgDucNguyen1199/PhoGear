@@ -53,7 +53,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </nav>
 
         {/* Cấu trúc hiển thị chi tiết sản phẩm (Client Component) */}
-        <ProductDetailView product={product} />
+        <ProductDetailView product={product} userId={profile?.id} />
       </main>
     </div>
   )

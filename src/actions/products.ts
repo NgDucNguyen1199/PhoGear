@@ -31,7 +31,7 @@ export async function getProductById(id: string) {
 
   const { data, error } = await supabase
     .from('products')
-    .select('*, categories(*), product_variants(*)')
+    .select('*, categories(*), product_variants(*), reviews(count)')
     .eq('id', id)
     .maybeSingle()
 
@@ -40,7 +40,12 @@ export async function getProductById(id: string) {
     return null
   }
 
-  return data as Product
+  const product = data as any
+  if (product && product.reviews) {
+    product.review_count = product.reviews[0]?.count || 0
+  }
+
+  return product as Product
 }
 
 export async function getCategories() {

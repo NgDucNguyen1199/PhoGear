@@ -35,8 +35,24 @@ export type Product = {
   layout: string | null
   connectivity: string | null
   average_rating: number
+  review_count?: number
   options: ProductOption[]
   product_variants?: ProductVariant[]
+  reviews?: Review[]
   created_at: string
   categories?: Category
+}
+
+export type Review = {
+  id: string
+  product_id: string
+  user_id: string
+  rating: number
+  comment: string | null
+  images_url: string[]
+  created_at: string
+  profiles?: {
+    full_name: string | null
+    avatar_url: string | null
+  }
 }

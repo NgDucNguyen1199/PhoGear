@@ -17,7 +17,9 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel"
 
-export function ProductDetailView({ product }: { product: Product }) {
+import { ReviewSection } from '@/components/shop/ReviewSection'
+
+export function ProductDetailView({ product, userId }: { product: Product, userId?: string }) {
   const variants = useMemo(() => product.product_variants || [], [product.product_variants])
   
   // Combine all unique images from product and variants
@@ -151,7 +153,7 @@ export function ProductDetailView({ product }: { product: Product }) {
             </div>
             <Separator orientation="vertical" className="h-5" />
             <span className="text-sm text-muted-foreground hover:underline cursor-pointer">
-              (128 đánh giá)
+              ({product.review_count || 0} đánh giá)
             </span>
           </div>
 
@@ -202,6 +204,10 @@ export function ProductDetailView({ product }: { product: Product }) {
           </div>
         </div>
       </div>
+
+      <Separator className="my-12" />
+      
+      <ReviewSection product={product} userId={userId} />
     </div>
   )
 }
