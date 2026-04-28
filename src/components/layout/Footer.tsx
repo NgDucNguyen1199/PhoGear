@@ -10,8 +10,8 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-1">
-            <div className="mb-4">
-              <Logo width={60} height={60} textSize="text-3xl" />
+            <div className="mb-6">
+              <Logo width={80} height={80} />
             </div>
             <p className="text-sm text-muted-foreground">
               Cửa hàng bàn phím cơ cao cấp tại Việt Nam. 
