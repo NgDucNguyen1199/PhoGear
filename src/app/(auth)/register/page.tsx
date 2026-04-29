@@ -8,15 +8,24 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Loader2, Eye, EyeOff, Mail, Lock, User, UserPlus } from 'lucide-react'
+import { Loader2, Eye, EyeOff, Mail, Lock, User, UserPlus, ShieldCheck } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { motion } from 'framer-motion'
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   async function handleSubmit(formData: FormData) {
+    const password = formData.get('password') as string
+    const confirmPassword = formData.get('confirmPassword') as string
+
+    if (password !== confirmPassword) {
+      toast.error('Mật khẩu xác nhận không khớp!')
+      return
+    }
+
     setIsLoading(true)
     try {
       const result = await signup(formData)
@@ -67,6 +76,12 @@ export default function RegisterPage() {
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    name="fullName"
+                    hidden
+                    aria-hidden="true"
+                  />
                   <Input 
                     id="fullName" 
                     name="fullName" 
@@ -114,6 +129,29 @@ export default function RegisterPage() {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">
+                  Xác nhận mật khẩu
+                </Label>
+                <div className="relative">
+                  <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="confirmPassword" 
+                    name="confirmPassword" 
+                    type={showConfirmPassword ? "text" : "password"} 
+                    required 
+                    className="pl-10 pr-10 h-12 rounded-xl bg-muted/50 border-white/10 focus:bg-background transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
