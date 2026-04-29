@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
@@ -72,33 +73,35 @@ export function RegionSwitcher() {
         <ChevronDown className="h-3 w-3 opacity-50" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl bg-background/95 backdrop-blur-xl border-primary/10 shadow-2xl">
-        <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-2 py-2">
-          Khu vực & Ngôn ngữ
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-primary/5" />
-        {regions.map((region) => (
-          <DropdownMenuItem
-            key={region.id}
-            onClick={() => handleRegionChange(region)}
-            className={cn(
-              "flex items-center justify-between rounded-xl p-3 cursor-pointer transition-all duration-200",
-              currentRegion.id === region.id ? "bg-primary/5 text-primary" : "hover:bg-muted"
-            )}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">{region.flag}</span>
-              <div className="flex flex-col">
-                <span className="text-sm font-bold leading-tight">{region.name}</span>
-                <span className="text-[10px] text-muted-foreground leading-tight uppercase font-medium tracking-wider">
-                  {region.language} • {region.currency}
-                </span>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-2 py-2">
+            Khu vực & Ngôn ngữ
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className="bg-primary/5" />
+          {regions.map((region) => (
+            <DropdownMenuItem
+              key={region.id}
+              onClick={() => handleRegionChange(region)}
+              className={cn(
+                "flex items-center justify-between rounded-xl p-3 cursor-pointer transition-all duration-200",
+                currentRegion.id === region.id ? "bg-primary/5 text-primary" : "hover:bg-muted"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{region.flag}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold leading-tight">{region.name}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight uppercase font-medium tracking-wider">
+                    {region.language} • {region.currency}
+                  </span>
+                </div>
               </div>
-            </div>
-            {currentRegion.id === region.id && (
-              <Check className="h-4 w-4 text-primary animate-in zoom-in-50 duration-300" />
-            )}
-          </DropdownMenuItem>
-        ))}
+              {currentRegion.id === region.id && (
+                <Check className="h-4 w-4 text-primary animate-in zoom-in-50 duration-300" />
+              )}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )
