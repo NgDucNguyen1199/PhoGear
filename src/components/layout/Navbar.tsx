@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Logo } from '@/components/ui/Logo'
+import { RegionSwitcher } from '@/components/layout/RegionSwitcher'
 
 export function Navbar({ user }: { user: any }) {
   const router = useRouter()
@@ -181,6 +182,10 @@ export function Navbar({ user }: { user: any }) {
           </Button>
 
           <CartSidebar open={isCartOpen} setOpen={setIsCartOpen} />
+
+          <div className="hidden sm:block border-l h-6 mx-1 opacity-20" />
+          
+          <RegionSwitcher />
 
           {user ? (
             <DropdownMenu>
