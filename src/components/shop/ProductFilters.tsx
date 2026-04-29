@@ -69,7 +69,7 @@ export function ProductFilters({ categories, brands, layouts, connectivities }: 
       {/* Sắp xếp */}
       <div className="space-y-2">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sắp xếp theo</Label>
-        <Select value={sort} onValueChange={setSort}>
+        <Select value={sort} onValueChange={(v) => v && setSort(v)}>
           <SelectTrigger className="bg-background border-white/10 rounded-xl h-10">
             <SelectValue placeholder="Sắp xếp" />
           </SelectTrigger>
@@ -85,7 +85,7 @@ export function ProductFilters({ categories, brands, layouts, connectivities }: 
       {/* Danh mục */}
       <div className="space-y-2">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Danh mục</Label>
-        <Select value={category} onValueChange={setCategory}>
+        <Select value={category} onValueChange={(v) => v && setCategory(v)}>
           <SelectTrigger className="bg-background border-white/10 rounded-xl h-10">
             <SelectValue placeholder="Tất cả danh mục" />
           </SelectTrigger>
@@ -101,7 +101,7 @@ export function ProductFilters({ categories, brands, layouts, connectivities }: 
       {/* Thương hiệu */}
       <div className="space-y-2">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Thương hiệu</Label>
-        <Select value={brand} onValueChange={setBrand}>
+        <Select value={brand} onValueChange={(v) => v && setBrand(v)}>
           <SelectTrigger className="bg-background border-white/10 rounded-xl h-10">
             <SelectValue placeholder="Tất cả thương hiệu" />
           </SelectTrigger>
@@ -117,7 +117,7 @@ export function ProductFilters({ categories, brands, layouts, connectivities }: 
       {/* Layout */}
       <div className="space-y-2">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Layout</Label>
-        <Select value={layout} onValueChange={setLayout}>
+        <Select value={layout} onValueChange={(v) => v && setLayout(v)}>
           <SelectTrigger className="bg-background border-white/10 rounded-xl h-10">
             <SelectValue placeholder="Tất cả layout" />
           </SelectTrigger>

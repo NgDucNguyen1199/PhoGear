@@ -31,7 +31,7 @@ export default async function AdminLayout({
       <aside className="w-64 border-r bg-background hidden md:block">
         <div className="flex h-16 items-center px-6 border-b">
           <Link href="/admin">
-            <Logo width={24} height={24} textSize="text-xl" />
+            <Logo width={24} height={24} />
           </Link>
           <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-black bg-primary/10 text-primary uppercase">Admin</span>
         </div>

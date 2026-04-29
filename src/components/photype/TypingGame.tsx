@@ -21,7 +21,6 @@ import { cn } from '@/lib/utils'
 import { saveTypingScore } from '@/actions/typing'
 import { toast } from 'sonner'
 import {
-  DropdownMenu,
   Select,
   SelectContent,
   SelectItem,
@@ -243,7 +242,7 @@ export function TypingGame() {
           {/* Theme Selector */}
           <div className="flex items-center gap-2 pr-4 border-r" style={{ borderColor: `${activeColors.text}20` }}>
             <Palette size={14} style={{ color: activeColors.sub }} />
-            <Select value={theme} onValueChange={(v) => setTheme(v as ThemeKey)}>
+            <Select<ThemeKey> value={theme} onValueChange={(v) => v && setTheme(v as ThemeKey)}>
                 <SelectTrigger className="w-[180px] h-7 bg-transparent border-none text-[10px] font-black uppercase focus:ring-0">
                     <SelectValue placeholder="Theme" />
                 </SelectTrigger>
