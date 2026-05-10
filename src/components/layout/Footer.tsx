@@ -3,8 +3,11 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/Logo'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 export function Footer() {
+  const { t } = useI18n()
+  
   return (
     <footer className="mt-auto border-t bg-muted/40 py-12">
       <div className="container mx-auto px-4">
@@ -14,38 +17,37 @@ export function Footer() {
               <Logo width={80} height={80} />
             </div>
             <p className="text-sm text-muted-foreground">
-              Cửa hàng bàn phím cơ cao cấp tại Việt Nam. 
-              Nâng tầm trải nghiệm gõ phím của người Việt.
+              {t.footer.description}
             </p>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Sản phẩm</h4>
+            <h4 className="font-bold mb-4">{t.footer.products}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/products?category=keyboard">Bàn phím</Link></li>
-              <li><Link href="/products?category=keycap">Keycap</Link></li>
-              <li><Link href="/products?category=switch">Switch</Link></li>
-              <li><Link href="/products?category=accessory">Phụ kiện</Link></li>
+              <li><Link href="/products?category=keyboard">{t.footer.keyboards}</Link></li>
+              <li><Link href="/products?category=keycap">{t.footer.keycaps}</Link></li>
+              <li><Link href="/products?category=switch">{t.footer.switches}</Link></li>
+              <li><Link href="/products?category=accessory">{t.footer.accessories}</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Hỗ trợ</h4>
+            <h4 className="font-bold mb-4">{t.footer.support}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/policy">Chính sách bảo hành</Link></li>
-              <li><Link href="/shipping">Vận chuyển</Link></li>
-              <li><Link href="/contact">Liên hệ</Link></li>
+              <li><Link href="/policy">{t.footer.warranty}</Link></li>
+              <li><Link href="/shipping">{t.footer.shipping}</Link></li>
+              <li><Link href="/contact">{t.footer.contact}</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Đăng ký nhận tin</h4>
-            <p className="text-xs text-muted-foreground mb-4">Nhận thông báo về sản phẩm mới và khuyến mãi.</p>
+            <h4 className="font-bold mb-4">{t.footer.newsletter}</h4>
+            <p className="text-xs text-muted-foreground mb-4">{t.footer.newsletterDesc}</p>
             <div className="flex gap-2">
-              <input type="email" placeholder="Email của bạn" className="bg-background border rounded px-3 py-1 text-sm w-full" />
-              <Button size="sm">Gửi</Button>
+              <input type="email" placeholder={t.footer.emailPlaceholder} className="bg-background border rounded px-3 py-1 text-sm w-full" />
+              <Button size="sm">{t.footer.send}</Button>
             </div>
           </div>
         </div>
         <div className="mt-12 pt-8 border-t text-center text-xs text-muted-foreground">
-          © 2026 Pho Gear. Tất cả quyền được bảo lưu. Thiết kế bởi Đồ án Tốt nghiệp.
+          © 2026 Pho Gear. {t.footer.rightsReserved}
         </div>
       </div>
     </footer>

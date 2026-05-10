@@ -18,8 +18,10 @@ import { ArrowRight, ShoppingCart, Zap } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Product } from "@/types"
+import { useI18n } from "@/components/providers/I18nProvider"
 
 export function HeroCarousel({ products }: { products: Product[] }) {
+  const { t, locale } = useI18n()
   const [api, setApi] = React.useState<CarouselApi>()
   const [current, setCurrent] = React.useState(0)
 
@@ -72,11 +74,11 @@ export function HeroCarousel({ products }: { products: Product[] }) {
                         <div className="flex gap-2 items-center">
                           {index === 0 ? (
                             <Badge className="bg-[#ff4500] hover:bg-[#ff4500]/90 text-white font-bold border-none uppercase tracking-widest px-3 py-1">
-                              HOT DEAL <Zap className="w-3 h-3 ml-1" />
+                              {t.home.hero.hotDeal} <Zap className="w-3 h-3 ml-1" />
                             </Badge>
                           ) : (
                             <Badge className="bg-[#00ff00] hover:bg-[#00ff00]/90 text-black font-bold border-none uppercase tracking-widest px-3 py-1">
-                              MỚI VỀ
+                              {t.home.hero.newArrival}
                             </Badge>
                           )}
                           <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
@@ -91,22 +93,25 @@ export function HeroCarousel({ products }: { products: Product[] }) {
                         </Link>
                         
                         <p className="text-lg text-muted-foreground line-clamp-3">
-                          {product.description || "Nâng tầm trải nghiệm gõ phím với thiết kế tinh tế và chất lượng hoàn thiện cao cấp nhất. Sở hữu ngay hôm nay."}
+                          {product.description || t.home.hero.defaultDesc}
                         </p>
                         
                         <div className="text-3xl font-black text-primary">
-                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                          {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { 
+                            style: 'currency', 
+                            currency: locale === 'vi' ? 'VND' : 'USD' 
+                          }).format(locale === 'vi' ? product.price : product.price / 25000)}
                         </div>
 
                         <div className="flex flex-wrap gap-4 pt-4">
                           <Link href={`/products/${product.id}`} aria-label={`Mua ngay ${product.name}`}>
                             <Button size="lg" className="font-bold gap-2">
-                              <ShoppingCart className="w-5 h-5" /> Mua Ngay
+                              <ShoppingCart className="w-5 h-5" /> {t.home.hero.buyNow}
                             </Button>
                           </Link>
                           <Link href={`/products`} aria-label="Khám phá tất cả sản phẩm">
                             <Button size="lg" variant="outline" className="font-bold">
-                              Khám Phá <ArrowRight className="w-4 h-4 ml-2" />
+                              {t.home.hero.explore} <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                           </Link>
                         </div>

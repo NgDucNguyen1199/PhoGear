@@ -20,8 +20,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Logo } from '@/components/ui/Logo'
 import { RegionSwitcher } from '@/components/layout/RegionSwitcher'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 export function Navbar({ user }: { user: any }) {
+  const { t, locale } = useI18n()
   const router = useRouter()
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -83,11 +85,11 @@ export function Navbar({ user }: { user: any }) {
             <Logo width={50} height={50} />
           </Link>
           <nav className="hidden md:flex gap-6 text-sm font-medium">
-            <Link href="/products" className="transition-colors hover:text-primary">Sản phẩm</Link>
-            <Link href="/categories" className="transition-colors hover:text-primary">Danh mục</Link>
-            <Link href="/keyboard-finder" className="transition-colors hover:text-primary">Tìm kiếm bàn phím</Link>
-            <Link href="/photype" className="transition-colors hover:text-primary font-bold text-orange-500">Pho Type</Link>
-            <Link href="/about" className="transition-colors hover:text-primary">Giới thiệu</Link>
+            <Link href="/products" className="transition-colors hover:text-primary">{t.nav.products}</Link>
+            <Link href="/categories" className="transition-colors hover:text-primary">{t.nav.categories}</Link>
+            <Link href="/keyboard-finder" className="transition-colors hover:text-primary">{t.nav.keyboardFinder}</Link>
+            <Link href="/photype" className="transition-colors hover:text-primary font-bold text-orange-500">{t.nav.photype}</Link>
+            <Link href="/about" className="transition-colors hover:text-primary">{t.nav.about}</Link>
           </nav>
         </div>
 
@@ -97,7 +99,7 @@ export function Navbar({ user }: { user: any }) {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <input
                 type="search"
-                placeholder="Tìm kiếm bàn phím..."
+                placeholder={t.nav.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
@@ -112,7 +114,7 @@ export function Navbar({ user }: { user: any }) {
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 mt-2 w-80 bg-background border rounded-lg shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
                 <div className="p-2 border-b bg-muted/30 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Sản phẩm gợi ý
+                  {t.nav.suggestedProducts}
                 </div>
                 <div className="max-h-96 overflow-y-auto">
                   {suggestions.map((product) => (
@@ -136,7 +138,10 @@ export function Navbar({ user }: { user: any }) {
                         <p className="text-sm font-bold text-foreground line-clamp-1">{product.name}</p>
                         <p className="text-xs text-muted-foreground uppercase">{product.brand}</p>
                         <p className="text-sm font-bold text-primary">
-                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                          {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { 
+                            style: 'currency', 
+                            currency: locale === 'vi' ? 'VND' : 'USD' 
+                          }).format(locale === 'vi' ? product.price : product.price / 25000)}
                         </p>
                       </div>
                     </div>
@@ -146,7 +151,7 @@ export function Navbar({ user }: { user: any }) {
                   onClick={handleSearch}
                   className="p-3 text-center text-xs font-medium text-primary hover:bg-primary/5 cursor-pointer border-t"
                 >
-                  Xem tất cả kết quả cho "{searchQuery}"
+                  {t.nav.viewAllResults} "{searchQuery}"
                 </div>
               </div>
             )}
@@ -195,24 +200,24 @@ export function Navbar({ user }: { user: any }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => router.push('/profile')}>
-                  Hồ sơ của tôi
+                  {t.nav.myProfile}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push('/orders')}>
-                  Đơn hàng
+                  {t.nav.orders}
                 </DropdownMenuItem>
                 {user.role === 'admin' && (
                   <DropdownMenuItem onClick={() => router.push('/admin')}>
-                    Quản trị viên
+                    {t.nav.admin}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={() => logout()} className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" /> Đăng xuất
+                  <LogOut className="mr-2 h-4 w-4" /> {t.nav.logout}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Link href="/login">
-              <Button size="sm">Đăng nhập</Button>
+              <Button size="sm">{t.nav.login}</Button>
             </Link>
           )}
           

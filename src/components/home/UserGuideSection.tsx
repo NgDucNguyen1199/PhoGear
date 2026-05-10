@@ -17,6 +17,7 @@ import {
   Info
 } from 'lucide-react'
 import Link from 'next/link'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 const manuals = [
   {
@@ -78,6 +79,7 @@ const manuals = [
 ]
 
 export function UserGuideSection() {
+  const { t } = useI18n()
   const [activeTab, setActiveTab] = useState(manuals[0].id)
 
   return (
@@ -85,10 +87,10 @@ export function UserGuideSection() {
       <div className="container mx-auto px-4 max-w-5xl">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 flex items-center justify-center gap-3">
-            <Info className="h-8 w-8 text-primary" /> Hướng Dẫn Sử Dụng
+            <Info className="h-8 w-8 text-primary" /> {t.home.guide.title}
           </h2>
           <p className="text-lg text-muted-foreground">
-            Làm chủ ngay chiếc bàn phím cơ của bạn với các thao tác kết nối, phím tắt và phần mềm tùy chỉnh.
+            {t.home.guide.desc}
           </p>
         </div>
 
@@ -96,9 +98,9 @@ export function UserGuideSection() {
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-8 flex gap-4 items-start text-amber-700 dark:text-amber-400">
           <BatteryWarning className="h-6 w-6 flex-shrink-0 mt-0.5" />
           <div>
-            <h4 className="font-bold text-sm uppercase tracking-wider mb-1">Lưu ý quan trọng về sạc pin</h4>
+            <h4 className="font-bold text-sm uppercase tracking-wider mb-1">{t.home.guide.warning}</h4>
             <p className="text-sm">
-              <strong>Tuyệt đối KHÔNG</strong> sử dụng củ sạc điện thoại (đặc biệt là sạc nhanh) để sạc bàn phím. Chỉ sạc bằng cách cắm trực tiếp cáp vào cổng USB của máy tính/laptop để tránh gây cháy nổ bo mạch (IC).
+              {t.home.guide.warningDesc}
             </p>
           </div>
         </div>
@@ -136,7 +138,7 @@ export function UserGuideSection() {
                     <AccordionItem value="connections" className="border-muted">
                       <AccordionTrigger className="text-lg font-bold hover:no-underline">
                         <div className="flex items-center gap-2">
-                          <Wifi className="h-5 w-5 text-blue-500" /> Các chế độ kết nối
+                          <Wifi className="h-5 w-5 text-blue-500" /> {t.home.guide.connections}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="space-y-4 pt-2 pb-4">
@@ -168,7 +170,7 @@ export function UserGuideSection() {
                     <AccordionItem value="shortcuts" className="border-muted">
                       <AccordionTrigger className="text-lg font-bold hover:no-underline">
                         <div className="flex items-center gap-2">
-                          <Lightbulb className="h-5 w-5 text-amber-500" /> Tổ hợp phím tắt (LED & Media)
+                          <Lightbulb className="h-5 w-5 text-amber-500" /> {t.home.guide.shortcuts}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pt-2 pb-4">
@@ -189,7 +191,7 @@ export function UserGuideSection() {
                     <AccordionItem value="reset" className="border-muted">
                       <AccordionTrigger className="text-lg font-bold hover:no-underline">
                         <div className="flex items-center gap-2">
-                          <RefreshCcw className="h-5 w-5 text-red-500" /> Cách Reset (Khôi phục cài đặt gốc)
+                          <RefreshCcw className="h-5 w-5 text-red-500" /> {t.home.guide.reset}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pt-2 pb-4 text-muted-foreground">
@@ -201,7 +203,7 @@ export function UserGuideSection() {
                     <AccordionItem value="software" className="border-muted border-b-0">
                       <AccordionTrigger className="text-lg font-bold hover:no-underline">
                         <div className="flex items-center gap-2">
-                          <Download className="h-5 w-5 text-purple-500" /> Phần mềm tùy chỉnh (Driver)
+                          <Download className="h-5 w-5 text-purple-500" /> {t.home.guide.software}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pt-2 pb-4">
@@ -210,7 +212,7 @@ export function UserGuideSection() {
                         </p>
                         <Link href={manual.driverLink} target="_blank" rel="noopener noreferrer">
                           <Button variant="outline" className="gap-2">
-                            <Download className="h-4 w-4" /> Tải Driver cho {manual.name}
+                            <Download className="h-4 w-4" /> {t.home.guide.downloadDriver} {manual.name}
                           </Button>
                         </Link>
                       </AccordionContent>

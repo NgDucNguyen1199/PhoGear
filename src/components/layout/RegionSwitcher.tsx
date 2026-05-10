@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Globe, ChevronDown, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 type Region = {
   id: string
@@ -40,6 +41,7 @@ const regions: Region[] = [
 ]
 
 export function RegionSwitcher() {
+  const { t } = useI18n()
   const [currentRegion, setCurrentRegion] = useState<Region>(regions[0])
   const [mounted, setMounted] = useState(false)
 
@@ -75,7 +77,7 @@ export function RegionSwitcher() {
       <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl bg-background/95 backdrop-blur-xl border-primary/10 shadow-2xl">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-2 py-2">
-            Khu vực & Ngôn ngữ
+            {t.common.regionAndLanguage}
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-primary/5" />
           {regions.map((region) => (

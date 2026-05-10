@@ -1,3 +1,5 @@
+'use client'
+
 import { getProducts } from '@/actions/products'
 import { getProfile } from '@/actions/auth'
 import { Navbar } from '@/components/layout/Navbar'
@@ -8,16 +10,27 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { ArrowRight, Keyboard, Zap, ShieldCheck, Truck } from 'lucide-react'
+import { useI18n } from '@/components/providers/I18nProvider'
+import { useState, useEffect } from 'react'
+import { Product } from '@/types'
 
-// Kích hoạt ISR (Incremental Static Regeneration)
-// Next.js sẽ tái tạo (re-render) lại trang này ở chế độ nền sau mỗi 60 giây
-// Đảm bảo Carousel luôn cập nhật sản phẩm mới mà không làm chậm trải nghiệm của người dùng
-export const revalidate = 60
+export default function HomePage() {
+  const { t } = useI18n()
+  const [heroProducts, setHeroProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [profile, setProfile] = useState<any>(null)
 
-export default async function HomePage() {
-  const heroProducts = await getProducts(5) // Fetch 5 sản phẩm mới nhất cho Carousel
-  const products = await getProducts(8) // Fetch 8 sản phẩm cho danh sách bên dưới
-  const profile = await getProfile()
+  useEffect(() => {
+    const fetchData = async () => {
+      const heroData = await getProducts(5)
+      const productsData = await getProducts(8)
+      const profileData = await getProfile()
+      setHeroProducts(heroData)
+      setProducts(productsData)
+      setProfile(profileData)
+    }
+    fetchData()
+  }, [])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -34,29 +47,29 @@ export default async function HomePage() {
               <div className="p-3 bg-background rounded-full border shadow-sm">
                 <ShieldCheck className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-bold">Bảo hành 2 năm</h3>
-              <p className="text-sm text-muted-foreground">Cam kết chất lượng</p>
+              <h3 className="font-bold">{t.home.features.warranty}</h3>
+              <p className="text-sm text-muted-foreground">{t.home.features.warrantyDesc}</p>
             </div>
             <div className="flex flex-col items-center text-center gap-2">
               <div className="p-3 bg-background rounded-full border shadow-sm">
                 <Truck className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-bold">Giao hàng hỏa tốc</h3>
-              <p className="text-sm text-muted-foreground">Trong vòng 2 giờ</p>
+              <h3 className="font-bold">{t.home.features.shipping}</h3>
+              <p className="text-sm text-muted-foreground">{t.home.features.shippingDesc}</p>
             </div>
             <div className="flex flex-col items-center text-center gap-2">
               <div className="p-3 bg-background rounded-full border shadow-sm">
                 <Zap className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-bold">Hỗ trợ 24/7</h3>
-              <p className="text-sm text-muted-foreground">Tư vấn tận tình</p>
+              <h3 className="font-bold">{t.home.features.support}</h3>
+              <p className="text-sm text-muted-foreground">{t.home.features.supportDesc}</p>
             </div>
             <div className="flex flex-col items-center text-center gap-2">
               <div className="p-3 bg-background rounded-full border shadow-sm">
                 <Keyboard className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-bold">Build theo yêu cầu</h3>
-              <p className="text-sm text-muted-foreground">Custom hóa tối đa</p>
+              <h3 className="font-bold">{t.home.features.custom}</h3>
+              <p className="text-sm text-muted-foreground">{t.home.features.customDesc}</p>
             </div>
           </div>
         </div>
@@ -67,12 +80,12 @@ export default async function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-10">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight">Sản phẩm mới về</h2>
-              <p className="text-muted-foreground">Những mẫu bàn phím cơ mới nhất thị trường</p>
+              <h2 className="text-3xl font-bold tracking-tight">{t.home.newArrivals}</h2>
+              <p className="text-muted-foreground">{t.home.newArrivalsDesc}</p>
             </div>
             <Link href="/products">
               <Button variant="ghost" className="hidden sm:flex">
-                Xem tất cả <ArrowRight className="ml-2 h-4 w-4" />
+                {t.home.viewAll} <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
@@ -86,10 +99,10 @@ export default async function HomePage() {
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-xl">
               <Keyboard className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-              <h3 className="text-xl font-medium text-muted-foreground">Chưa có sản phẩm nào</h3>
-              <p className="text-muted-foreground mb-6">Chúng tôi đang cập nhật sản phẩm, quay lại sau nhé!</p>
+              <h3 className="text-xl font-medium text-muted-foreground">{t.home.noProducts}</h3>
+              <p className="text-muted-foreground mb-6">{t.home.noProductsDesc}</p>
               <Link href="/login">
-                <Button variant="outline">Đăng nhập Admin để thêm sản phẩm</Button>
+                <Button variant="outline">{t.home.loginAdmin}</Button>
               </Link>
             </div>
           )}

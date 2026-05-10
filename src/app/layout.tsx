@@ -23,6 +23,8 @@ export const metadata: Metadata = {
   }
 };
 
+import { I18nProvider } from "@/components/providers/I18nProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,9 +36,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <main className="flex-grow">{children}</main>
-        <Footer />
-        <Toaster position="top-center" richColors />
+        <I18nProvider>
+          <main className="flex-grow">{children}</main>
+          <Footer />
+          <Toaster position="top-center" richColors />
+        </I18nProvider>
       </body>
     </html>
   );
