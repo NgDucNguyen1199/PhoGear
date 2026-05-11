@@ -1,4 +1,14 @@
 export const VIETNAMESE_WORDS = [
+  "là", "của", "và", "có", "trong", "một", "cho", "được", "với", "không", "những", "nhiều", "đã", "về", "như", "các", "người", "đến", "khi", "cũng",
+  "đang", "đó", "tại", "này", "ra", "vào", "mới", "hơn", "sau", "rất", "thể", "phải", "lại", "thành", "từ", "con", "nói", "làm", "đi", "biết",
+  "xem", "nào", "mình", "cách", "vì", "nên", "thời", "gian", "nơi", "việc", "sự", "ngày", "năm", "trước", "nhưng", "tôi", "anh", "chị", "em", "bạn",
+  "cùng", "qua", "theo", "đây", "để", "muốn", "thấy", "lên", "vẫn", "đều", "nếu", "hay", "cần", "cứ", "chỉ", "đúng", "tốt", "đẹp", "cao", "lớn",
+  "nhỏ", "ít", "xa", "gần", "trên", "dưới", "trong", "ngoài", "giữa", "bên", "chung", "riêng", "mỗi", "tất", "cả", "hết", "còn", "mất", "đã", "vừa",
+  "mới", "sẽ", "được", "bị", "phải", "nên", "có", "không", "chưa", "đừng", "hãy", "thôi", "luôn", "thường", "ít", "đôi", "mọi", "từng", "vài", "nhau",
+  "thế", "vậy", "rồi", "đâu", "kia", "nào", "ai", "gì", "sao", "bao", "giờ", "lúc", "khi", "nào", "đôi", "khi", "tại", "sao", "như", "thế", "nào",
+  "vừa", "qua", "xong", "hết", "cả", "một", "cái", "chiếc", "bộ", "đám", "nhóm", "loại", "hàng", "số", "lượng", "mức", "phần", "điểm", "vấn", "đề",
+  "chuyện", "việc", "làm", "hành", "động", "ý", "nghĩ", "tâm", "trạng", "tình", "cảm", "sức", "khỏe", "gia", "đình", "bạn", "bè", "xã", "hội", "nhà",
+  "trường", "công", "ty", "văn", "phòng", "đất", "nước", "thế", "giới", "con", "người", "cuộc", "sống", "tương", "lai", "quá", "khứ", "hiện", "tại",
   "bàn phím", "phím cơ", "switch", "keycap", "lube", "stabilizer", "linear", "tactile", "clicky",
   "thocky", "clacky", "nhôm", "nhựa", "kết nối", "không dây", "bluetooth", "độ trễ", "phản hồi",
   "trải nghiệm", "gõ phím", "tốc độ", "chính xác", "đam mê", "góc làm việc", "setup", "ánh sáng",
@@ -8,6 +18,11 @@ export const VIETNAMESE_WORDS = [
 ];
 
 export const ENGLISH_WORDS = [
+  "the", "be", "to", "of", "and", "a", "in", "that", "have", "it", "for", "not", "on", "with", "he", "as", "you", "do", "at", "this",
+  "but", "his", "by", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so",
+  "up", "out", "if", "about", "who", "get", "which", "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know", "take", "people",
+  "into", "year", "your", "good", "some", "could", "them", "see", "other", "than", "then", "now", "look", "only", "come", "its", "over", "think", "also", "back",
+  "after", "use", "two", "how", "our", "work", "first", "well", "way", "even", "new", "want", "because", "any", "these", "give", "day", "most", "us",
   "keyboard", "mechanical", "switch", "keycap", "stabilizer", "linear", "tactile", "clicky",
   "thocky", "clacky", "aluminum", "plastic", "connection", "wireless", "bluetooth", "latency",
   "feedback", "experience", "typing", "speed", "accuracy", "passion", "workspace", "setup",
@@ -15,6 +30,7 @@ export const ENGLISH_WORDS = [
   "work", "programming", "creative", "focus", "success", "love", "happiness", "smile",
   "technology", "hardware", "software", "optimize", "performance", "elegant", "premium", "style"
 ];
+
 
 export const QUOTES = {
   vi: [

@@ -95,6 +95,7 @@ export function TypingGame() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const [currentInput, setCurrentWordInput] = useState('')
   const [completedWords, setCompletedWords] = useState<{word: string, isCorrect: boolean}[]>([])
+  const [keystrokes, setKeystrokes] = useState({ correct: 0, incorrect: 0 })
   const [timeLeft, setTimeLeft] = useState(30)
   const [isActive, setIsActive] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
@@ -127,16 +128,19 @@ export function TypingGame() {
     let elapsed = activeTab === 'time' ? (activeConfig - timeLeft) : (60 - timeLeft)
     if (elapsed <= 0) elapsed = 0.001
     const wpm = Math.round((totalCorrect / 5) / (elapsed / 60)) || 0
-    const typed = completedWords.reduce((acc, curr) => acc + curr.word.length + 1, 0) + currentInput.length
-    const acc = typed > 0 ? Math.round((totalCorrect / typed) * 100) : 100
+    
+    // Accuracy based on total keystrokes (like 10FastFingers)
+    const totalKeystrokes = keystrokes.correct + keystrokes.incorrect
+    const acc = totalKeystrokes > 0 ? Math.round((keystrokes.correct / totalKeystrokes) * 100) : 100
+    
     let rank: Rank = 'Rùa con'
     if (wpm >= 100) rank = 'Pho Master'
     else if (wpm >= 60) rank = 'Thần sấm'
     else if (wpm >= 30) rank = 'Tay đua'
-    const result = { wpm, accuracy: acc, rank }
+    const result = { wpm, accuracy: acc, rank, keystrokes }
     statsRef.current = result
     return result
-  }, [completedWords, currentInput, words, currentWordIndex, timeLeft, activeConfig, activeTab])
+  }, [completedWords, currentInput, words, currentWordIndex, timeLeft, activeConfig, activeTab, keystrokes])
 
   const finishGame = useCallback(async () => {
     setIsActive(false)
@@ -163,6 +167,7 @@ export function TypingGame() {
     setCurrentWordIndex(0)
     setCurrentWordInput('')
     setCompletedWords([])
+    setKeystrokes({ correct: 0, incorrect: 0 })
     setTimeLeft(activeTab === 'time' ? activeConfig : 60)
     setIsActive(false)
     setIsFinished(false)
@@ -207,10 +212,28 @@ export function TypingGame() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isFinished) return
     const val = e.target.value
+    const lastChar = val[val.length - 1]
+    const isBackspace = val.length < currentInput.length
+
     if (!isActive && val.length > 0) { setIsActive(true); if (isMemory) setShowText(false); }
+    
     if (isCombo && val.length > currentInput.length) {
         if (val[val.length-1] !== words[currentWordIndex][val.length-1] && val[val.length-1] !== ' ') { toast.error("COMBO BROKEN!"); startGame(); return; }
     }
+
+    // Keystroke tracking
+    if (!isBackspace && val.length > 0) {
+      const targetWord = words[currentWordIndex]
+      const charIndex = val.length - 1
+      if (lastChar === ' ') {
+         setKeystrokes(prev => ({ ...prev, correct: prev.correct + 1 })) // Space is usually correct
+      } else if (targetWord[charIndex] === lastChar) {
+         setKeystrokes(prev => ({ ...prev, correct: prev.correct + 1 }))
+      } else {
+         setKeystrokes(prev => ({ ...prev, incorrect: prev.incorrect + 1 }))
+      }
+    }
+
     if (val.endsWith(' ')) {
         const typed = val.trim()
         const target = words[currentWordIndex]
@@ -317,18 +340,39 @@ export function TypingGame() {
             )}
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative p-12 rounded-[2.5rem] transition-all overflow-hidden h-[240px]">
               <input ref={inputRef} type="text" className="absolute inset-0 opacity-0 cursor-default z-0" value={currentInput} onChange={handleInputChange} onKeyDown={e => e.key === 'Tab' && (e.preventDefault(), startGame())} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} autoFocus />
-              <div ref={scrollRef} className={cn("text-3xl font-mono leading-[1.8] select-none tracking-tight text-left transition-all duration-300 ease-in-out", !showText && !isActive && "blur-md opacity-20")}>
-                <div className="flex flex-wrap gap-x-4 gap-y-2">
-                  {completedWords.map((item, i) => (<span key={`comp-${i}`} className="rounded-sm px-1" style={{ color: item.isCorrect ? activeColors.text : "#ef4444", textDecoration: item.isCorrect ? "none" : "underline" }}>{item.word}</span>))}
-                  <span ref={el => { wordRefs.current[currentWordIndex] = el }} className="relative rounded-md px-1 min-w-[20px]" style={{ backgroundColor: `${activeColors.main}15` }}>
+              <div ref={scrollRef} className={cn("text-3xl font-typing leading-[1.6] select-none tracking-normal text-left transition-all duration-300 ease-in-out", !showText && !isActive && "blur-md opacity-20")}>
+                <div className="flex flex-wrap gap-x-6 gap-y-4">
+                  {completedWords.map((item, i) => (
+                    <span key={`comp-${i}`} className="rounded-sm px-1 transition-colors" style={{ color: item.isCorrect ? "#22c55e" : "#ef4444" }}>
+                      {item.word}
+                    </span>
+                  ))}
+                  <span 
+                    ref={el => { wordRefs.current[currentWordIndex] = el }} 
+                    className="relative rounded-md px-2 min-w-[20px] transition-all" 
+                    style={{ backgroundColor: `${activeColors.text}15` }}
+                  >
                       {words[currentWordIndex]?.split('').map((char, i) => {
                           let color = activeColors.sub
                           if (i < currentInput.length) color = currentInput[i] === char ? activeColors.text : "#ef4444"
-                          return (<span key={i} className="transition-colors relative" style={{ color }}>{i === currentInput.length && isFocused && (<motion.span layoutId="caret" className="absolute w-0.5 h-8 -left-[1px] top-1" style={{ backgroundColor: activeColors.caret }} animate={{ opacity: [1, 0] }} transition={{ duration: 0.8, repeat: Infinity }} />)}{char}</span>)
+                          return (
+                            <span key={i} className="transition-colors relative" style={{ color }}>
+                              {i === currentInput.length && isFocused && (
+                                <motion.span layoutId="caret" className="absolute w-0.5 h-8 -left-[1px] top-1" style={{ backgroundColor: activeColors.caret }} animate={{ opacity: [1, 0] }} transition={{ duration: 0.8, repeat: Infinity }} />
+                              )}
+                              {char}
+                            </span>
+                          )
                       })}
-                      {currentInput.length >= (words[currentWordIndex]?.length || 0) && isFocused && (<motion.span layoutId="caret" className="absolute w-0.5 h-8 top-1" style={{ left: `${(words[currentWordIndex]?.length || 0) * 1.15}rem`, backgroundColor: activeColors.caret }} animate={{ opacity: [1, 0] }} transition={{ duration: 0.8, repeat: Infinity }} />)}
+                      {currentInput.length >= (words[currentWordIndex]?.length || 0) && isFocused && (
+                        <motion.span layoutId="caret" className="absolute w-0.5 h-8 top-1" style={{ left: `${(words[currentWordIndex]?.length || 0) * 1.15}rem`, backgroundColor: activeColors.caret }} animate={{ opacity: [1, 0] }} transition={{ duration: 0.8, repeat: Infinity }} />
+                      )}
                   </span>
-                  {showText && words.slice(currentWordIndex + 1).map((word, i) => (<span key={`future-${i}`} ref={el => { wordRefs.current[currentWordIndex + 1 + i] = el }} className="px-1 opacity-30" style={{ color: activeColors.sub }}>{word}</span>))}
+                  {showText && words.slice(currentWordIndex + 1).map((word, i) => (
+                    <span key={`future-${i}`} ref={el => { wordRefs.current[currentWordIndex + 1 + i] = el }} className="px-1 opacity-30 transition-opacity" style={{ color: activeColors.sub }}>
+                      {word}
+                    </span>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -343,9 +387,30 @@ export function TypingGame() {
                 <p className="text-xl font-bold opacity-50 mb-8">Từ mỗi phút</p>
                 <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl border" style={{ backgroundColor: `${activeColors.main}10`, borderColor: `${activeColors.main}20` }}><Award style={{ color: activeColors.main }} size={24} /><span className="text-lg font-black" style={{ color: activeColors.text }}>{stats.rank}</span></div>
               </div>
-              <div className="p-6 rounded-[2rem] border shadow-sm flex items-center justify-between px-10" style={{ backgroundColor: activeColors.bg, borderColor: `${activeColors.text}10` }}>
-                 <div className="text-center border-r flex-1" style={{ borderColor: `${activeColors.text}10` }}><p className="text-[10px] font-black uppercase opacity-50">Chính xác</p><p className="text-2xl font-black">{stats.accuracy}%</p></div>
-                 <div className="text-center flex-1"><p className="text-[10px] font-black uppercase opacity-50">Từ đúng</p><p className="text-2xl font-black">{completedWords.filter(w => w.isCorrect).length}</p></div>
+              <div className="p-6 rounded-[2rem] border shadow-sm space-y-4" style={{ backgroundColor: activeColors.bg, borderColor: `${activeColors.text}10` }}>
+                 <div className="flex items-center justify-between px-4">
+                   <p className="text-[10px] font-black uppercase opacity-50">Chính xác</p>
+                   <p className="text-2xl font-black" style={{ color: activeColors.main }}>{stats.accuracy}%</p>
+                 </div>
+                 <div className="h-px w-full" style={{ backgroundColor: `${activeColors.text}10` }} />
+                 <div className="flex items-center justify-between px-4">
+                   <p className="text-[10px] font-black uppercase opacity-50">Phím gõ</p>
+                   <p className="text-xl font-black">
+                     <span className="text-green-500">{keystrokes.correct}</span>
+                     <span className="mx-1 opacity-30">|</span>
+                     <span className="text-red-500">{keystrokes.incorrect}</span>
+                   </p>
+                 </div>
+                 <div className="h-px w-full" style={{ backgroundColor: `${activeColors.text}10` }} />
+                 <div className="flex items-center justify-between px-4">
+                   <p className="text-[10px] font-black uppercase opacity-50">Từ đúng</p>
+                   <p className="text-xl font-black">{completedWords.filter(w => w.isCorrect).length}</p>
+                 </div>
+                 <div className="h-px w-full" style={{ backgroundColor: `${activeColors.text}10` }} />
+                 <div className="flex items-center justify-between px-4">
+                   <p className="text-[10px] font-black uppercase opacity-50">Từ sai</p>
+                   <p className="text-xl font-black text-red-500">{completedWords.filter(w => !w.isCorrect).length}</p>
+                 </div>
               </div>
               <div className="flex gap-4">
                  <Button onClick={startGame} size="lg" className="flex-1 h-16 rounded-2xl font-black text-lg gap-2 shadow-lg transition-all active:scale-95" style={{ backgroundColor: activeColors.main, color: activeColors.bg }}>
