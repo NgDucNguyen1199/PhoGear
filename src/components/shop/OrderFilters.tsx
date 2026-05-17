@@ -87,7 +87,7 @@ export function OrderFilters() {
                         {/* Status */}
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Trạng thái đơn hàng</Label>
-                            <Select value={status} onValueChange={setStatus}>
+                            <Select value={status} onValueChange={(v) => v && setStatus(v)}>
                                 <SelectTrigger className="rounded-xl h-10 bg-muted/30 border-none">
                                     <SelectValue placeholder="Tất cả trạng thái" />
                                 </SelectTrigger>
@@ -105,7 +105,7 @@ export function OrderFilters() {
                         {/* Sorting */}
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sắp xếp theo</Label>
-                            <Select value={sort} onValueChange={setSort}>
+                            <Select value={sort} onValueChange={(v) => v && setSort(v)}>
                                 <SelectTrigger className="rounded-xl h-10 bg-muted/30 border-none">
                                     <SelectValue placeholder="Mới nhất" />
                                 </SelectTrigger>

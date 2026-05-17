@@ -105,7 +105,7 @@ export function UserGuideSection() {
           </div>
         </div>
 
-        <Tabs defaultValue={manuals[0].id} value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs defaultValue={manuals[0].id} value={activeTab} onValueChange={(v) => v && setActiveTab(v)} className="w-full">
           <div className="flex justify-center mb-8 overflow-x-auto pb-2 scrollbar-hide">
             <TabsList className="bg-muted/50 p-1">
               {manuals.map((manual) => (
