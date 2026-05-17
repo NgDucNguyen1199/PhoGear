@@ -16,7 +16,7 @@
 
 ## 📑 Tóm tắt dự án (Abstract)
 
-**PhoGear** là một ứng dụng web Fullstack hiện đại, được thiết kế nhằm tối ưu hóa quy trình thương mại điện tử trong thị trường ngách là thiết bị ngoại vi cao cấp (Mechanical Keyboards). Dự án không chỉ dừng lại ở một nền tảng bán hàng truyền thống mà còn tích hợp các module tương tác nâng cao như **PhoType** (Typing Engine) và hệ thống bảo mật đa lớp (**Multi-Factor Authentication - MFA**). Hệ thống tận dụng sức mạnh của kiến trúc **Server-side Rendering (SSR)** và **Edge Computing** để đảm bảo tốc độ truy cập tối ưu và tính toàn vẹn dữ liệu ở quy mô lớn.
+**PhoGear** là một ứng dụng web Fullstack hiện đại, được thiết kế nhằm tối ưu hóa quy trình thương mại điện tử trong thị trường ngách là thiết bị ngoại vi cao cấp (Mechanical Keyboards). Dự án tích hợp các module tương tác nâng cao như **PhoType** (Typing Engine), công cụ trắc nghiệm **Keyboard Finder** và hệ thống bảo mật đa lớp (**Multi-Factor Authentication - MFA**). Hệ thống tận dụng sức mạnh của kiến trúc **Server-side Rendering (SSR)** và **Edge Computing** để đảm bảo tốc độ truy cập tối ưu và tính bảo mật dữ liệu tuyệt đối.
 
 ---
 
@@ -25,104 +25,72 @@
 Hệ thống được xây dựng trên mô hình kiến trúc **Modern Web Stack**, tách biệt rõ rệt giữa giao diện người dùng và logic nghiệp vụ:
 
 ### 1.1 Tầng Giao diện & Xử lý (Frontend & Logic)
-- **Next.js 15 (App Router):** Sử dụng mô hình Hybrid Rendering (kết hợp Client và Server Components) để tối ưu hóa hiệu năng và SEO.
-- **Server Actions:** Xử lý các tác vụ đột biến dữ liệu trực tiếp trên server, giảm thiểu mã nguồn phía client và tăng cường bảo mật.
-- **State Management:** Sử dụng **Zustand** để quản lý trạng thái giỏ hàng và danh sách yêu thích với cơ chế Persist dữ liệu dưới Local Storage.
+- **Next.js 15 (App Router):** Sử dụng mô hình Hybrid Rendering để tối ưu hóa hiệu năng.
+- **Server Actions:** Xử lý đột biến dữ liệu an toàn trực tiếp trên server (MFA, Profile Updates, Order Search).
+- **State Management:** Sử dụng **Zustand** kết hợp cơ chế Persist để quản lý giỏ hàng và danh sách yêu thích (Wishlist).
 
 ### 1.2 Tầng Hạ tầng & Cơ sở dữ liệu (Backend & Database)
-- **Supabase BaaS:** Đóng vai trò là hạt nhân của hệ thống backend.
-  - **PostgreSQL:** Hệ quản trị cơ sở dữ liệu quan hệ mạnh mẽ với tính năng Row Level Security (RLS).
-  - **Supabase Auth:** Quản lý vòng đời người dùng và xác thực bảo mật.
-  - **Supabase Storage:** Lưu trữ và phục vụ tài nguyên đa phương tiện (hình ảnh sản phẩm, âm thanh switch).
+- **Supabase BaaS:** Hạt nhân lưu trữ và xác thực.
+  - **PostgreSQL:** Cơ sở dữ liệu quan hệ với Row Level Security (RLS) nghiêm ngặt.
+  - **Supabase Auth:** Triển khai **MFA (TOTP)** chuẩn công nghiệp.
+  - **Supabase Storage:** Quản lý tài nguyên đa phương tiện và ảnh đại diện (Avatar) người dùng.
 
 ---
 
 ## ✨ 2. Các Module Chức năng Cốt lõi
 
 ### 🛒 2.1 Module Thương mại điện tử (E-commerce Core)
-Hệ thống quản lý sản phẩm dựa trên cấu trúc **Product-Variant**, cho phép mỗi sản phẩm gốc có nhiều phiên bản linh kiện (Switch, Layout, Color) với mức giá và tồn kho riêng biệt. Quy trình thanh toán được thiết kế tối giản nhưng vẫn đảm bảo đầy đủ các bước xác thực thông tin vận chuyển.
+- **Quản lý Sản phẩm Biến thể:** Hệ thống Product-Variant linh hoạt cho phép tùy biến linh kiện.
+- **Bộ lọc & Tìm kiếm Nâng cao:** Tích hợp thanh trượt (Drawer) cho sản phẩm và hệ thống tìm kiếm đa năng (Search/Filter/Sort) cho lịch sử đơn hàng.
+- **Giỏ hàng & Wishlist:** Trải nghiệm mua sắm liền mạch với khả năng đồng bộ dữ liệu thời gian thực.
 
-### 🎮 2.2 Trình mô phỏng Luyện gõ (Typing Engine - PhoType)
-Một module đặc biệt được thiết kế để phân tích kỹ năng người dùng. Sử dụng thuật toán so khớp chuỗi thời gian thực để tính toán các chỉ số:
-- **WPM (Words Per Minute):** Tốc độ gõ phím chuẩn hóa.
-- **Accuracy:** Độ chính xác dựa trên tỷ lệ lỗi ký tự.
-- **Persistence:** Kết quả được lưu trữ vào hệ thống Bảng vàng (Typing Scores) để theo dõi tiến trình cá nhân.
+### 🎮 2.2 Trình mô phỏng & Trắc nghiệm (User Experience)
+- **Keyboard Finder:** Công cụ trắc nghiệm thông minh tích hợp ngay tại trang chủ giúp định hướng sản phẩm cho người dùng.
+- **PhoType Engine:** Trò chơi luyện gõ phím chuyên nghiệp, phân tích tốc độ (WPM) và độ chính xác (Accuracy).
 
-### 🛡️ 2.3 Hệ thống Bảo mật & Quản trị (Security & Admin)
-- **Xác thực 2 lớp (MFA):** Tích hợp tiêu chuẩn bảo mật cao cấp nhất của Supabase, cho phép người dùng sử dụng ứng dụng xác thực (Authenticator App) qua giao thức **TOTP**.
-- **Admin Dashboard:** Cung cấp công cụ quản trị toàn diện từ quản lý danh mục, đơn hàng đến phân tích lịch sử đăng nhập hệ thống nhằm phát hiện các hành vi bất thường.
+### 🛡️ 2.3 Bảo mật & Cá nhân hóa (Security & Profile)
+- **Xác thực 2 lớp (MFA):** Bảo vệ tài khoản tuyệt đối qua mã xác thực 6 số (TOTP) từ điện thoại.
+- **Profile Dashboard:** Giao diện cá nhân hóa với khả năng tải lên ảnh đại diện, đổi mật khẩu và quản lý đơn hàng chuyên sâu.
+- **Login History:** Hệ thống ghi lại lịch sử truy cập (IP, Thiết bị) phục vụ mục đích giám sát bảo mật cho quản trị viên.
 
 ---
 
 ## 🛠️ 3. Phân tích Kỹ thuật & Công nghệ
 
-| Công nghệ | Vai trò trong hệ thống | Lý do lựa chọn |
+| Công nghệ | Vai trò trong hệ thống | Ưu điểm chính |
 | :--- | :--- | :--- |
-| **TypeScript** | Ngôn ngữ phát triển | Đảm bảo tính nhất quán của dữ liệu (Type Safety) và giảm thiểu 90% lỗi logic trong quá trình phát triển. |
-| **React 19** | Thư viện UI | Cung cấp các tính năng Concurrent Rendering mới nhất, giúp giao diện phản hồi mượt mà hơn. |
-| **Tailwind CSS** | Styling | Xây dựng giao diện Responsive nhanh chóng dựa trên hệ thống Utility-first, tối ưu kích thước file CSS. |
-| **Shadcn UI** | UI Components | Thư viện component được thiết kế theo tiêu chuẩn Accessibility (WAI-ARIA). |
-| **Zod** | Validation | Xác thực dữ liệu đầu vào nghiêm ngặt từ cả phía Client và Server. |
+| **TypeScript** | Ngôn ngữ phát triển | Type Safety, giảm thiểu 90% lỗi logic runtime. |
+| **Tailwind CSS** | Styling | Utility-first, giao diện Responsive mượt mà trên mọi thiết bị. |
+| **Base UI** | UI Library | Thành phần giao diện tuân thủ chuẩn Accessibility (Popover, Dialog, Sheet). |
+| **Framer Motion** | Animation | Hiệu ứng chuyển động cao cấp cho các Tab và Modal. |
 
 ---
 
 ## 🔐 4. An toàn & Bảo mật Dữ liệu
 
-Dự án tuân thủ nghiêm ngặt các nguyên tắc bảo mật hiện đại:
-1. **Row Level Security (RLS):** Thiết lập các chính sách truy cập dữ liệu trực tiếp trong database, đảm bảo người dùng chỉ có thể truy cập dữ liệu của chính họ.
-2. **JWT & Session Management:** Quản lý phiên làm việc thông qua token được mã hóa và lưu trữ an toàn trong HttpOnly Cookies.
-3. **Audit Logging:** Hệ thống tự động ghi lại lịch sử đăng nhập (IP, User Agent) để phục vụ mục đích kiểm tra và bảo mật.
+1. **Row Level Security (RLS):** Người dùng chỉ có quyền truy cập và sửa đổi dữ liệu thuộc sở hữu cá nhân.
+2. **MFA Enforcement:** Tùy chọn bắt buộc xác thực 2 lớp đối với tài khoản quản trị viên.
+3. **Secure Storage:** Ảnh đại diện được lưu trữ trong bucket riêng tư, chỉ cho phép truy cập qua Public URL an toàn.
 
 ---
 
 ## 🚀 5. Hướng dẫn Cài đặt & Khởi chạy
 
 ### Yêu cầu tiên quyết:
-- Node.js phiên bản 18.x trở lên.
-- Một dự án Supabase đã được cấu hình.
+- Node.js 18+ và tài khoản Supabase.
 
 ### Các bước thực hiện:
-1. **Khởi tạo mã nguồn:**
-   ```bash
-   git clone https://github.com/NgDucNguyen1199/PhoGear.git
-   cd PhoGear
-   ```
-
-2. **Cài đặt thư viện phụ thuộc:**
-   ```bash
-   npm install
-   ```
-
-3. **Thiết lập biến môi trường:**
-   Tạo tệp `.env.local` với cấu trúc sau:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-4. **Triển khai Cơ sở dữ liệu:**
-   Truy cập mục **SQL Editor** trong Supabase Dashboard, sao chép và chạy nội dung tệp `supabase/schema.sql` để khởi tạo cấu trúc bảng và chính sách bảo mật.
-
-5. **Khởi chạy môi trường phát triển:**
-   ```bash
-   npm run dev
-   ```
-
----
-
-## 🎓 6. Kết luận & Hướng phát triển
-
-Dự án **PhoGear** đã thành công trong việc xây dựng một hệ sinh thái thương mại điện tử chuyên sâu cho cộng đồng bàn phím cơ. Trong tương lai, hệ thống sẽ tiếp tục được nâng cấp với các tính năng:
-- **Real-time Chat:** Hỗ trợ tư vấn khách hàng trực tiếp qua WebSocket.
-- **AI Recommendation:** Gợi ý sản phẩm dựa trên hành vi mua sắm và sở thích gõ phím của người dùng.
-- **Progressive Web App (PWA):** Tối ưu hóa trải nghiệm trên thiết bị di động như một ứng dụng native.
+1. **Khởi tạo:** `git clone https://github.com/NgDucNguyen1199/PhoGear.git`
+2. **Cài đặt:** `npm install`
+3. **Biến môi trường:** Cấu hình `NEXT_PUBLIC_SUPABASE_URL` và `ANON_KEY` trong `.env.local`.
+4. **Database:** Chạy script trong thư mục `/supabase` (ưu tiên `schema.sql`).
+5. **Chạy thử:** `npm run dev`
 
 ---
 
 ## 👤 Thông tin Tác giả
 
-- **Họ và tên:** Nguyễn Đức Nguyên
-- **Mã số sinh viên:** 2212429
+- **Họ và tên:** Nguyễn Đức Nguyên (MSSV: 2212429)
 - **Trường:** Đại học Đà Lạt
 - **Email:** [2212429@dlu.edu.vn](mailto:2212429@dlu.edu.vn)
 - **Github:** [NgDucNguyen1199](https://github.com/NgDucNguyen1199)
