@@ -1,8 +1,8 @@
 import { getProducts, getCategories } from '@/actions/products'
 import { getProfile } from '@/actions/auth'
 import { Navbar } from '@/components/layout/Navbar'
-import { ProductFilters } from '@/components/shop/ProductFilters'
 import { FilteredProductList } from '@/components/shop/FilteredProductList'
+import { FilterDrawer } from '@/components/shop/FilterDrawer'
 import { Suspense } from 'react'
 
 export const metadata = {
@@ -25,41 +25,38 @@ export default async function ProductsPage() {
       <Navbar user={profile} />
       
       <main className="container mx-auto px-4 py-12 flex-grow">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div>
             <h1 className="text-5xl font-black uppercase tracking-tighter italic">Tất cả sản phẩm</h1>
             <p className="text-muted-foreground mt-2 font-medium">
               Khám phá bộ sưu tập bàn phím cơ và phụ kiện cao cấp của chúng tôi.
             </p>
           </div>
-          <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground bg-background px-4 py-2 rounded-full border shadow-sm">
-            {products.length} sản phẩm có sẵn
+          
+          <div className="flex items-center gap-4">
+            <div className="hidden md:block text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-background px-4 py-2 rounded-full border shadow-sm">
+                {products.length} sản phẩm có sẵn
+            </div>
+
+            <FilterDrawer 
+                categories={categories}
+                brands={brands}
+                layouts={layouts}
+                connectivities={connectivities}
+            />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Sidebar Filter */}
-          <aside className="lg:col-span-3">
-            <ProductFilters 
-              categories={categories} 
-              brands={brands} 
-              layouts={layouts} 
-              connectivities={connectivities} 
-            />
-          </aside>
-
-          {/* Product Grid */}
-          <div className="lg:col-span-9">
+        <div className="w-full">
             <Suspense fallback={
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map(i => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
                   <div key={i} className="h-[400px] bg-muted animate-pulse rounded-[2.5rem]" />
                 ))}
               </div>
             }>
               <FilteredProductList initialProducts={products} />
             </Suspense>
-          </div>
         </div>
       </main>
     </div>

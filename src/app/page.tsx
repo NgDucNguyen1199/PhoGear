@@ -1,32 +1,39 @@
 'use client'
 
-import { getProducts } from '@/actions/products'
+import { getProducts, getCategories } from '@/actions/products'
 import { getProfile } from '@/actions/auth'
 import { Navbar } from '@/components/layout/Navbar'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { HeroCarousel } from '@/components/home/HeroCarousel'
 import { UserGuideSection } from '@/components/home/UserGuideSection'
+import { KeyboardFinder } from '@/components/shop/KeyboardFinder'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import { ArrowRight, Keyboard, Zap, ShieldCheck, Truck } from 'lucide-react'
+import { ArrowRight, Keyboard, Zap, ShieldCheck, Truck, Search } from 'lucide-react'
 import { useI18n } from '@/components/providers/I18nProvider'
 import { useState, useEffect } from 'react'
-import { Product } from '@/types'
+import { Product, Category } from '@/types'
 
 export default function HomePage() {
   const { t } = useI18n()
   const [heroProducts, setHeroProducts] = useState<Product[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [profile, setProfile] = useState<any>(null)
 
   useEffect(() => {
     const fetchData = async () => {
-      const heroData = await getProducts(5)
-      const productsData = await getProducts(8)
-      const profileData = await getProfile()
-      setHeroProducts(heroData)
-      setProducts(productsData)
+      const [heroData, productsData, categoriesData, profileData] = await Promise.all([
+        getProducts(5),
+        getProducts(8),
+        getCategories(),
+        getProfile()
+      ])
+      
+      setHeroProducts(heroData || [])
+      setProducts(productsData || [])
+      setCategories(categoriesData || [])
       setProfile(profileData)
     }
     fetchData()
@@ -106,6 +113,16 @@ export default function HomePage() {
               </Link>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Keyboard Finder Section */}
+      <section className="py-24 bg-primary/[0.03] border-y border-primary/5 overflow-hidden relative">
+        <div className="absolute top-0 right-0 p-24 opacity-5 pointer-events-none">
+            <Search size={400} className="text-primary rotate-12" />
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
+            <KeyboardFinder categories={categories} />
         </div>
       </section>
 
