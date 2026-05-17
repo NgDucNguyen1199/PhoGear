@@ -131,3 +131,46 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- System Settings
+CREATE TABLE public.system_settings (
+    id TEXT PRIMARY KEY DEFAULT 'main',
+    site_name TEXT DEFAULT 'Pho Gear',
+    contact_email TEXT DEFAULT 'contact@phogear.com',
+    currency TEXT DEFAULT 'VND',
+    language TEXT DEFAULT 'vi',
+    order_notifications BOOLEAN DEFAULT true,
+    weekly_reports BOOLEAN DEFAULT false,
+    two_factor_auth BOOLEAN DEFAULT false,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Everyone can view system settings" ON public.system_settings FOR SELECT USING (true);
+CREATE POLICY "Admins can manage system settings" ON public.system_settings 
+    FOR ALL
+    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+    WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+INSERT INTO public.system_settings (id, site_name) VALUES ('main', 'Pho Gear') ON CONFLICT DO NOTHING;
+
+-- Login History
+CREATE TABLE public.login_history (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    full_name TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    status TEXT DEFAULT 'success',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.login_history ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view all login history" ON public.login_history FOR SELECT
+    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+CREATE POLICY "Users can view own login history" ON public.login_history FOR SELECT
+    USING (auth.uid() = user_id);
+

@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { redirect } from 'next/navigation'
 import { 
   User, Mail, Calendar, Award, Package, LogOut, 
-  Clock, Zap, ShieldCheck, Activity, MapPin, Phone, Keyboard
+  Clock, Zap, ShieldCheck, Activity, MapPin, Phone, Keyboard,
+  Heart, Settings, ShoppingBag, Fingerprint
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -13,6 +14,11 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import Image from 'next/image'
+
+import { MfaSetup } from '@/components/shop/MfaSetup'
+import { EditProfileDialog } from '@/components/shop/EditProfileDialog'
+import { ChangePasswordDialog } from '@/components/shop/ChangePasswordDialog'
+import { WishlistTab } from '@/components/shop/WishlistTab'
 
 export default async function ProfilePage() {
   const profile = await getProfile()
@@ -39,30 +45,38 @@ export default async function ProfilePage() {
     <div className="flex min-h-screen flex-col bg-muted/20">
       <Navbar user={profile} />
       <main className="container mx-auto px-4 py-12 flex-1">
-        <div className="max-w-5xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8">
           
           {/* Header Profile */}
-          <div className="relative rounded-3xl overflow-hidden bg-background border shadow-sm">
-            <div className="h-32 md:h-48 bg-gradient-to-r from-primary/20 via-primary/5 to-background"></div>
-            <div className="px-6 md:px-10 pb-8 flex flex-col md:flex-row items-start md:items-end gap-6 -mt-12 md:-mt-16 relative">
-              <div className="h-24 w-24 md:h-32 md:w-32 rounded-full border-4 border-background bg-primary/10 flex items-center justify-center text-primary text-5xl font-black shadow-lg">
-                {profile.full_name?.charAt(0) || <User size={48} />}
+          <div className="relative rounded-[2.5rem] overflow-hidden bg-background border shadow-xl">
+            <div className="h-40 md:h-64 bg-gradient-to-br from-primary via-primary/80 to-primary/40 relative">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent"></div>
+            </div>
+            <div className="px-6 md:px-12 pb-10 flex flex-col md:flex-row items-center md:items-end gap-6 -mt-20 md:-mt-24 relative z-10 text-center md:text-left">
+              <div className="h-32 w-32 md:h-44 md:w-44 rounded-full border-[6px] border-background bg-muted flex items-center justify-center text-primary text-6xl font-black shadow-2xl overflow-hidden relative group">
+                {profile.avatar_url && (profile.avatar_url.includes('supabase.co') || profile.avatar_url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) ? (
+                    <Image src={profile.avatar_url} alt={profile.full_name} fill className="object-cover" unoptimized={!profile.avatar_url.includes('supabase.co')} />
+                ) : (
+                    <span className="relative z-10">{profile.full_name?.charAt(0)}</span>
+                )}
               </div>
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-3xl md:text-4xl font-black tracking-tight">{profile.full_name}</h1>
+              <div className="flex-1 space-y-2 mb-2">
+                <div className="flex flex-col md:flex-row md:items-center gap-3">
+                  <h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground drop-shadow-sm">{profile.full_name}</h1>
                   {profile.role === 'admin' && (
-                    <Badge variant="default" className="uppercase font-bold tracking-widest text-[10px]">Admin</Badge>
+                    <Badge variant="default" className="w-fit mx-auto md:mx-0 uppercase font-black tracking-[0.2em] text-[10px] bg-primary text-primary-foreground px-3 py-1 rounded-full">Admin</Badge>
                   )}
                 </div>
-                <p className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <Mail size={14} /> {profile.id}
+                <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2 text-base font-medium">
+                  <Mail size={16} className="text-primary" /> {profile.email || 'Email chưa cập nhật'}
                 </p>
               </div>
-              <div className="w-full md:w-auto flex gap-3 pt-4 md:pt-0">
+              <div className="flex items-center gap-3 pt-4 md:pt-0">
+                <EditProfileDialog profile={profile} />
                 <form action={logout}>
-                  <Button variant="outline" className="w-full md:w-auto font-bold uppercase tracking-widest text-xs gap-2">
-                    <LogOut size={14} /> Đăng xuất
+                  <Button variant="ghost" className="h-10 w-10 p-0 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                    <LogOut size={20} />
                   </Button>
                 </form>
               </div>
@@ -70,140 +84,242 @@ export default async function ProfilePage() {
           </div>
 
           <Tabs defaultValue="general" className="w-full">
-            <div className="overflow-x-auto pb-2 scrollbar-hide mb-8">
-              <TabsList className="grid w-[600px] grid-cols-3 bg-background border shadow-sm rounded-2xl p-1">
-                <TabsTrigger value="general" className="rounded-xl font-bold uppercase tracking-widest text-[10px] md:text-xs py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary group-data-[variant=default]/tabs-list:data-active:shadow-none">Thông tin chung</TabsTrigger>
-                <TabsTrigger value="orders" className="rounded-xl font-bold uppercase tracking-widest text-[10px] md:text-xs py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary group-data-[variant=default]/tabs-list:data-active:shadow-none">Đơn hàng</TabsTrigger>
-                <TabsTrigger value="photype" className="rounded-xl font-bold uppercase tracking-widest text-[10px] md:text-xs py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary group-data-[variant=default]/tabs-list:data-active:shadow-none">Pho Type</TabsTrigger>
+            <div className="flex justify-center mb-10 overflow-x-auto pb-2 scrollbar-hide">
+              <TabsList className="flex h-auto gap-2 md:gap-4 bg-transparent p-0 w-full md:w-auto justify-between md:justify-center">
+                {[
+                    { value: 'general', label: 'Hồ sơ', icon: User },
+                    { value: 'orders', label: 'Đơn hàng', icon: ShoppingBag },
+                    { value: 'wishlist', label: 'Yêu thích', icon: Heart },
+                    { value: 'photype', label: 'Pho Type', icon: Keyboard },
+                    { value: 'security', label: 'Bảo mật', icon: ShieldCheck },
+                ].map((tab) => (
+                    <TabsTrigger 
+                        key={tab.value}
+                        value={tab.value} 
+                        className="rounded-2xl font-bold uppercase tracking-widest text-[9px] md:text-[10px] w-[65px] md:w-[100px] h-[65px] md:h-[80px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-background border shadow-sm transition-all hover:bg-muted active:scale-95 flex flex-col items-center justify-center gap-1.5 shrink-0"
+                    >
+                        <tab.icon size={20} className="md:w-6 md:h-6" /> 
+                        <span className="text-center leading-tight">{tab.label}</span>
+                    </TabsTrigger>
+                ))}
               </TabsList>
             </div>
 
             {/* TAB: THÔNG TIN CHUNG */}
-            <TabsContent value="general" className="space-y-6 focus-visible:outline-none">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="border-none shadow-md rounded-3xl overflow-hidden bg-background/60 backdrop-blur-xl">
-                  <CardHeader className="bg-primary/5 border-b border-primary/10 pb-4">
-                    <CardTitle className="text-lg font-bold flex items-center gap-2">
-                      <ShieldCheck className="text-primary" size={20} /> Bảo mật & Tài khoản
+            <TabsContent value="general" className="space-y-8 focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <Card className="lg:col-span-2 border-none shadow-xl rounded-[2rem] overflow-hidden bg-background">
+                  <CardHeader className="bg-primary/5 border-b border-primary/10 py-8 px-10">
+                    <CardTitle className="text-2xl font-black flex items-center gap-3 uppercase tracking-tight">
+                      <Fingerprint className="text-primary" size={28} /> Thông tin cá nhân
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6 pt-6">
-                    <div className="flex items-center justify-between border-b pb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-muted rounded-xl"><User className="h-5 w-5 text-muted-foreground" /></div>
-                        <div>
-                          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Họ và tên</p>
-                          <p className="font-semibold">{profile.full_name}</p>
+                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="space-y-8">
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground uppercase font-black tracking-[0.2em]">Họ và tên</p>
+                          <p className="text-xl font-bold border-b pb-2">{profile.full_name}</p>
                         </div>
-                      </div>
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground uppercase font-black tracking-[0.2em]">Email liên kết</p>
+                          <p className="text-xl font-bold border-b pb-2">{profile.email}</p>
+                        </div>
                     </div>
-                    <div className="flex items-center justify-between border-b pb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-muted rounded-xl"><Calendar className="h-5 w-5 text-muted-foreground" /></div>
-                        <div>
-                          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Ngày tham gia</p>
-                          <p className="font-semibold">{new Date(profile.created_at).toLocaleDateString('vi-VN')}</p>
+                    <div className="space-y-8">
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground uppercase font-black tracking-[0.2em]">Ngày gia nhập</p>
+                          <p className="text-xl font-bold border-b pb-2">{new Date(profile.created_at).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                         </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-muted rounded-xl"><Award className="h-5 w-5 text-muted-foreground" /></div>
-                        <div>
-                          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Hạng thành viên</p>
-                          <p className="font-semibold text-primary">Pho Member</p>
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground uppercase font-black tracking-[0.2em]">Hạng thành viên</p>
+                          <div className="flex items-center gap-2 text-xl font-bold text-primary">
+                             <Award size={24} /> Pho Platinum
+                          </div>
                         </div>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-md rounded-3xl overflow-hidden bg-background/60 backdrop-blur-xl flex flex-col justify-center items-center text-center p-8">
-                  <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-                    <Package className="h-10 w-10 text-primary" />
-                  </div>
-                  <h3 className="text-2xl font-black mb-2">{orders?.length || 0}</h3>
-                  <p className="text-muted-foreground font-medium mb-6">Đơn hàng đã đặt</p>
-                  <Link href="/products" className={buttonVariants({ variant: "outline", className: "rounded-xl font-bold uppercase tracking-widest text-xs" })}>
-                    Tiếp tục mua sắm
-                  </Link>
-                </Card>
+                <div className="space-y-8">
+                    <Card className="border-none shadow-xl rounded-[2rem] overflow-hidden bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-8 relative">
+                      <div className="relative z-10 flex flex-col items-center text-center">
+                        <div className="h-20 w-20 bg-white/20 backdrop-blur-md rounded-[1.5rem] flex items-center justify-center mb-6 shadow-inner">
+                            <ShoppingBag className="h-10 w-10" />
+                        </div>
+                        <h3 className="text-4xl font-black mb-2">{orders?.length || 0}</h3>
+                        <p className="text-primary-foreground/80 font-bold uppercase tracking-widest text-xs mb-8">Đơn hàng đã đặt</p>
+                        <Link href="/products" className="w-full bg-white text-primary h-14 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center hover:bg-primary-foreground transition-colors shadow-lg shadow-black/10">
+                            Tiếp tục mua sắm
+                        </Link>
+                      </div>
+                      <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <ShoppingBag size={120} />
+                      </div>
+                    </Card>
+
+                    <Card className="border-none shadow-xl rounded-[2rem] overflow-hidden bg-background p-8 flex flex-col items-center text-center group hover:bg-primary/5 transition-colors cursor-pointer border border-transparent hover:border-primary/10">
+                        <div className="h-16 w-16 bg-muted rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <Activity className="h-8 w-8 text-primary" />
+                        </div>
+                        <p className="text-xs text-muted-foreground font-black uppercase tracking-[0.2em] mb-1">Cấp độ</p>
+                        <p className="text-2xl font-black italic">LEVEL 42</p>
+                    </Card>
+                </div>
               </div>
             </TabsContent>
 
-            {/* TAB: ĐƠN HÀNG */}
-            <TabsContent value="orders" className="focus-visible:outline-none">
-              <Card className="border-none shadow-md rounded-3xl overflow-hidden bg-background">
-                <CardHeader className="bg-muted/30 border-b pb-6">
-                  <CardTitle className="text-xl font-bold flex items-center gap-2">
-                    <Package className="text-primary" /> Lịch sử đơn hàng
+            {/* TAB: BẢO MẬT */}
+            <TabsContent value="security" className="space-y-8 focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Card className="border-none shadow-xl rounded-[2rem] overflow-hidden bg-background">
+                <CardHeader className="bg-muted/30 border-b py-8 px-10">
+                  <CardTitle className="text-2xl font-black flex items-center gap-3 uppercase tracking-tight">
+                    <ShieldCheck className="text-primary" size={28} /> Bảo vệ tài khoản
                   </CardTitle>
-                  <CardDescription>Theo dõi và quản lý các đơn hàng bạn đã đặt mua.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-10 space-y-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="space-y-6">
+                      <div className="p-8 border-2 border-primary/10 rounded-[2rem] bg-primary/5 relative overflow-hidden group">
+                        <div className="flex items-center justify-between mb-4 relative z-10">
+                          <h4 className="font-black text-xl flex items-center gap-3">
+                            <Zap className="text-orange-500" size={24} /> Xác thực 2FA
+                          </h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-8 relative z-10 font-medium">
+                          Tăng cường bảo mật bằng mã xác thực 6 chữ số từ ứng dụng điện thoại mỗi khi đăng nhập.
+                        </p>
+                        <div className="relative z-10">
+                           <MfaSetup />
+                        </div>
+                        <ShieldCheck className="absolute -bottom-6 -right-6 text-primary/5 h-32 w-32 group-hover:scale-110 transition-transform" />
+                      </div>
+
+                      <div className="p-8 border-2 border-muted rounded-[2rem] hover:border-primary/20 transition-colors">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-black text-xl">Mật khẩu</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-8 font-medium">
+                          Thay đổi mật khẩu định kỳ để giữ cho tài khoản của bạn luôn an toàn trước các rủi ro.
+                        </p>
+                        <ChangePasswordDialog />
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <Card className="bg-muted/20 border-none rounded-[2rem] p-8">
+                        <CardContent className="p-0 space-y-6">
+                          <h5 className="font-black text-lg uppercase tracking-tight mb-4 flex items-center gap-2">
+                             Lợi ích bảo mật
+                          </h5>
+                          <div className="space-y-6">
+                            {[
+                                { title: 'Chống xâm nhập', desc: 'Ngăn chặn 99.9% các cuộc tấn công chiếm quyền.', icon: ShieldCheck },
+                                { title: 'An toàn giao dịch', desc: 'Bảo vệ thông tin thanh toán và địa chỉ giao hàng.', icon: ShoppingBag },
+                                { title: 'Quyền riêng tư', desc: 'Đảm bảo dữ liệu cá nhân chỉ mình bạn truy cập.', icon: User },
+                            ].map((item, i) => (
+                                <div key={i} className="flex gap-4">
+                                    <div className="h-10 w-10 bg-background rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                                        <item.icon className="text-primary" size={20} />
+                                    </div>
+                                    <div>
+                                        <p className="font-black text-sm uppercase tracking-wider">{item.title}</p>
+                                        <p className="text-xs text-muted-foreground font-medium mt-1">{item.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* TAB: YÊU THÍCH */}
+            <TabsContent value="wishlist" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+               <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
+                        <Heart className="text-primary fill-primary" /> Sản phẩm yêu thích
+                    </h2>
+               </div>
+               <WishlistTab />
+            </TabsContent>
+
+            {/* TAB: ĐƠN HÀNG */}
+            <TabsContent value="orders" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background">
+                <CardHeader className="bg-muted/30 border-b py-8 px-10">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <CardTitle className="text-2xl font-black flex items-center gap-3 uppercase tracking-tight">
+                            <ShoppingBag className="text-primary" /> Lịch sử mua sắm
+                        </CardTitle>
+                        <CardDescription className="text-base font-medium mt-1">Tổng cộng {orders?.length || 0} giao dịch đã thực hiện.</CardDescription>
+                    </div>
+                    <Link href="/products" className={buttonVariants({ variant: "outline", className: "rounded-2xl font-black uppercase tracking-widest text-[10px] h-12" })}>
+                        Mua sắm thêm
+                    </Link>
+                  </div>
                 </CardHeader>
                 <CardContent className="p-0">
                   {orders && orders.length > 0 ? (
-                    <div className="divide-y">
+                    <div className="divide-y divide-muted/50">
                       {orders.map((order: any) => (
-                        <div key={order.id} className="p-6 hover:bg-muted/20 transition-colors">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                            <div>
-                              <p className="font-bold text-lg">Mã đơn: <span className="font-mono text-primary">#{order.id.split('-')[0]}</span></p>
-                              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                                <Clock size={14} /> {new Date(order.created_at).toLocaleString('vi-VN')}
-                              </p>
+                        <div key={order.id} className="p-8 md:p-12 hover:bg-primary/[0.02] transition-colors">
+                          <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-10">
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-3">
+                                <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Đơn hàng</Badge>
+                                <p className="font-mono text-xl font-bold tracking-tighter">#{order.id.split('-')[0].toUpperCase()}</p>
+                              </div>
+                              <div className="flex flex-wrap gap-6 text-sm text-muted-foreground font-medium">
+                                <p className="flex items-center gap-2"><Clock size={16} className="text-primary" /> {new Date(order.created_at).toLocaleString('vi-VN')}</p>
+                                <p className="flex items-center gap-2"><MapPin size={16} className="text-primary" /> {order.shipping_address}</p>
+                              </div>
                             </div>
-                            <div className="flex flex-col md:items-end gap-2">
-                              <Badge variant={order.status === 'completed' ? 'default' : order.status === 'cancelled' ? 'destructive' : 'secondary'} className="w-fit uppercase font-bold tracking-widest text-[10px] px-3 py-1">
+                            <div className="flex flex-col md:items-end gap-3">
+                              <Badge variant={order.status === 'completed' ? 'default' : order.status === 'cancelled' ? 'destructive' : 'secondary'} className="w-fit uppercase font-black tracking-[0.2em] text-[10px] px-4 py-2 rounded-xl shadow-sm">
                                 {order.status === 'pending' ? 'Đang xử lý' : order.status === 'processing' ? 'Đang giao' : order.status === 'completed' ? 'Hoàn thành' : 'Đã hủy'}
                               </Badge>
-                              <p className="text-xl font-black text-primary">{order.total_amount.toLocaleString('vi-VN')}đ</p>
+                              <p className="text-3xl font-black text-primary tracking-tight">{order.total_amount.toLocaleString('vi-VN')}đ</p>
                             </div>
                           </div>
                           
-                          <div className="bg-muted/30 rounded-2xl p-4 space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {order.order_items.map((item: any) => (
-                              <div key={item.id} className="flex items-center gap-4">
-                                <div className="h-16 w-16 bg-background rounded-xl overflow-hidden flex-shrink-0 border relative">
-                                  {item.products?.images?.[0] ? (
-                                    <Image src={item.products.images[0]} alt={item.products.name} fill className="object-cover" />
+                              <div key={item.id} className="flex items-center gap-5 p-4 bg-muted/30 rounded-3xl border border-transparent hover:border-primary/10 transition-colors">
+                                <div className="h-20 w-20 bg-background rounded-2xl overflow-hidden flex-shrink-0 border-2 border-white shadow-sm relative">
+                                {item.products?.images_url?.[0] ? (
+                                    <Image src={item.products.images_url[0]} alt={item.products.name} fill className="object-cover" />
                                   ) : (
                                     <div className="w-full h-full flex items-center justify-center"><Package className="text-muted-foreground opacity-20" /></div>
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <Link href={`/products/${item.product_id}`} className="font-bold text-sm md:text-base hover:text-primary transition-colors line-clamp-1">
-                                    {item.products?.name || 'Sản phẩm không tồn tại'}
+                                  <Link href={`/products/${item.product_id}`} className="font-bold text-sm hover:text-primary transition-colors line-clamp-2 leading-tight">
+                                    {item.products?.name}
                                   </Link>
-                                  <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2 flex items-center gap-3">
                                     <span>SL: {item.quantity}</span>
-                                    <span>Đơn giá: {item.price_at_time.toLocaleString('vi-VN')}đ</span>
+                                    <span className="h-1 w-1 bg-muted-foreground rounded-full"></span>
+                                    <span className="text-primary">{item.price_at_time.toLocaleString('vi-VN')}đ</span>
                                   </div>
                                 </div>
                               </div>
                             ))}
                           </div>
-                          
-                          <div className="mt-4 flex flex-col md:flex-row gap-4 md:items-center text-sm text-muted-foreground bg-primary/5 rounded-xl p-4 border border-primary/10">
-                            <div className="flex items-start gap-2">
-                              <MapPin size={16} className="mt-0.5 flex-shrink-0 text-primary" />
-                              <span><strong className="text-foreground">Giao đến:</strong> {order.shipping_address}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Phone size={16} className="flex-shrink-0 text-primary" />
-                              <span><strong className="text-foreground">SĐT:</strong> {order.phone_number}</span>
-                            </div>
-                          </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="py-20 text-center flex flex-col items-center">
-                      <div className="h-24 w-24 bg-muted rounded-full flex items-center justify-center mb-4">
-                        <Package className="h-10 w-10 text-muted-foreground opacity-50" />
+                    <div className="py-24 text-center flex flex-col items-center">
+                      <div className="h-32 w-32 bg-muted rounded-[2rem] flex items-center justify-center mb-6">
+                        <ShoppingBag className="h-14 w-14 text-muted-foreground opacity-30" />
                       </div>
-                      <p className="text-lg font-bold mb-2">Chưa có đơn hàng nào</p>
-                      <p className="text-muted-foreground mb-6 max-w-sm">Bạn chưa thực hiện giao dịch nào trên PhoGear. Khám phá các sản phẩm tuyệt vời ngay hôm nay!</p>
-                      <Link href="/products" className={buttonVariants({ className: "rounded-xl font-bold uppercase tracking-widest text-xs h-12 px-8" })}>
+                      <p className="text-2xl font-black mb-2 uppercase tracking-tight">Trống trải quá!</p>
+                      <p className="text-muted-foreground mb-8 max-w-sm font-medium px-6">Bạn chưa thực hiện giao dịch nào. Hãy bắt đầu hành trình mua sắm bàn phím cơ ngay bây giờ.</p>
+                      <Link href="/products" className={buttonVariants({ className: "rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-[10px] h-14 px-10 shadow-xl shadow-primary/20" })}>
                         Mua sắm ngay
                       </Link>
                     </div>
@@ -213,87 +329,81 @@ export default async function ProfilePage() {
             </TabsContent>
 
             {/* TAB: PHO TYPE */}
-            <TabsContent value="photype" className="space-y-6 focus-visible:outline-none">
+            <TabsContent value="photype" className="space-y-8 focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* Thống kê tổng quan */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="border-none shadow-sm rounded-2xl bg-background">
-                  <CardContent className="p-6 text-center">
-                    <div className="mx-auto h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-3">
-                      <Activity size={24} />
-                    </div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Tổng lượt gõ</p>
-                    <p className="text-2xl font-black">{totalRaces}</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-none shadow-sm rounded-2xl bg-background">
-                  <CardContent className="p-6 text-center">
-                    <div className="mx-auto h-12 w-12 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 mb-3">
-                      <Zap size={24} />
-                    </div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">WPM Cao nhất</p>
-                    <p className="text-2xl font-black">{bestWpm}</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-none shadow-sm rounded-2xl bg-background">
-                  <CardContent className="p-6 text-center">
-                    <div className="mx-auto h-12 w-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 mb-3">
-                      <ShieldCheck size={24} />
-                    </div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Độ chính xác TB</p>
-                    <p className="text-2xl font-black">{avgAccuracy}%</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-none shadow-sm rounded-2xl bg-background">
-                  <CardContent className="p-6 text-center flex flex-col justify-center h-full">
-                    <Link href="/photype" className={buttonVariants({ variant: "default", className: "w-full h-full min-h-[80px] rounded-xl font-bold uppercase tracking-widest text-xs flex flex-col gap-2" })}>
-                      <Keyboard size={24} />
-                      Luyện tập ngay
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                    { label: 'Tổng lượt gõ', value: totalRaces, icon: Activity, color: 'text-primary', bg: 'bg-primary/10' },
+                    { label: 'WPM Cao nhất', value: bestWpm, icon: Zap, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+                    { label: 'Độ chính xác TB', value: `${avgAccuracy}%`, icon: ShieldCheck, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                ].map((stat, i) => (
+                    <Card key={i} className="border-none shadow-xl rounded-3xl bg-background overflow-hidden relative group">
+                        <CardContent className="p-8 text-center relative z-10">
+                            <div className={`mx-auto h-16 w-16 ${stat.bg} rounded-2xl flex items-center justify-center ${stat.color} mb-4 group-hover:scale-110 transition-transform duration-500 shadow-inner`}>
+                                <stat.icon size={32} />
+                            </div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">{stat.label}</p>
+                            <p className="text-4xl font-black tracking-tight">{stat.value}</p>
+                        </CardContent>
+                        <div className={`absolute top-0 right-0 p-2 opacity-5 ${stat.color}`}>
+                            <stat.icon size={80} />
+                        </div>
+                    </Card>
+                ))}
+                <Card className="border-none shadow-xl rounded-3xl bg-primary text-primary-foreground overflow-hidden group">
+                  <CardContent className="p-0 h-full">
+                    <Link href="/photype" className="w-full h-full flex flex-col items-center justify-center p-8 gap-3 group-hover:bg-primary/90 transition-colors">
+                      <Keyboard size={40} className="group-hover:animate-bounce" />
+                      <p className="font-black uppercase tracking-[0.2em] text-xs">Luyện tập ngay</p>
                     </Link>
                   </CardContent>
                 </Card>
               </div>
 
               {/* Lịch sử */}
-              <Card className="border-none shadow-md rounded-3xl overflow-hidden bg-background">
-                <CardHeader className="border-b pb-6">
-                  <CardTitle className="text-xl font-bold flex items-center gap-2">
-                    <Award className="text-primary" /> Lịch sử gõ phím gần đây
+              <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background">
+                <CardHeader className="border-b py-8 px-10">
+                  <CardTitle className="text-2xl font-black flex items-center gap-3 uppercase tracking-tight">
+                    <Award className="text-primary" /> Bảng vàng thành tích
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   {scores && scores.length > 0 ? (
-                    <div className="divide-y">
+                    <div className="divide-y divide-muted/50">
                       {scores.map((score) => (
-                        <div key={score.id} className="p-4 md:p-6 flex items-center justify-between hover:bg-muted/20 transition-colors">
-                          <div className="flex items-center gap-4 md:gap-8">
-                            <div className="text-center w-16">
-                              <p className="text-2xl md:text-3xl font-black text-primary leading-none">{score.wpm}</p>
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground mt-1 tracking-widest">WPM</p>
+                        <div key={score.id} className="p-6 md:p-8 flex items-center justify-between hover:bg-primary/[0.02] transition-colors">
+                          <div className="flex items-center gap-6 md:gap-12">
+                            <div className="text-center min-w-[80px]">
+                              <p className="text-4xl md:text-5xl font-black text-primary leading-none tracking-tighter">{score.wpm}</p>
+                              <p className="text-[10px] uppercase font-black text-muted-foreground mt-2 tracking-[0.2em]">WPM</p>
                             </div>
-                            <div className="text-center w-16 border-l pl-4 md:pl-8">
-                              <p className="text-xl md:text-2xl font-bold leading-none">{score.accuracy}%</p>
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground mt-1 tracking-widest">Chính xác</p>
+                            <div className="text-center min-w-[80px] border-l-2 border-muted pl-6 md:pl-12">
+                              <p className="text-2xl md:text-3xl font-black leading-none tracking-tight">{score.accuracy}%</p>
+                              <p className="text-[10px] uppercase font-black text-muted-foreground mt-2 tracking-[0.2em]">Chính xác</p>
                             </div>
-                            <div className="hidden md:block pl-8 border-l">
-                              <Badge variant="outline" className="font-mono text-[10px]">{score.mode || 'time_vi'}</Badge>
+                            <div className="hidden lg:block pl-12 border-l-2 border-muted">
+                              <Badge variant="outline" className="font-mono text-[10px] uppercase font-black tracking-widest px-4 py-1.5 rounded-xl bg-muted/50 border-none">{score.mode?.replace('_', ' ') || 'TIME VI'}</Badge>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold text-sm md:text-base text-primary uppercase tracking-wider">{score.rank_name}</p>
-                            <p className="text-xs text-muted-foreground mt-1 flex items-center justify-end gap-1">
-                              <Clock size={12} /> {new Date(score.created_at).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })}
+                            <p className="font-black text-lg md:text-xl text-primary uppercase tracking-tighter italic">{score.rank_name || 'NOVICE'}</p>
+                            <p className="text-[10px] text-muted-foreground mt-2 font-black uppercase tracking-widest flex items-center justify-end gap-2">
+                              <Clock size={12} className="text-primary" /> {new Date(score.created_at).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })}
                             </p>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="py-20 text-center flex flex-col items-center">
-                      <div className="h-24 w-24 bg-muted rounded-full flex items-center justify-center mb-4">
-                        <Keyboard className="h-10 w-10 text-muted-foreground opacity-50" />
+                    <div className="py-24 text-center flex flex-col items-center">
+                      <div className="h-32 w-32 bg-muted rounded-[2rem] flex items-center justify-center mb-6">
+                        <Keyboard className="h-14 w-14 text-muted-foreground opacity-30" />
                       </div>
-                      <p className="text-lg font-bold mb-2">Chưa có dữ liệu</p>
-                      <p className="text-muted-foreground mb-6">Tham gia Pho Type để kiểm tra tốc độ gõ phím của bạn và leo rank!</p>
+                      <p className="text-2xl font-black mb-2 uppercase tracking-tight">Chưa có kỷ lục!</p>
+                      <p className="text-muted-foreground mb-8 max-w-sm font-medium px-6">Hãy tham gia Pho Type để khẳng định tốc độ ngón tay của bạn và leo lên bảng xếp hạng.</p>
+                      <Link href="/photype" className={buttonVariants({ className: "rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-[10px] h-14 px-10 shadow-xl shadow-primary/20" })}>
+                         Bắt đầu ngay
+                      </Link>
                     </div>
                   )}
                 </CardContent>
@@ -307,3 +417,4 @@ export default async function ProfilePage() {
     </div>
   )
 }
+

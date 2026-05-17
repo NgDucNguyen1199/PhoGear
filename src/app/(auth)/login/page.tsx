@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { login } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +14,7 @@ import { Logo } from '@/components/ui/Logo'
 import { motion } from 'framer-motion'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -20,9 +22,17 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       const result = await login(formData)
+      if (result?.requiresMfa) {
+        router.push(`/login/mfa?factorId=${result.factorId}`)
+        return
+      }
+      
       if (result?.error) {
         toast.error(result.error)
         setIsLoading(false)
+      } else if (result?.success) {
+        router.push('/')
+        router.refresh()
       }
     } catch (error) {
       toast.error('Đã có lỗi xảy ra. Vui lòng thử lại sau.')
