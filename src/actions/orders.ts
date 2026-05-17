@@ -80,13 +80,21 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
   return { success: 'Đặt hàng thành công!', orderId: order.id }
 }
 
-export async function getUserOrders() {
+export async function getUserOrders(options: {
+  query?: string,
+  status?: string,
+  minPrice?: number,
+  maxPrice?: number,
+  startDate?: string,
+  endDate?: string,
+  sort?: string
+} = {}) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  const { data, error } = await supabase
+  let dbQuery = supabase
     .from('orders')
     .select(`
       *,
@@ -96,11 +104,55 @@ export async function getUserOrders() {
       )
     `)
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+
+  // 1. Filter by Status
+  if (options.status && options.status !== 'all') {
+    dbQuery = dbQuery.eq('status', options.status)
+  }
+
+  // 2. Filter by Price Range
+  if (options.minPrice !== undefined) {
+    dbQuery = dbQuery.gte('total_amount', options.minPrice)
+  }
+  if (options.maxPrice !== undefined) {
+    dbQuery = dbQuery.lte('total_amount', options.maxPrice)
+  }
+
+  // 3. Filter by Date Range
+  if (options.startDate) {
+    dbQuery = dbQuery.gte('created_at', options.startDate)
+  }
+  if (options.endDate) {
+    dbQuery = dbQuery.lte('created_at', options.endDate)
+  }
+
+  // 4. Sorting
+  const [column, direction] = (options.sort || 'created_at-desc').split('-')
+  dbQuery = dbQuery.order(column === 'price' ? 'total_amount' : column, { 
+    ascending: direction === 'asc' 
+  })
+
+  const { data, error } = await dbQuery
 
   if (error) {
     console.error('Error fetching orders:', error)
     return []
+  }
+
+  // 5. Client-side Search (for nested product names or specific fields)
+  if (options.query) {
+    const q = options.query.toLowerCase()
+    return data.filter(order => {
+      const matchesId = order.id.toLowerCase().includes(q)
+      const matchesAddress = order.shipping_address.toLowerCase().includes(q)
+      const matchesPhone = order.phone_number.toLowerCase().includes(q)
+      const matchesAmount = order.total_amount.toString().includes(q)
+      const matchesProducts = order.order_items.some((item: any) => 
+        item.products?.name.toLowerCase().includes(q)
+      )
+      
+      return matchesId || matchesAddress || matchesPhone || matchesAmount || matchesProducts
+    })
   }
 
   return data
