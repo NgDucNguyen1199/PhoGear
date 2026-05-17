@@ -51,9 +51,9 @@ const settingsFormSchema = z.object({
   contactEmail: z.string().email("Email không hợp lệ"),
   currency: z.string().min(1, "Vui lòng nhập tiền tệ"),
   language: z.string().min(1, "Vui lòng nhập ngôn ngữ"),
-  orderNotifications: z.boolean().default(true),
-  weeklyReports: z.boolean().default(false),
-  twoFactorAuth: z.boolean().default(false),
+  orderNotifications: z.boolean(),
+  weeklyReports: z.boolean(),
+  twoFactorAuth: z.boolean(),
 })
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>
