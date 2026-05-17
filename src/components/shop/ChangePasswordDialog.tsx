@@ -56,7 +56,7 @@ export function ChangePasswordDialog() {
         <form onSubmit={handleSubmit}>
           <div className="grid gap-6 py-6">
             <div className="grid gap-2">
-              <Label htmlFor="password" class="text-xs font-bold uppercase tracking-widest ml-1">Mật khẩu mới</Label>
+              <Label htmlFor="password" className="text-xs font-bold uppercase tracking-widest ml-1">Mật khẩu mới</Label>
               <Input
                 id="password"
                 name="password"
@@ -66,7 +66,7 @@ export function ChangePasswordDialog() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="confirmPassword" class="text-xs font-bold uppercase tracking-widest ml-1">Xác nhận mật khẩu</Label>
+              <Label htmlFor="confirmPassword" className="text-xs font-bold uppercase tracking-widest ml-1">Xác nhận mật khẩu</Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
