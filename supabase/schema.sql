@@ -35,6 +35,10 @@ CREATE TABLE public.products (
     layout TEXT, -- 60%, 75%, TKL, Fullsize
     connectivity TEXT, -- Wired, Bluetooth, 2.4G
     average_rating NUMERIC DEFAULT 0,
+    is_flash_sale BOOLEAN DEFAULT false,
+    flash_sale_price NUMERIC CHECK (flash_sale_price >= 0),
+    flash_sale_stock INTEGER DEFAULT 0 CHECK (flash_sale_stock >= 0),
+    flash_sale_sold INTEGER DEFAULT 0 CHECK (flash_sale_sold >= 0),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

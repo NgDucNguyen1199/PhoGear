@@ -60,9 +60,15 @@ export function ProductCard({ product }: { product: Product }) {
           
           {/* Quick View Overlay */}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center pointer-events-none">
-            <div className="bg-background text-foreground px-6 py-2.5 rounded-full text-xs font-black flex items-center gap-2 transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500 shadow-xl border border-white/10">
-              <Eye className="h-4 w-4" /> XEM CHI TIẾT
-            </div>
+            {product.stock_quantity === 0 ? (
+              <div className="bg-destructive text-destructive-foreground px-6 py-2.5 rounded-full text-xs font-black flex items-center gap-2 transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500 shadow-xl border border-white/10">
+                ĐÃ HẾT HÀNG
+              </div>
+            ) : (
+              <div className="bg-background text-foreground px-6 py-2.5 rounded-full text-xs font-black flex items-center gap-2 transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500 shadow-xl border border-white/10">
+                <Eye className="h-4 w-4" /> XEM CHI TIẾT
+              </div>
+            )}
           </div>
 
           {product.stock_quantity === 0 && (
@@ -89,9 +95,22 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
 
           <div className="pt-2">
-            <p className="text-xl font-black text-foreground drop-shadow-sm tracking-tighter">
-              {formattedPrice}
-            </p>
+            {product.is_sale && product.sale_price ? (
+              <div className="space-y-1">
+                <div className="flex items-baseline gap-2">
+                    <p className="text-xl font-black text-primary drop-shadow-sm tracking-tighter">
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.sale_price)}
+                    </p>
+                    <p className="text-xs font-bold text-muted-foreground line-through opacity-50">
+                        {formattedPrice}
+                    </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xl font-black text-foreground drop-shadow-sm tracking-tighter">
+                {formattedPrice}
+              </p>
+            )}
             <p className="text-[9px] font-bold text-muted-foreground uppercase mt-1 opacity-50">
                Click để xem các tùy chọn màu sắc
             </p>

@@ -29,6 +29,9 @@ export type Product = {
   brand: string | null
   description: string | null
   price: number
+  sale_price?: number
+  is_sale?: boolean
+  sale_percent?: number
   stock_quantity: number
   images_url: string[]
   category_id: string | null

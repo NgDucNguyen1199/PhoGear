@@ -125,6 +125,23 @@ export async function getRelatedProducts(productId: string, categoryId: string |
   return data as Product[]
 }
 
+export async function getFlashSaleProducts() {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, categories(*)')
+    .eq('is_flash_sale', true)
+    .order('updated_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching flash sale products:', error)
+    return []
+  }
+
+  return data as Product[]
+}
+
 export async function getCategories() {
   const supabase = await createClient()
 
