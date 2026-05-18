@@ -2,6 +2,7 @@
 
 import { getProducts, getCategories, getFlashSaleProducts } from '@/actions/products'
 import { getProfile } from '@/actions/auth'
+import { getSystemSettings } from '@/actions/admin_settings'
 import { Navbar } from '@/components/layout/Navbar'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { HeroCarousel } from '@/components/home/HeroCarousel'
@@ -27,15 +28,17 @@ export default function HomePage() {
   const [bestSellers, setBestSellers] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [profile, setProfile] = useState<any>(null)
+  const [settings, setSettings] = useState<any>(null)
 
   useEffect(() => {
     const fetchData = async () => {
-      const [heroData, allProducts, flashData, categoriesData, profileData] = await Promise.all([
+      const [heroData, allProducts, flashData, categoriesData, profileData, settingsData] = await Promise.all([
         getProducts(5),
         getProducts(16),
         getFlashSaleProducts(),
         getCategories(),
-        getProfile()
+        getProfile(),
+        getSystemSettings()
       ])
       
       setHeroProducts(heroData || [])
@@ -44,6 +47,7 @@ export default function HomePage() {
       setBestSellers(allProducts?.slice(8, 12) || [])
       setCategories(categoriesData || [])
       setProfile(profileData)
+      setSettings(settingsData)
     }
     fetchData()
   }, [])
@@ -68,7 +72,12 @@ export default function HomePage() {
       </section>
 
       {/* Flash Sale Section */}
-      <FlashSaleSection products={flashSaleProducts} />
+      {settings?.flash_sale_enabled && flashSaleProducts.length > 0 && (
+        <FlashSaleSection 
+          products={flashSaleProducts} 
+          endTime={settings.flash_sale_end_time}
+        />
+      )}
 
       {/* Category Grid Section */}
       <CategoryGrid />

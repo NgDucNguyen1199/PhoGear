@@ -147,6 +147,8 @@ CREATE TABLE public.system_settings (
     order_notifications BOOLEAN DEFAULT true,
     weekly_reports BOOLEAN DEFAULT false,
     two_factor_auth BOOLEAN DEFAULT false,
+    flash_sale_enabled BOOLEAN DEFAULT false,
+    flash_sale_end_time TIMESTAMPTZ,
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 

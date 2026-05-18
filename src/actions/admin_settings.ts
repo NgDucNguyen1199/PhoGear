@@ -75,6 +75,8 @@ export async function updateSystemSettings(formData: FormData) {
     order_notifications: formData.get('orderNotifications') === 'on',
     weekly_reports: formData.get('weeklyReports') === 'on',
     two_factor_auth: formData.get('twoFactorAuth') === 'on',
+    flash_sale_enabled: formData.get('flashSaleEnabled') === 'on',
+    flash_sale_end_time: formData.get('flashSaleEndTime') ? new Date(formData.get('flashSaleEndTime') as string).toISOString() : null,
     updated_at: new Date().toISOString()
   }
 

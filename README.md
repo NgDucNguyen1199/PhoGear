@@ -40,18 +40,18 @@ Hệ thống được xây dựng trên mô hình kiến trúc **Modern Web Stac
 ## ✨ 2. Các Module Chức năng Cốt lõi
 
 ### 🛒 2.1 Module Thương mại điện tử (E-commerce Core)
-- **Quản lý Sản phẩm Biến thể:** Hệ thống Product-Variant linh hoạt cho phép tùy biến linh kiện.
-- **Bộ lọc & Tìm kiếm Nâng cao:** Tích hợp thanh trượt (Drawer) cho sản phẩm và hệ thống tìm kiếm đa năng (Search/Filter/Sort) cho lịch sử đơn hàng.
-- **Giỏ hàng & Wishlist:** Trải nghiệm mua sắm liền mạch với khả năng đồng bộ dữ liệu thời gian thực.
+- **Hệ thống Flash Sale 2.0:** Quản lý chương trình khuyến mãi giờ vàng với bộ đếm ngược thời gian thực, quản lý kho hàng sale và thanh trạng thái bán hàng động.
+- **Quản lý Sản phẩm Biến thể:** Hệ thống Product-Variant linh hoạt, hỗ trợ lưu trữ chi tiết tùy chọn (selected options) trong đơn hàng.
+- **Bộ lọc & Tìm kiếm Nâng cao:** Tích hợp thanh trượt (Drawer) cho sản phẩm và hệ thống tìm kiếm đa năng (Search/Filter/Sort).
 
 ### 🎮 2.2 Trình mô phỏng & Trắc nghiệm (User Experience)
-- **Keyboard Finder:** Công cụ trắc nghiệm thông minh tích hợp ngay tại trang chủ giúp định hướng sản phẩm cho người dùng.
-- **PhoType Engine:** Trò chơi luyện gõ phím chuyên nghiệp, phân tích tốc độ (WPM) và độ chính xác (Accuracy).
+- **Keyboard Finder 2.0:** Công cụ trắc nghiệm đa bước với minh họa layout bằng SVG trực quan và hiệu ứng âm thanh tương tác (Audio Feedback).
+- **PhoType Engine:** Trò chơi luyện gõ phím chuyên nghiệp, phân tích tốc độ (WPM) và độ chính xác (Accuracy) với biểu đồ thống kê hiệu năng.
 
-### 🛡️ 2.3 Bảo mật & Cá nhân hóa (Security & Profile)
+### 🛡️ 2.3 Quản trị & Bảo mật (Admin & Security)
+- **Admin Dashboard 2.0:** Hệ thống phân tích kinh doanh với biểu đồ doanh thu theo tháng (Recharts), theo dõi đơn hàng thời gian thực và quản lý cài đặt hệ thống tập trung.
 - **Xác thực 2 lớp (MFA):** Bảo vệ tài khoản tuyệt đối qua mã xác thực 6 số (TOTP) từ điện thoại.
-- **Profile Dashboard:** Giao diện cá nhân hóa với khả năng tải lên ảnh đại diện, đổi mật khẩu và quản lý đơn hàng chuyên sâu.
-- **Login History:** Hệ thống ghi lại lịch sử truy cập (IP, Thiết bị) phục vụ mục đích giám sát bảo mật cho quản trị viên.
+- **Lịch sử Truy cập:** Ghi lại IP và thiết bị đăng nhập phục vụ giám sát an ninh.
 
 ---
 
@@ -60,9 +60,9 @@ Hệ thống được xây dựng trên mô hình kiến trúc **Modern Web Stac
 | Công nghệ | Vai trò trong hệ thống | Ưu điểm chính |
 | :--- | :--- | :--- |
 | **TypeScript** | Ngôn ngữ phát triển | Type Safety, giảm thiểu 90% lỗi logic runtime. |
-| **Tailwind CSS** | Styling | Utility-first, giao diện Responsive mượt mà trên mọi thiết bị. |
-| **Base UI** | UI Library | Thành phần giao diện tuân thủ chuẩn Accessibility (Popover, Dialog, Sheet). |
-| **Framer Motion** | Animation | Hiệu ứng chuyển động cao cấp cho các Tab và Modal. |
+| **Tailwind CSS** | Styling | Giao diện Responsive mượt mà, tối ưu hóa tốc độ tải trang. |
+| **Recharts** | Data Visualization | Hiển thị xu hướng kinh doanh trực quan cho quản trị viên. |
+| **Framer Motion** | Animation | Hiệu ứng chuyển động cao cấp và trải nghiệm người dùng sống động. |
 
 ---
 
@@ -83,7 +83,7 @@ Hệ thống được xây dựng trên mô hình kiến trúc **Modern Web Stac
 1. **Khởi tạo:** `git clone https://github.com/NgDucNguyen1199/PhoGear.git`
 2. **Cài đặt:** `npm install`
 3. **Biến môi trường:** Cấu hình `NEXT_PUBLIC_SUPABASE_URL` và `ANON_KEY` trong `.env.local`.
-4. **Database:** Chạy script trong thư mục `/supabase` (ưu tiên `schema.sql`).
+4. **Database:** Chạy toàn bộ script trong thư mục `/supabase` trên SQL Editor của Supabase.
 5. **Chạy thử:** `npm run dev`
 
 ---

@@ -7,25 +7,43 @@ import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { Product } from '@/types'
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
-export function FlashSaleSection({ products }: { products: Product[] }) {
+export function FlashSaleSection({ products, endTime }: { products: Product[], endTime?: string }) {
   const [timeLeft, setTimeLeft] = useState({
-    hours: 2,
-    minutes: 45,
-    seconds: 30
+    hours: 0,
+    minutes: 0,
+    seconds: 0
   })
 
   useEffect(() => {
+    if (!endTime) return
+
+    const calculateTimeLeft = () => {
+      const end = new Date(endTime).getTime()
+      const now = new Date().getTime()
+      const diff = end - now
+
+      if (diff <= 0) {
+        return { hours: 0, minutes: 0, seconds: 0 }
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+      return { hours, minutes, seconds }
+    }
+
+    // Initial calculation
+    setTimeLeft(calculateTimeLeft())
+
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 }
-        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 }
-        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 }
-        return prev
-      })
+      setTimeLeft(calculateTimeLeft())
     }, 1000)
+    
     return () => clearInterval(timer)
-  }, [])
+  }, [endTime])
 
   if (!products || products.length === 0) return null
 

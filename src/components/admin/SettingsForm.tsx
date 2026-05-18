@@ -19,7 +19,9 @@ import {
   Save,
   RotateCcw,
   Loader2,
-  History
+  History,
+  Zap,
+  Timer
 } from 'lucide-react'
 import { updateSystemSettings, getLoginHistory } from '@/actions/admin_settings'
 import {
@@ -54,6 +56,8 @@ const settingsFormSchema = z.object({
   orderNotifications: z.boolean(),
   weeklyReports: z.boolean(),
   twoFactorAuth: z.boolean(),
+  flashSaleEnabled: z.boolean(),
+  flashSaleEndTime: z.string().optional().nullable(),
 })
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>
@@ -78,6 +82,8 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
       orderNotifications: initialSettings.order_notifications ?? true,
       weeklyReports: initialSettings.weekly_reports ?? false,
       twoFactorAuth: initialSettings.two_factor_auth ?? false,
+      flashSaleEnabled: initialSettings.flash_sale_enabled ?? false,
+      flashSaleEndTime: initialSettings.flash_sale_end_time ? new Date(new Date(initialSettings.flash_sale_end_time).getTime() + 7 * 60 * 60 * 1000).toISOString().slice(0, 16) : "",
     },
   })
 
@@ -101,6 +107,8 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
     if (values.orderNotifications) formData.append('orderNotifications', 'on')
     if (values.weeklyReports) formData.append('weeklyReports', 'on')
     if (values.twoFactorAuth) formData.append('twoFactorAuth', 'on')
+    if (values.flashSaleEnabled) formData.append('flashSaleEnabled', 'on')
+    if (values.flashSaleEndTime) formData.append('flashSaleEndTime', values.flashSaleEndTime)
 
     const result = await updateSystemSettings(formData)
     setIsLoading(false)
@@ -119,7 +127,59 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
-        {/* Cấu hình chung */}
+        {/* FLASH SALE CONFIGURATION */}
+        <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-background ring-2 ring-primary/20">
+          <CardHeader className="bg-primary/5 border-b pb-4">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Zap className="text-primary fill-primary" size={20} /> Cấu hình Flash Sale
+            </CardTitle>
+            <CardDescription>Bật/Tắt chương trình khuyến mãi giờ vàng trên toàn trang chủ.</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-6">
+            <FormField
+              control={form.control}
+              name="flashSaleEnabled"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between p-4 bg-muted/20 rounded-2xl border">
+                  <div>
+                    <FormLabel className="text-base font-bold">Kích hoạt Flash Sale</FormLabel>
+                    <FormDescription>Khi bật, khu vực Flash Sale sẽ xuất hiện ở trang chủ.</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="flashSaleEndTime"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Timer size={16} className="text-primary" />
+                    <FormLabel className="font-bold">Thời gian kết thúc</FormLabel>
+                  </div>
+                  <FormControl>
+                    <Input 
+                      type="datetime-local" 
+                      className="max-w-md h-12 rounded-xl"
+                      {...field} 
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Thời điểm bộ đếm ngược kết thúc. Hệ thống sẽ tự động hiển thị thời gian còn lại dựa trên mốc này.
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>        {/* Cấu hình chung */}
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-background">
           <CardHeader className="bg-muted/30 border-b pb-4">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
