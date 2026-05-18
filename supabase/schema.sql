@@ -57,7 +57,8 @@ CREATE TABLE public.order_items (
     order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE,
     product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
-    price_at_time NUMERIC NOT NULL CHECK (price_at_time >= 0)
+    price_at_time NUMERIC NOT NULL CHECK (price_at_time >= 0),
+    selected_options JSONB DEFAULT '{}'::jsonb
 );
 
 -- Reviews

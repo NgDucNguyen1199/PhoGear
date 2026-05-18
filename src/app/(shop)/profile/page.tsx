@@ -300,10 +300,22 @@ export default async function ProfilePage() {
                                   <Link href={`/products/${item.product_id}`} className="font-bold text-sm hover:text-primary transition-colors line-clamp-2 leading-tight">
                                     {item.products?.name}
                                   </Link>
-                                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2 flex items-center gap-3">
+                                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2 flex flex-wrap items-center gap-3">
                                     <span>SL: {item.quantity}</span>
                                     <span className="h-1 w-1 bg-muted-foreground rounded-full"></span>
                                     <span className="text-primary">{item.price_at_time.toLocaleString('vi-VN')}đ</span>
+                                    {item.selected_options && Object.keys(item.selected_options).length > 0 && (
+                                      <>
+                                        <span className="h-1 w-1 bg-muted-foreground rounded-full"></span>
+                                        <div className="flex flex-wrap gap-1">
+                                          {Object.entries(item.selected_options).map(([key, value]) => (
+                                            <span key={key} className="text-[8px] font-bold text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded-full border border-primary/10">
+                                              {key}: {value as string}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </>
+                                    )}
                                   </div>
                                 </div>
                               </div>

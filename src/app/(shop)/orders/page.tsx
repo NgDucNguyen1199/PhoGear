@@ -110,6 +110,15 @@ async function OrderList({ searchParams }: { searchParams: any }) {
                         <span className="h-1 w-1 bg-muted-foreground rounded-full opacity-30"></span>
                         <span>Số lượng: {item.quantity}</span>
                     </div>
+                    {item.selected_options && Object.keys(item.selected_options).length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {Object.entries(item.selected_options).map(([key, value]) => (
+                          <span key={key} className="text-[9px] font-bold text-primary/70 bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
+                            {key}: {value as string}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="text-right hidden sm:block">
                     <p className="text-lg font-black text-foreground">{(item.price_at_time * item.quantity).toLocaleString('vi-VN')}đ</p>
