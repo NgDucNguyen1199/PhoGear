@@ -48,6 +48,7 @@ const productSchema = z.object({
   is_flash_sale: z.boolean().default(false),
   flash_sale_price: z.coerce.number().min(0, 'Giá Flash Sale không được âm').optional().nullable(),
   flash_sale_stock: z.coerce.number().min(0, 'Kho Flash Sale không được âm').default(0),
+  stock_quantity: z.coerce.number().min(0, 'Số lượng tồn kho không được âm').default(0),
   variants: z.array(z.object({
     variant_name: z.string().min(1, 'Tên biến thể bắt buộc'),
     switch_type: z.string().optional(),
@@ -55,7 +56,7 @@ const productSchema = z.object({
     image_url: z.string().optional(),
     price: z.coerce.number().min(0, 'Giá không được âm'),
     stock_quantity: z.coerce.number().min(0, 'Số lượng không được âm'),
-  })).min(1, 'Cần ít nhất 1 biến thể')
+  })).optional().default([])
 })
 
 type ProductFormInput = z.input<typeof productSchema>
@@ -75,12 +76,14 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
       is_flash_sale: false,
       flash_sale_price: 0,
       flash_sale_stock: 0,
-      variants: [{ variant_name: '', switch_type: '', sku: '', image_url: '', price: 0, stock_quantity: 0 }]
+      stock_quantity: 0,
+      variants: []
     }
   })
 
   const { control, register, watch, setValue, handleSubmit, reset, formState: { errors } } = form
   const isFlashSale = watch('is_flash_sale')
+  const variants = watch('variants')
 
   async function onSubmit(values: ProductFormInput) {
     setIsLoading(true)
@@ -98,7 +101,7 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
 
   const onInvalid = (errors: any) => {
     console.group('Lỗi nhập liệu chi tiết')
-    console.error('Đối tượng errors:', errors)
+    console.error('Errors object:', errors)
     Object.keys(errors).forEach(key => {
       console.error(`Lỗi tại trường [${key}]:`, errors[key])
     })
@@ -137,7 +140,6 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
                   </FormItem>
                 )}
               />
-              {/* ... (brand, category_id, base_price) */}
               
               <FormField
                 control={control}
@@ -175,8 +177,25 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
                 name="base_price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Giá tham khảo (VNĐ)</FormLabel>
+                    <FormLabel>Giá bán (VNĐ)</FormLabel>
                     <FormControl><Input type="number" {...field} value={field.value as number} /></FormControl>
+                    <FormDescription>Giá mặc định nếu sản phẩm không có biến thể.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="stock_quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Số lượng tổng</FormLabel>
+                    <FormControl><Input type="number" {...field} value={field.value as number} disabled={variants && variants.length > 0} /></FormControl>
+                    <FormDescription>
+                      {variants && variants.length > 0 
+                        ? "Tự động tính từ tổng các biến thể." 
+                        : "Số lượng tồn kho thực tế."}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

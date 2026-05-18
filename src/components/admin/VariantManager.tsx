@@ -137,7 +137,6 @@ export function VariantManager({ control, register, watch, setValue, errors }: V
                   size="icon" 
                   onClick={() => remove(index)}
                   className="absolute top-2 right-2 text-muted-foreground hover:text-destructive h-8 w-8"
-                  disabled={fields.length === 1}
                 >
                   <Trash2 size={16} />
                 </Button>

@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Product, ProductVariant } from '@/types'
 import { useCartStore } from '@/store/cartStore'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ShoppingCart, Plus, Minus, Check, CreditCard, LayoutGrid, Image as ImageIcon } from 'lucide-react'
+import { ShoppingCart, Plus, Minus, Check, CreditCard, LayoutGrid, Image as ImageIcon, Zap, Timer } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { getSystemSettings } from '@/actions/admin_settings'
 
 interface AddToCartSectionProps {
   product: Product
@@ -19,10 +20,27 @@ interface AddToCartSectionProps {
 export function AddToCartSection({ product, selectedVariant, onVariantClick }: AddToCartSectionProps) {
   const router = useRouter()
   const [quantity, setQuantity] = useState(1)
+  const [isFlashSaleActive, setIsFlashSaleActive] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
   const variants = product.product_variants || []
 
-  const currentPrice = selectedVariant ? selectedVariant.price : product.price
+  useEffect(() => {
+    const checkFlashSale = async () => {
+        const settings = await getSystemSettings()
+        if (settings?.flash_sale_enabled && settings?.flash_sale_end_time) {
+            const isActive = new Date(settings.flash_sale_end_time) > new Date()
+            setIsFlashSaleActive(isActive)
+        }
+    }
+    checkFlashSale()
+  }, [])
+
+  const basePrice = selectedVariant ? selectedVariant.price : product.price
+  
+  // Calculate if sale price should be applied
+  const canApplyFlashSale = isFlashSaleActive && product.is_flash_sale && product.flash_sale_price && (product.flash_sale_sold || 0) < (product.flash_sale_stock || 0)
+  
+  const currentPrice = canApplyFlashSale ? (product.flash_sale_price as number) : basePrice
   const currentStock = selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity
   const isOutOfStock = currentStock === 0
 
@@ -35,6 +53,8 @@ export function AddToCartSection({ product, selectedVariant, onVariantClick }: A
     const options: Record<string, string> = selectedVariant 
       ? { "Phiên bản": selectedVariant.variant_name } 
       : {}
+    
+    // Khi thêm vào giỏ, ta gửi giá hiện tại (đã bao gồm giá sale nếu có)
     const productWithPrice = { ...product, price: currentPrice }
     addItem(productWithPrice, options, quantity)
     toast.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`)
@@ -55,25 +75,56 @@ export function AddToCartSection({ product, selectedVariant, onVariantClick }: A
   }
 
   const formatVND = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(amount)
   }
 
   return (
     <div className="space-y-8 mt-4">
       {/* GIÁ TIỀN VÀ SKU */}
-      <div className="flex items-center justify-between bg-muted/20 p-5 rounded-2xl border border-white/5 shadow-sm">
+      <div className={cn(
+        "flex flex-col md:flex-row md:items-center justify-between p-6 rounded-3xl border transition-all duration-500",
+        canApplyFlashSale ? "bg-primary/[0.03] border-primary/20 ring-2 ring-primary/10 shadow-lg" : "bg-muted/20 border-white/5 shadow-sm"
+      )}>
         <div className="flex flex-col gap-1 text-left">
-          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Giá bán chính thức</span>
-          <div className="text-4xl font-black text-primary drop-shadow-sm transition-all duration-300">
-            {formatVND(currentPrice)}
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+                {canApplyFlashSale ? "Giá Flash Sale" : "Giá bán chính thức"}
+            </span>
+            {canApplyFlashSale && (
+                <span className="bg-red-600 text-white text-[8px] font-black px-2 py-0.5 rounded flex items-center gap-1 animate-pulse">
+                    <Zap size={8} className="fill-white" /> TIẾT KIỆM {Math.round((1 - (product.flash_sale_price as number) / basePrice) * 100)}%
+                </span>
+            )}
+          </div>
+          <div className="flex items-baseline gap-3">
+              <div className={cn(
+                "text-4xl font-black drop-shadow-sm transition-all duration-300",
+                canApplyFlashSale ? "text-primary" : "text-foreground"
+              )}>
+                {formatVND(currentPrice)}
+              </div>
+              {canApplyFlashSale && (
+                <div className="text-lg font-bold text-muted-foreground line-through opacity-50">
+                    {formatVND(basePrice)}
+                </div>
+              )}
           </div>
         </div>
-        {selectedVariant?.sku && (
-          <div className="text-right">
-            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-[9px]">Mã SKU</span>
-            <p className="font-mono text-xs font-bold text-foreground">{selectedVariant.sku}</p>
-          </div>
-        )}
+        
+        <div className="mt-4 md:mt-0 flex flex-col md:items-end gap-2">
+            {selectedVariant?.sku && (
+            <div className="text-right">
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-[9px]">Mã SKU</span>
+                <p className="font-mono text-xs font-bold text-foreground">{selectedVariant.sku}</p>
+            </div>
+            )}
+            {canApplyFlashSale && (
+                <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/10">
+                    <Timer size={14} className="text-primary animate-spin" />
+                    <span className="text-[10px] font-black text-primary uppercase">Đang áp dụng ưu đãi</span>
+                </div>
+            )}
+        </div>
       </div>
 
       {/* DANH SÁCH BIẾN THỂ (CHỈ CHỌN 1 TRONG NHIỀU) */}

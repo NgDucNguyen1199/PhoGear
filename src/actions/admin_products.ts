@@ -35,6 +35,10 @@ function handleInternalSkuDuplicates(variants: any[]) {
 export async function createProductWithVariants(data: any) {
   const supabase = await createClient()
 
+  const totalStock = data.variants && data.variants.length > 0
+    ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0)
+    : (parseInt(data.stock_quantity) || 0)
+
   // 1. Chèn thông tin chung vào bảng products
   const { data: product, error: productError } = await supabase
     .from('products')
@@ -44,7 +48,7 @@ export async function createProductWithVariants(data: any) {
       description: data.description,
       category_id: data.category_id,
       price: data.base_price, 
-      stock_quantity: data.variants ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0) : 0,
+      stock_quantity: totalStock,
       images_url: [],
       is_flash_sale: data.is_flash_sale || false,
       flash_sale_price: data.flash_sale_price || null,
@@ -87,15 +91,15 @@ export async function createProductWithVariants(data: any) {
 
   revalidatePath('/admin/products')
   revalidatePath('/')
-  return { success: 'Đã thêm sản phẩm và các biến thể thành công!' }
+  return { success: 'Đã thêm sản phẩm thành công!' }
 }
 
 export async function updateProduct(id: string, data: any) {
   const supabase = await createClient()
   
-  const totalStock = data.variants 
+  const totalStock = data.variants && data.variants.length > 0
     ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0) 
-    : 0
+    : (parseInt(data.stock_quantity) || 0)
 
   const updates = {
     name: data.name,
@@ -144,6 +148,9 @@ export async function updateProduct(id: string, data: any) {
       console.error('Error inserting new variants:', variantsError)
       return { error: `Lỗi cập nhật biến thể (Mã SKU bị trùng lặp): ${variantsError.message}` }
     }
+  } else {
+    // Nếu không có biến thể, xóa hết biến thể cũ của sản phẩm này
+    await supabase.from('product_variants').delete().eq('product_id', id)
   }
 
   revalidatePath('/admin/products')

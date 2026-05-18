@@ -22,6 +22,7 @@ const statusOptions = [
 
 export function StatusSelector({ orderId, currentStatus }: { orderId: string, currentStatus: string }) {
   const [isLoading, setIsLoading] = useState(false)
+  const [status, setStatus] = useState(currentStatus)
 
   const handleStatusChange = async (newStatus: string | null) => {
     if (!newStatus) return
@@ -33,13 +34,14 @@ export function StatusSelector({ orderId, currentStatus }: { orderId: string, cu
       toast.error(result.error)
     } else {
       toast.success(result.success)
+      setStatus(newStatus)
     }
   }
 
   return (
     <div className="flex items-center gap-2">
       {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-      <Select defaultValue={currentStatus} onValueChange={handleStatusChange} disabled={isLoading}>
+      <Select value={status} onValueChange={handleStatusChange} disabled={isLoading}>
         <SelectTrigger className="w-[180px]">
           <SelectValue />
         </SelectTrigger>

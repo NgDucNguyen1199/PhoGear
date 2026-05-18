@@ -49,6 +49,7 @@ const productSchema = z.object({
   is_flash_sale: z.boolean().default(false),
   flash_sale_price: z.coerce.number().min(0, 'Giá Flash Sale không được âm').optional().nullable(),
   flash_sale_stock: z.coerce.number().min(0, 'Kho Flash Sale không được âm').default(0),
+  stock_quantity: z.coerce.number().min(0, 'Số lượng tồn kho không được âm').default(0),
   variants: z.array(z.object({
     variant_name: z.string().min(1, 'Tên biến thể bắt buộc'),
     switch_type: z.string().optional().nullable(),
@@ -56,7 +57,7 @@ const productSchema = z.object({
     image_url: z.string().optional().nullable(),
     price: z.coerce.number().min(0, 'Giá không được âm'),
     stock_quantity: z.coerce.number().min(0, 'Số lượng không được âm'),
-  })).min(1, 'Cần ít nhất 1 biến thể')
+  })).optional().default([])
 })
 
 type ProductFormInput = z.input<typeof productSchema>
@@ -76,6 +77,7 @@ export function EditProductDialog({ product, categories }: { product: Product, c
       is_flash_sale: product.is_flash_sale || false,
       flash_sale_price: product.flash_sale_price || 0,
       flash_sale_stock: product.flash_sale_stock || 0,
+      stock_quantity: product.stock_quantity || 0,
       variants: product.product_variants && product.product_variants.length > 0 
         ? product.product_variants.map(v => ({
             variant_name: v.variant_name,
@@ -85,12 +87,13 @@ export function EditProductDialog({ product, categories }: { product: Product, c
             price: v.price,
             stock_quantity: v.stock_quantity
           })) 
-        : [{ variant_name: 'Mặc định', price: product.price || 0, stock_quantity: product.stock_quantity || 0, switch_type: '', sku: '', image_url: '' }]
+        : []
     }
   })
 
   const { control, register, watch, setValue, handleSubmit, formState: { errors } } = form
   const isFlashSale = watch('is_flash_sale')
+  const variants = watch('variants')
 
   async function onSubmit(values: ProductFormInput) {
     setIsLoading(true)
@@ -107,7 +110,7 @@ export function EditProductDialog({ product, categories }: { product: Product, c
 
   const onInvalid = (errors: any) => {
     console.group('Lỗi nhập liệu chi tiết (Chỉnh sửa)')
-    console.error('Đối tượng errors:', errors)
+    console.error('Errors object:', errors)
     Object.keys(errors).forEach(key => {
       console.error(`Lỗi tại trường [${key}]:`, errors[key])
     })
@@ -146,7 +149,6 @@ export function EditProductDialog({ product, categories }: { product: Product, c
                   </FormItem>
                 )}
               />
-              {/* ... (brand, category_id, base_price) */}
               
               <FormField
                 control={control}
@@ -184,8 +186,24 @@ export function EditProductDialog({ product, categories }: { product: Product, c
                 name="base_price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Giá tham khảo (VNĐ)</FormLabel>
+                    <FormLabel>Giá bán (VNĐ)</FormLabel>
                     <FormControl><Input type="number" {...field} value={field.value as number} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="stock_quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Số lượng tổng</FormLabel>
+                    <FormControl><Input type="number" {...field} value={field.value as number} disabled={variants && variants.length > 0} /></FormControl>
+                    <FormDescription>
+                      {variants && variants.length > 0 
+                        ? "Tự động tính từ tổng các biến thể." 
+                        : "Số lượng tồn kho thực tế."}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

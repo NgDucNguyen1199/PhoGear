@@ -24,15 +24,50 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
     return { error: 'Vui lòng cung cấp đầy đủ địa chỉ và số điện thoại.' }
   }
 
-  // 2. Tính tổng tiền
-  const total_amount = items.reduce((total, item) => total + (item.price_at_time * item.quantity), 0)
+  // 2. Xác thực giá tiền thực tế (Flash Sale check)
+  const { data: settings } = await supabase.from('system_settings').select('*').eq('id', 'main').single()
+  const isGlobalFlashSaleActive = settings?.flash_sale_enabled && 
+    settings?.flash_sale_end_time && 
+    new Date(settings.flash_sale_end_time) > new Date()
 
-  // 3. Tạo đơn hàng (Transaction-like flow)
+  const verifiedOrderItems = []
+  let calculated_total_amount = 0
+
+  for (const item of items) {
+    const { data: product } = await supabase
+      .from('products')
+      .select('price, is_flash_sale, flash_sale_price, flash_sale_stock, flash_sale_sold')
+      .eq('id', item.product_id)
+      .single()
+
+    if (!product) return { error: `Sản phẩm với ID ${item.product_id} không tồn tại.` }
+
+    let price_to_apply = product.price
+
+    // Nếu flash sale đang bật toàn hệ thống và sản phẩm cũng bật flash sale
+    if (isGlobalFlashSaleActive && product.is_flash_sale && product.flash_sale_price) {
+        // Kiểm tra xem còn lượt sale không
+        if ((product.flash_sale_sold || 0) < (product.flash_sale_stock || 0)) {
+            price_to_apply = product.flash_sale_price
+        }
+    }
+
+    calculated_total_amount += price_to_apply * item.quantity
+    verifiedOrderItems.push({
+      order_id: '', // Will be set after order creation
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price_at_time: price_to_apply,
+      selected_options: item.selected_options || {}
+    })
+  }
+
+  // 3. Tạo đơn hàng
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({
       user_id: user.id,
-      total_amount,
+      total_amount: calculated_total_amount,
       shipping_address,
       phone_number,
       status: 'pending'
@@ -43,40 +78,47 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
   if (orderError) return { error: `Lỗi tạo đơn hàng: ${orderError.message}` }
 
   // 4. Tạo chi tiết đơn hàng
-  const orderItems = items.map(item => ({
-    order_id: order.id,
-    product_id: item.product_id,
-    quantity: item.quantity,
-    price_at_time: item.price_at_time,
-    selected_options: item.selected_options || {}
+  const finalOrderItems = verifiedOrderItems.map(vItem => ({
+    ...vItem,
+    order_id: order.id
   }))
 
   const { error: itemsError } = await supabase
     .from('order_items')
-    .insert(orderItems)
+    .insert(finalOrderItems)
 
   if (itemsError) {
     return { error: `Lỗi lưu chi tiết đơn hàng: ${itemsError.message}` }
   }
 
-  // 5. Cập nhật số lượng kho hàng
-  for (const item of items) {
+  // 5. Cập nhật số lượng kho hàng và flash sale sold
+  for (const item of finalOrderItems) {
     const { data: product } = await supabase
       .from('products')
-      .select('stock_quantity')
+      .select('stock_quantity, is_flash_sale, flash_sale_sold')
       .eq('id', item.product_id)
       .single()
     
     if (product) {
+      const updates: any = { 
+        stock_quantity: Math.max(0, product.stock_quantity - item.quantity) 
+      }
+
+      // Nếu mua với giá flash sale (xác định bằng cách so sánh giá áp dụng với giá flash sale)
+      if (isGlobalFlashSaleActive && product.is_flash_sale && item.price_at_time === product.flash_sale_price) {
+        updates.flash_sale_sold = (product.flash_sale_sold || 0) + item.quantity
+      }
+
       await supabase
         .from('products')
-        .update({ stock_quantity: Math.max(0, product.stock_quantity - item.quantity) })
+        .update(updates)
         .eq('id', item.product_id)
     }
   }
 
   revalidatePath('/orders')
   revalidatePath('/admin/orders')
+  revalidatePath('/')
   return { success: 'Đặt hàng thành công!', orderId: order.id }
 }
 
