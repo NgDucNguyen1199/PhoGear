@@ -1,7 +1,9 @@
-import { getAdminStats, seedCategories, seedProducts } from '@/actions/admin'
+import { getAdminStats } from '@/actions/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { DollarSign, ShoppingBag, Package, Users, TrendingUp, Database, Keyboard } from 'lucide-react'
+import { DollarSign, ShoppingBag, Package, Users, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { RevenueChart } from '@/components/admin/RevenueChart'
+import { RecentOrders } from '@/components/admin/RecentOrders'
+import { cn } from '@/lib/utils'
 
 export default async function AdminDashboard() {
   const stats = await getAdminStats()
@@ -9,100 +11,98 @@ export default async function AdminDashboard() {
   const formattedRevenue = new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND',
+    maximumFractionDigits: 0
   }).format(stats.totalRevenue)
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Thống kê tổng quan</h1>
-          <p className="text-muted-foreground">Chào mừng quay trở lại hệ thống quản trị Pho Gear.</p>
-        </div>
-        <div className="flex gap-2">
-          <form action={async (formData: FormData) => {
-            'use server'
-            await seedCategories()
-          }}>
-            <Button variant="outline" className="gap-2">
-              <Database size={16} /> Khởi tạo danh mục
-            </Button>
-          </form>
-          <form action={async (formData: FormData) => {
-            'use server'
-            await seedProducts()
-          }}>
-            <Button className="gap-2">
-              <Keyboard size={16} /> Khởi tạo sản phẩm mẫu
-            </Button>
-          </form>
+          <h1 className="text-4xl font-black uppercase tracking-tighter italic text-primary">Hệ thống quản trị</h1>
+          <p className="text-muted-foreground font-medium">Theo dõi hoạt động kinh doanh và quản lý dữ liệu Pho Gear.</p>
         </div>
       </div>
-...
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard 
           title="Tổng doanh thu" 
           value={formattedRevenue} 
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-          description="+20% so với tháng trước"
+          icon={<DollarSign className="h-5 w-5 text-primary" />}
+          description="Dựa trên đơn hàng đã giao"
+          trend="+12.5%"
+          trendUp={true}
         />
         <StatCard 
           title="Đơn hàng" 
-          value={stats.orderCount.toString()} 
-          icon={<ShoppingBag className="h-4 w-4 text-muted-foreground" />}
-          description="Đơn hàng đã được tạo"
+          value={stats.orderCount.toLocaleString('vi-VN')} 
+          icon={<ShoppingBag className="h-5 w-5 text-primary" />}
+          description="Tổng số đơn hệ thống"
+          trend="+8.2%"
+          trendUp={true}
         />
         <StatCard 
           title="Sản phẩm" 
-          value={stats.productCount.toString()} 
-          icon={<Package className="h-4 w-4 text-muted-foreground" />}
-          description="Sản phẩm hiện có trong kho"
+          value={stats.productCount.toLocaleString('vi-VN')} 
+          icon={<Package className="h-5 w-5 text-primary" />}
+          description="Mẫu mã đang kinh doanh"
+          trend="+2"
+          trendUp={true}
         />
         <StatCard 
           title="Người dùng" 
-          value={stats.userCount.toString()} 
-          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+          value={stats.userCount.toLocaleString('vi-VN')} 
+          icon={<Users className="h-5 w-5 text-primary" />}
           description="Khách hàng đã đăng ký"
+          trend="+4.1%"
+          trendUp={true}
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Biểu đồ doanh thu</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px] flex items-center justify-center border-t">
-            <div className="text-center">
-              <TrendingUp className="h-12 w-12 text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-muted-foreground italic text-sm">Biểu đồ đang được phát triển...</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Đơn hàng gần đây</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground italic">Chưa có đơn hàng mới nào được ghi nhận.</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <RevenueChart data={stats.monthlyRevenue} />
+        <RecentOrders orders={stats.recentOrders} />
       </div>
     </div>
   )
 }
 
-function StatCard({ title, value, icon, description }: { title: string, value: string, icon: React.ReactNode, description: string }) {
+function StatCard({ 
+  title, 
+  value, 
+  icon, 
+  description, 
+  trend, 
+  trendUp 
+}: { 
+  title: string, 
+  value: string, 
+  icon: React.ReactNode, 
+  description: string,
+  trend?: string,
+  trendUp?: boolean
+}) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon}
+    <Card className="border-none shadow-xl rounded-[2rem] overflow-hidden bg-background group hover:bg-primary/[0.02] transition-colors">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{title}</CardTitle>
+        <div className="p-2 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform">
+          {icon}
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+        <div className="text-3xl font-black tracking-tight mb-1">{value}</div>
+        <div className="flex items-center gap-2">
+            {trend && (
+                <span className={cn(
+                    "flex items-center text-[10px] font-black px-2 py-0.5 rounded-full",
+                    trendUp ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                )}>
+                    {trendUp ? <ArrowUpRight size={10} className="mr-0.5" /> : <ArrowDownRight size={10} className="mr-0.5" />}
+                    {trend}
+                </span>
+            )}
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{description}</p>
+        </div>
       </CardContent>
     </Card>
   )
