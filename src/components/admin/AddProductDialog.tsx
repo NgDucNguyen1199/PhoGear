@@ -87,9 +87,9 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
     const result = await createProductWithVariants(values)
     setIsLoading(false)
 
-    if (result.error) {
+    if (result?.error) {
       toast.error(result.error)
-    } else {
+    } else if (result?.success) {
       toast.success(result.success)
       setOpen(false)
       reset()

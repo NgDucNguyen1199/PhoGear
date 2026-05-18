@@ -97,9 +97,9 @@ export function EditProductDialog({ product, categories }: { product: Product, c
     const result = await updateProduct(product.id, values)
     setIsLoading(false)
 
-    if (result.error) {
+    if (result?.error) {
       toast.error(result.error)
-    } else {
+    } else if (result?.success) {
       toast.success(result.success)
       setOpen(false)
     }
