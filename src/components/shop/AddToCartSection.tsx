@@ -21,6 +21,7 @@ export function AddToCartSection({ product, selectedVariant, onVariantClick }: A
   const router = useRouter()
   const [quantity, setQuantity] = useState(1)
   const [isFlashSaleActive, setIsFlashSaleActive] = useState(false)
+  const [endTime, setEndTime] = useState<string | null>(null)
   const addItem = useCartStore((state) => state.addItem)
   const variants = product.product_variants || []
 
@@ -28,12 +29,27 @@ export function AddToCartSection({ product, selectedVariant, onVariantClick }: A
     const checkFlashSale = async () => {
         const settings = await getSystemSettings()
         if (settings?.flash_sale_enabled && settings?.flash_sale_end_time) {
+            setEndTime(settings.flash_sale_end_time)
             const isActive = new Date(settings.flash_sale_end_time) > new Date()
             setIsFlashSaleActive(isActive)
         }
     }
     checkFlashSale()
   }, [])
+
+  // Dynamic check for end time to revert prices in real-time
+  useEffect(() => {
+    if (!endTime) return
+
+    const interval = setInterval(() => {
+        const isActive = new Date(endTime) > new Date()
+        if (isActive !== isFlashSaleActive) {
+            setIsFlashSaleActive(isActive)
+        }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [endTime, isFlashSaleActive])
 
   const basePrice = selectedVariant ? selectedVariant.price : product.price
   

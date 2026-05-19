@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 export function FlashSaleSection({ products, endTime }: { products: Product[], endTime?: string }) {
+  const [isExpired, setIsExpired] = useState(false)
   const [timeLeft, setTimeLeft] = useState({
     hours: 0,
     minutes: 0,
@@ -25,9 +26,11 @@ export function FlashSaleSection({ products, endTime }: { products: Product[], e
       const diff = end - now
 
       if (diff <= 0) {
+        setIsExpired(true)
         return { hours: 0, minutes: 0, seconds: 0 }
       }
 
+      setIsExpired(false)
       const hours = Math.floor(diff / (1000 * 60 * 60))
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
       const seconds = Math.floor((diff % (1000 * 60)) / 1000)
@@ -45,7 +48,7 @@ export function FlashSaleSection({ products, endTime }: { products: Product[], e
     return () => clearInterval(timer)
   }, [endTime])
 
-  if (!products || products.length === 0) return null
+  if (!products || products.length === 0 || isExpired) return null
 
   return (
     <section className="py-16 bg-gradient-to-b from-primary/5 to-background border-y border-primary/10 overflow-hidden relative">

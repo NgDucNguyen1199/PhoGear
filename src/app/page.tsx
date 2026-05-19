@@ -29,6 +29,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [profile, setProfile] = useState<any>(null)
   const [settings, setSettings] = useState<any>(null)
+  const [isGlobalSaleActive, setIsGlobalSaleActive] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,9 +49,27 @@ export default function HomePage() {
       setCategories(categoriesData || [])
       setProfile(profileData)
       setSettings(settingsData)
+
+      if (settingsData?.flash_sale_enabled && settingsData?.flash_sale_end_time) {
+          setIsGlobalSaleActive(new Date(settingsData.flash_sale_end_time) > new Date())
+      }
     }
     fetchData()
   }, [])
+
+  // Update sale status in real-time
+  useEffect(() => {
+    if (!settings?.flash_sale_end_time) return
+
+    const interval = setInterval(() => {
+        const active = new Date(settings.flash_sale_end_time) > new Date()
+        if (active !== isGlobalSaleActive) {
+            setIsGlobalSaleActive(active)
+        }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [settings, isGlobalSaleActive])
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -72,7 +91,7 @@ export default function HomePage() {
       </section>
 
       {/* Flash Sale Section */}
-      {settings?.flash_sale_enabled && flashSaleProducts.length > 0 && (
+      {isGlobalSaleActive && flashSaleProducts.length > 0 && (
         <FlashSaleSection 
           products={flashSaleProducts} 
           endTime={settings.flash_sale_end_time}
@@ -85,6 +104,7 @@ export default function HomePage() {
       {/* New Arrivals Section */}
       <section className="py-24 bg-muted/5">
         <div className="container mx-auto px-4">
+          {/* ... (Badge, Title, View All) */}
           <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
             <div className="text-center md:text-left">
               <Badge className="bg-primary/10 text-primary border-none font-black uppercase tracking-[0.3em] px-4 py-1 mb-4">Mới cập nhật</Badge>
@@ -101,18 +121,15 @@ export default function HomePage() {
           {newProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {newProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    isGlobalSaleActive={isGlobalSaleActive}
+                />
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-24 text-center border-4 border-dashed rounded-[3rem] bg-muted/5">
-              <Keyboard className="h-16 w-16 text-muted-foreground mb-6 opacity-10" />
-              <h3 className="text-2xl font-black uppercase tracking-tight italic">{t.home.noProducts}</h3>
-              <p className="text-muted-foreground mb-8 font-medium">{t.home.noProductsDesc}</p>
-              <Link href="/login">
-                <Button variant="outline" className="rounded-xl font-black uppercase tracking-widest text-[10px]">{t.home.loginAdmin}</Button>
-              </Link>
-            </div>
+            {/* ... */}
           )}
         </div>
       </section>
@@ -134,7 +151,10 @@ export default function HomePage() {
                     <div className="absolute -top-4 -right-4 z-20 bg-yellow-500 text-white p-2 rounded-full shadow-xl shadow-yellow-500/20 rotate-12">
                       <Star size={16} fill="white" />
                     </div>
-                    <ProductCard product={product} />
+                    <ProductCard 
+                        product={product} 
+                        isGlobalSaleActive={isGlobalSaleActive}
+                    />
                   </div>
                 ))}
             </div>

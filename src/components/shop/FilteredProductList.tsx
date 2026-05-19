@@ -7,10 +7,23 @@ import { ProductCard } from './ProductCard'
 import { Keyboard, Loader2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 
+import { getSystemSettings } from '@/actions/admin_settings'
+
 export function FilteredProductList({ initialProducts }: { initialProducts: Product[] }) {
   const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [isLoading, setIsLoading] = useState(false)
+  const [isGlobalSaleActive, setIsGlobalSaleActive] = useState(false)
+
+  useEffect(() => {
+    const checkSale = async () => {
+      const settings = await getSystemSettings()
+      if (settings?.flash_sale_enabled && settings?.flash_sale_end_time) {
+        setIsGlobalSaleActive(new Date(settings.flash_sale_end_time) > new Date())
+      }
+    }
+    checkSale()
+  }, [])
 
   useEffect(() => {
     const fetchFiltered = async () => {
@@ -52,7 +65,11 @@ export function FilteredProductList({ initialProducts }: { initialProducts: Prod
       {products.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              isGlobalSaleActive={isGlobalSaleActive}
+            />
           ))}
         </div>
       ) : (

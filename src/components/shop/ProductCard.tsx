@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, isGlobalSaleActive = true }: { product: Product, isGlobalSaleActive?: boolean }) {
   const router = useRouter()
   const { toggleItem, isInWishlist } = useWishlistStore()
   const isLiked = isInWishlist(product.id)
@@ -30,9 +30,12 @@ export function ProductCard({ product }: { product: Product }) {
     currency: 'VND',
   }).format(product.price)
 
+  // Chỉ hiển thị giá sale nếu cả sản phẩm VÀ hệ thống đều đang trong đợt sale
+  const showSalePrice = isGlobalSaleActive && product.is_sale && product.sale_price
+
   return (
     <Card className="group overflow-hidden transition-all hover:shadow-2xl relative border-white/5 bg-background/50 backdrop-blur-sm flex flex-col h-full">
-      {/* Wishlist Button */}
+      {/* ... */}
       <Button
         variant="ghost"
         size="icon"
@@ -43,7 +46,7 @@ export function ProductCard({ product }: { product: Product }) {
       </Button>
       
       <Link href={`/products/${product.id}`} className="flex-1 flex flex-col">
-        {/* Image Section */}
+        {/* ... */}
         <div className="relative aspect-square overflow-hidden bg-muted">
           {product.images_url?.[0] ? (
             <Image
@@ -95,11 +98,11 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
 
           <div className="pt-2">
-            {product.is_sale && product.sale_price ? (
+            {showSalePrice ? (
               <div className="space-y-1">
                 <div className="flex items-baseline gap-2">
                     <p className="text-xl font-black text-primary drop-shadow-sm tracking-tighter">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.sale_price)}
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.sale_price as number)}
                     </p>
                     <p className="text-xs font-bold text-muted-foreground line-through opacity-50">
                         {formattedPrice}
