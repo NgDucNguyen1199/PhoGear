@@ -209,7 +209,7 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
                   <FormItem>
                     <FormLabel>Giá bán (VNĐ)</FormLabel>
                     <FormControl><Input type="number" {...field} value={field.value as number} /></FormControl>
-                    <FormDescription>Giá mặc định nếu sản phẩm không có biến thể.</FormDescription>
+                    <FormDescription>Hệ thống sẽ tự động lấy giá thấp nhất từ các biến thể làm giá hiển thị chính.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

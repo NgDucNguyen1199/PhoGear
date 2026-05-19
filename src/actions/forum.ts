@@ -127,6 +127,14 @@ export async function addComment(postId: string, content: string) {
 export async function adminGetPendingPosts() {
   const supabase = await createClient()
   
+  // Kiểm tra quyền Admin
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id || '').single()
+  
+  if (profile?.role !== 'admin') {
+    return []
+  }
+
   const { data, error } = await supabase
     .from('posts')
     .select(`
@@ -149,6 +157,14 @@ export async function adminGetPendingPosts() {
  */
 export async function adminModeratePost(postId: string, status: 'approved' | 'rejected') {
   const supabase = await createClient()
+
+  // Kiểm tra quyền Admin
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id || '').single()
+  
+  if (profile?.role !== 'admin') {
+    return { error: 'Bạn không có quyền thực hiện thao tác này.' }
+  }
   
   const { error } = await supabase
     .from('posts')

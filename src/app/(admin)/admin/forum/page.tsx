@@ -1,9 +1,9 @@
-import { adminGetPendingPosts, adminModeratePost } from '@/actions/forum'
+import { adminGetPendingPosts } from '@/actions/forum'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Check, X, MessageSquare, User, Calendar, Image as ImageIcon } from 'lucide-react'
+import { Check, MessageSquare, User, Calendar, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
+import { ModerateButtons } from '@/components/admin/ModerateButtons'
 
 export const metadata = {
   title: 'Duyệt bài viết Diễn đàn | Admin Pho Gear',
@@ -66,24 +66,7 @@ export default async function AdminForumPage() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-4 pt-6 border-t border-dashed">
-                    <form action={async () => {
-                        'use server'
-                        await adminModeratePost(post.id, 'approved')
-                    }}>
-                        <Button className="rounded-xl font-black uppercase tracking-widest text-[10px] gap-2 h-12 px-8 shadow-lg shadow-primary/20">
-                            <Check size={16} /> Duyệt bài viết
-                        </Button>
-                    </form>
-                    <form action={async () => {
-                        'use server'
-                        await adminModeratePost(post.id, 'rejected')
-                    }}>
-                        <Button variant="outline" className="rounded-xl font-black uppercase tracking-widest text-[10px] gap-2 h-12 px-8 border-2 border-destructive/20 text-destructive hover:bg-destructive/5">
-                            <X size={16} /> Từ chối
-                        </Button>
-                    </form>
-                  </div>
+                  <ModerateButtons postId={post.id} />
                 </CardContent>
               </div>
             </Card>
