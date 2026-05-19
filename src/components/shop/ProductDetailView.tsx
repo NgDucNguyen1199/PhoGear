@@ -165,12 +165,18 @@ export function ProductDetailView({ product, userId }: { product: Product, userI
 
             <div className="grid grid-cols-2 gap-6 mb-10 text-sm text-left">
               <div className="p-6 bg-muted/20 rounded-3xl border border-white/5 shadow-inner">
-                <p className="text-[10px] uppercase font-black text-muted-foreground mb-2 tracking-widest opacity-50">Layout Phím</p>
-                <p className="font-black text-lg italic">{product.layout || 'Mặc định'}</p>
+                <p className="text-[10px] uppercase font-black text-muted-foreground mb-2 tracking-widest opacity-50">
+                    {product.categories?.name === 'Keycap' ? 'Profile' : 'Layout Phím'}
+                </p>
+                <p className="font-black text-lg italic">{product.layout || (product.categories?.name === 'Keycap' ? 'Cherry' : 'Mặc định')}</p>
               </div>
               <div className="p-6 bg-muted/20 rounded-3xl border border-white/5 shadow-inner">
-                <p className="text-[10px] uppercase font-black text-muted-foreground mb-2 tracking-widest opacity-50">Phương thức Kết nối</p>
-                <p className="font-black text-lg italic">{product.connectivity || 'Có dây'}</p>
+                <p className="text-[10px] uppercase font-black text-muted-foreground mb-2 tracking-widest opacity-50">
+                    {product.categories?.name === 'Keycap' ? 'Chất liệu' : 'Phương thức Kết nối'}
+                </p>
+                <p className="font-black text-lg italic">
+                    {product.connectivity || (product.categories?.name === 'Keycap' ? 'Nhựa PBT' : 'Có dây')}
+                </p>
               </div>
             </div>
 
