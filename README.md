@@ -24,7 +24,7 @@
 
 ### 1.1 Tầng Giao diện & Xử lý (Frontend & Logic)
 - **Next.js 16 (App Router):** Sử dụng Turbopack để tăng tốc độ phát triển và deploy. Triển khai cơ chế **Proxy** thay thế cho Middleware truyền thống.
-- **Server Actions:** Xử lý nghiệp vụ phức tạp trực tiếp trên server (MFA, Forum Moderation, Order Verification).
+- **Server Actions:** Xử lý nghiệp vụ phức tạp trực tiếp trên server (MFA, Forum Moderation, Order Verification, Product Management).
 - **State Management:** Sử dụng **Zustand** với cơ chế Persist để duy trì giỏ hàng và danh sách yêu thích giữa các phiên làm việc.
 
 ### 1.2 Tầng Hạ tầng & Cơ sở dữ liệu (Backend & Database)
@@ -39,12 +39,17 @@
 ### 🛒 2.1 Module Thương mại điện tử (E-commerce Core)
 - **Hệ thống Flash Sale 3.0:** Quản lý chương trình khuyến mãi giờ vàng với bộ đếm ngược thời gian thực, tự động khôi phục giá gốc khi hết giờ và giới hạn số lượng bán.
 - **Chính sách Vận chuyển Thông minh:** Tự động tính phí vận chuyển (30,000đ) và áp dụng **Freeship cho đơn từ 800,000đ** (kèm thông báo nhắc nhở mua thêm).
-- **Quản lý Sản phẩm Linh hoạt:** Hỗ trợ sản phẩm có biến thể hoặc không có biến thể. Tích hợp tính năng **Upload ảnh trực tiếp từ máy tính** lên Cloud.
-- **Tính ổn định cao:** Đã xử lý triệt để các lỗi hiển thị đối tượng (React Child Error) cho các trường dữ liệu động.
+- **Quản lý Sản phẩm Thông minh (Admin 2.0):** 
+    - Tự động tính toán **Số lượng tồn kho tổng** dựa trên các biến thể thời gian thực.
+    - Tự động lấy **Giá thấp nhất** của các biến thể làm giá hiển thị chính.
+    - Hỗ trợ Upload ảnh trực tiếp từ máy tính lên Cloud.
+- **Xác thực Đơn hàng:** Kiểm tra giá và phí vận chuyển tại Server để chống gian lận.
 
 ### 💬 2.2 PhoGear Forum Hub (Community)
 - **Diễn đàn Chia sẻ:** Nơi thành viên đăng bài viết chia sẻ kinh nghiệm build phím với bộ sưu tập ảnh thực tế (Gallery) và hệ thống bình luận thời gian thực.
-- **Hệ thống Phê duyệt (Moderation):** Bài viết mới được giữ ở trạng thái "Pending" và chỉ hiển thị sau khi được Admin phê duyệt trong trang quản trị.
+- **Hệ thống Phê duyệt (Moderation 2.0):** 
+    - Giao diện Admin chuyên biệt để Duyệt/Từ chối bài viết với phản hồi tức thì (Toasts).
+    - Bài viết mới được giữ ở trạng thái "Pending" và chỉ hiển thị sau khi được phê duyệt.
 - **Phân quyền truy cập:** Khách vãng lai chỉ được xem, chỉ thành viên chính thức mới có quyền đăng bài và bình luận.
 
 ### 🎮 2.3 Trình mô phỏng & Trắc nghiệm (User Experience)
@@ -52,8 +57,8 @@
 - **PhoType Engine:** Trò chơi luyện gõ phím chuyên nghiệp với bảng xếp hạng thần tốc (Leaderboard).
 
 ### 🛡️ 2.4 Quản trị & Bảo mật (Admin & Security)
-- **Admin Dashboard 2.0:** Hệ thống phân tích kinh doanh với biểu đồ doanh thu Recharts, quản lý bài viết diễn đàn và cài đặt hệ thống tập trung.
-- **Multi-Factor Authentication (MFA):** Bảo vệ tài khoản bằng mã TOTP 6 số qua ứng dụng Authenticator, bắt buộc đối với tài khoản quản trị.
+- **Admin Dashboard 2.0:** Hệ thống phân tích kinh doanh với biểu đồ doanh thu Recharts, quản lý bài viết diễn đàn và quản trị kho hàng an toàn.
+- **Multi-Factor Authentication (MFA):** Bảo vệ tài khoản bằng mã TOTP 6 số, bắt buộc đối với tài khoản quản trị.
 
 ---
 
@@ -62,7 +67,7 @@
 | Công nghệ | Vai trò trong hệ thống | Ưu điểm chính |
 | :--- | :--- | :--- |
 | **Next.js 16** | Framework chính | Hiệu năng vượt trội, cơ chế Proxy bảo mật hơn. |
-| **TypeScript** | Ngôn ngữ phát triển | Type Safety tuyệt đối, đảm bảo dữ liệu luôn đúng định dạng chuỗi. |
+| **TypeScript** | Ngôn ngữ phát triển | Type Safety tuyệt đối, ngăn chặn lỗi runtime "React Child". |
 | **Supabase** | Backend | Xác thực mạnh mẽ, Storage ổn định, Database thời gian thực. |
 | **Framer Motion** | Animation | Hiệu ứng chuyển cảnh, thanh tiến trình Flash Sale và Gallery ảnh mượt mà. |
 

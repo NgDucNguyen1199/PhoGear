@@ -6,7 +6,6 @@ import { getSystemSettings } from '@/actions/admin_settings'
 import { Navbar } from '@/components/layout/Navbar'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { HeroCarousel } from '@/components/home/HeroCarousel'
-import { UserGuideSection } from '@/components/home/UserGuideSection'
 import { KeyboardFinder } from '@/components/shop/KeyboardFinder'
 import { FlashSaleSection } from '@/components/home/FlashSaleSection'
 import { CategoryGrid } from '@/components/home/CategoryGrid'
@@ -182,9 +181,6 @@ export default function HomePage() {
 
       {/* Knowledge Hub (Forum Feed) */}
       <ForumFeed userId={profile?.id} />
-
-      {/* User Guide Section (Manuals) */}
-      <UserGuideSection />
     </div>
   )
 }

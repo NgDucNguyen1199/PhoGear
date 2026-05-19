@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, Pencil, Trash2, Search, Settings2 } from 'lucide-react'
 import { AddProductDialog } from '@/components/admin/AddProductDialog'
 import { EditProductDialog } from '@/components/admin/EditProductDialog'
+import { DeleteProductButton } from '@/components/admin/DeleteProductButton'
 
 export default async function AdminProductsPage() {
   const products = await getProducts(50)
@@ -81,14 +82,7 @@ export default async function AdminProductsPage() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <EditProductDialog product={product} categories={categories} />
-                      <form action={async () => {
-                        'use server'
-                        await deleteProduct(product.id)
-                      }}>
-                        <Button variant="ghost" size="icon" className="text-destructive h-8 w-8">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </form>
+                      <DeleteProductButton productId={product.id} productName={product.name} />
                     </div>
                   </TableCell>
                 </TableRow>
