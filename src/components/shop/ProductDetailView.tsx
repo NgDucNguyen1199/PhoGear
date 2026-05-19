@@ -16,7 +16,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel"
-
+import { motion } from 'framer-motion'
 import { ReviewSection } from '@/components/shop/ReviewSection'
 
 export function ProductDetailView({ product, userId }: { product: Product, userId?: string }) {
@@ -206,6 +206,37 @@ export function ProductDetailView({ product, userId }: { product: Product, userI
       </div>
 
       <Separator className="my-12" />
+      
+      {/* Dedicated Gallery for Reference */}
+      {allImages.length > 1 && (
+        <div className="space-y-10">
+            <div className="flex flex-col items-center text-center space-y-2">
+                <h2 className="text-3xl font-black uppercase tracking-tight italic text-primary">Hình ảnh thực tế</h2>
+                <p className="text-muted-foreground font-medium">Chi tiết sản phẩm từ nhiều góc độ khác nhau để bạn dễ dàng tham khảo.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {allImages.map((img, i) => (
+                    <motion.div 
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        viewport={{ once: true }}
+                        className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-xl border border-white/5"
+                    >
+                        <Image 
+                            src={img} 
+                            alt={`${product.name} detail ${i + 1}`} 
+                            fill 
+                            className="object-cover hover:scale-105 transition-transform duration-1000" 
+                        />
+                    </motion.div>
+                ))}
+            </div>
+            <Separator className="my-12" />
+        </div>
+      )}
       
       <ReviewSection product={product} userId={userId} />
     </div>

@@ -46,6 +46,7 @@ const productSchema = z.object({
   description: z.string().optional(),
   category_id: z.string().min(1, 'Vui lòng chọn danh mục'),
   base_price: z.coerce.number().min(0, 'Giá không được âm'),
+  images_url: z.string().optional().default(''),
   is_flash_sale: z.boolean().default(false),
   flash_sale_price: z.coerce.number().min(0, 'Giá Flash Sale không được âm').optional().nullable(),
   flash_sale_stock: z.coerce.number().min(0, 'Kho Flash Sale không được âm').default(0),
@@ -209,6 +210,20 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
                     <FormItem>
                       <FormLabel>Mô tả chi tiết</FormLabel>
                       <FormControl><Textarea rows={3} {...field} value={field.value as string} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-full">
+                <FormField
+                  control={control}
+                  name="images_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Link ảnh minh họa (Dấu phẩy để ngăn cách)</FormLabel>
+                      <FormControl><Textarea placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg" rows={2} {...field} /></FormControl>
+                      <FormDescription>Cung cấp các đường dẫn hình ảnh cho sản phẩm. Đặc biệt cần thiết nếu không có biến thể.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

@@ -39,6 +39,11 @@ export async function createProductWithVariants(data: any) {
     ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0)
     : (parseInt(data.stock_quantity) || 0)
 
+  // Xử lý chuỗi URL ảnh thành mảng
+  const images_url = data.images_url 
+    ? data.images_url.split(',').map((url: string) => url.trim()).filter(Boolean)
+    : []
+
   // 1. Chèn thông tin chung vào bảng products
   const { data: product, error: productError } = await supabase
     .from('products')
@@ -49,7 +54,7 @@ export async function createProductWithVariants(data: any) {
       category_id: data.category_id,
       price: data.base_price, 
       stock_quantity: totalStock,
-      images_url: [],
+      images_url,
       is_flash_sale: data.is_flash_sale || false,
       flash_sale_price: data.flash_sale_price || null,
       flash_sale_stock: data.flash_sale_stock || 0,
@@ -101,6 +106,11 @@ export async function updateProduct(id: string, data: any) {
     ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0) 
     : (parseInt(data.stock_quantity) || 0)
 
+  // Xử lý chuỗi URL ảnh thành mảng
+  const images_url = data.images_url 
+    ? data.images_url.split(',').map((url: string) => url.trim()).filter(Boolean)
+    : []
+
   const updates = {
     name: data.name,
     brand: data.brand,
@@ -108,6 +118,7 @@ export async function updateProduct(id: string, data: any) {
     category_id: data.category_id,
     price: data.base_price,
     stock_quantity: totalStock,
+    images_url,
     is_flash_sale: data.is_flash_sale || false,
     flash_sale_price: data.flash_sale_price || null,
     flash_sale_stock: data.flash_sale_stock || 0
