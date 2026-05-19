@@ -132,9 +132,9 @@ export default function CheckoutPage() {
 
     startTransition(async () => {
         const result = await createOrder(formData, orderItems)
-        if (result.error) {
+        if (result?.error) {
             toast.error(result.error)
-        } else {
+        } else if (result?.success) {
             setOrderId(result.orderId || null)
             toast.success(result.success)
             clearCart()

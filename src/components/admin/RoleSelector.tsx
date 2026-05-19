@@ -26,9 +26,9 @@ export function RoleSelector({ userId, currentRole }: { userId: string, currentR
     const result = await updateUserRole(userId, newRole)
     setIsLoading(false)
 
-    if (result.error) {
+    if (result?.error) {
       toast.error(result.error)
-    } else {
+    } else if (result?.success) {
       toast.success(result.success)
     }
   }

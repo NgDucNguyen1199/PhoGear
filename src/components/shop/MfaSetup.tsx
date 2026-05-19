@@ -38,12 +38,12 @@ export function MfaSetup() {
     const result = await enrollMfa()
     setIsLoading(false)
 
-    if (result.error) {
+    if (result?.error) {
       toast.error(result.error)
       return
     }
 
-    if (result.data) {
+    if (result?.data) {
       setQrCode(result.data.totp.qr_code)
       setFactorId(result.data.id)
       setStep(2)
@@ -60,9 +60,9 @@ export function MfaSetup() {
     const result = await verifyMfaChallenge(factorId, code)
     setIsLoading(false)
 
-    if (result.error) {
+    if (result?.error) {
       toast.error(result.error)
-    } else {
+    } else if (result) {
       setStep(4)
       toast.success('Xác thực 2 lớp đã được kích hoạt!')
       fetchFactors()
@@ -76,9 +76,9 @@ export function MfaSetup() {
     const result = await unenrollMfa(id)
     setIsLoading(false)
 
-    if (result.error) {
+    if (result?.error) {
       toast.error(result.error)
-    } else {
+    } else if (result) {
       toast.success('Đã tắt xác thực 2 lớp.')
       fetchFactors()
     }

@@ -29,11 +29,11 @@ export function ChangePasswordDialog() {
     const result = await updatePassword(formData)
     
     setIsLoading(false)
-    if (result.error) {
+    if (result?.error) {
       toast.error(result.error)
-    } else {
+    } else if (result?.success) {
       toast.success(result.success)
-      setIsOpen(false)
+      setOpen(false)
     }
   }
 

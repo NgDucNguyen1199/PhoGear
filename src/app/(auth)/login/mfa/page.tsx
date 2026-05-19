@@ -36,11 +36,11 @@ function MfaContent() {
 
     setIsLoading(true)
     try {
-      const result = await verifyMfaChallenge(factorId!, code)
-      if (result.error) {
+      const result = await verifyMfaChallenge(factorId || '', code)
+      if (result?.error) {
         toast.error(result.error)
         setIsLoading(false)
-      } else {
+      } else if (result) {
         toast.success('Xác thực thành công!')
         router.push('/')
         router.refresh()

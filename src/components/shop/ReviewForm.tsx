@@ -63,9 +63,9 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
 
     startTransition(async () => {
       const result = await submitReview(formData)
-      if (result.error) {
+      if (result?.error) {
         toast.error(result.error)
-      } else {
+      } else if (result?.success) {
         toast.success(result.success)
         setComment('')
         setImages([])

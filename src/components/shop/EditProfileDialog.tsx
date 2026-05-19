@@ -42,11 +42,11 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
     const result = await updateProfile(formData)
     
     setIsLoading(false)
-    if (result.error) {
+    if (result?.error) {
       toast.error(result.error)
-    } else {
+    } else if (result?.success) {
       toast.success(result.success)
-      setIsOpen(false)
+      setOpen(false)
     }
   }
 

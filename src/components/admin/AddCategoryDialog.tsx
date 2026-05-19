@@ -26,9 +26,9 @@ export function AddCategoryDialog() {
     const result = await createCategory(formData)
     setIsLoading(false)
 
-    if (result.error) {
+    if (result?.error) {
       toast.error(result.error)
-    } else {
+    } else if (result?.success) {
       toast.success(result.success)
       setOpen(false)
     }

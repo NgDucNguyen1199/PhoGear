@@ -27,9 +27,9 @@ export function EditCategoryDialog({ category }: { category: Category | any }) {
     const result = await updateCategory(category.id, formData)
     setIsLoading(false)
 
-    if (result.error) {
+    if (result?.error) {
       toast.error(result.error)
-    } else {
+    } else if (result?.success) {
       toast.success(result.success)
       setOpen(false)
     }
