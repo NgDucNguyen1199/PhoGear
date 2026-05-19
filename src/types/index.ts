@@ -1,3 +1,34 @@
+export type Post = {
+  id: string
+  author_id: string
+  title: string
+  content: string
+  images_url: string[]
+  status: 'pending' | 'approved' | 'rejected'
+  created_at: string
+  updated_at: string
+  profiles?: {
+    full_name: string | null
+    avatar_url: string | null
+  }
+  comments?: PostComment[]
+  _count?: {
+    comments: number
+  }
+}
+
+export type PostComment = {
+  id: string
+  post_id: string
+  author_id: string
+  content: string
+  created_at: string
+  profiles?: {
+    full_name: string | null
+    avatar_url: string | null
+  }
+}
+
 export type Category = {
   id: string
   name: string

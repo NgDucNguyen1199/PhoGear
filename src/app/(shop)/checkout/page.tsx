@@ -23,11 +23,13 @@ import {
   Phone, 
   User as UserIcon,
   MessageSquare,
-  ChevronRight
+  ChevronRight,
+  Zap
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -145,7 +147,7 @@ export default function CheckoutPage() {
   }
 
   const subtotal = getTotalPrice()
-  const shippingFee = 0 // Miễn phí vận chuyển
+  const shippingFee = subtotal >= 800000 ? 0 : 30000
   const total = subtotal + shippingFee
 
   const formatPrice = (price: number) => {
@@ -333,8 +335,18 @@ export default function CheckoutPage() {
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground font-medium uppercase text-[10px] tracking-widest">Vận chuyển</span>
-                                    <span className="text-green-600 font-black uppercase text-[10px]">Miễn phí</span>
+                                    <span className={cn(
+                                        "font-black uppercase text-[10px]",
+                                        shippingFee === 0 ? "text-green-600" : "text-foreground"
+                                    )}>
+                                        {shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}
+                                    </span>
                                 </div>
+                                {shippingFee > 0 && (
+                                    <p className="text-[9px] text-muted-foreground italic text-right">
+                                        * Mua thêm {formatPrice(800000 - subtotal)} để được Freeship
+                                    </p>
+                                )}
                                 <div className="bg-primary/5 p-4 rounded-2xl mt-4 border border-primary/10">
                                     <div className="flex justify-between items-center">
                                         <span className="text-xs font-black uppercase tracking-[0.2em] italic">Tổng cộng</span>

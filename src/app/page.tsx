@@ -10,7 +10,7 @@ import { UserGuideSection } from '@/components/home/UserGuideSection'
 import { KeyboardFinder } from '@/components/shop/KeyboardFinder'
 import { FlashSaleSection } from '@/components/home/FlashSaleSection'
 import { CategoryGrid } from '@/components/home/CategoryGrid'
-import { BlogFeed } from '@/components/home/BlogFeed'
+import { ForumFeed } from '@/components/home/ForumFeed'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -175,8 +175,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Knowledge Hub (Blog Feed) */}
-      <BlogFeed />
+      {/* Knowledge Hub (Forum Feed) */}
+      <ForumFeed userId={profile?.id} />
 
       {/* User Guide Section (Manuals) */}
       <UserGuideSection />

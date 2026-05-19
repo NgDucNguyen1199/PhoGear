@@ -62,6 +62,10 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
     })
   }
 
+  // Tính phí vận chuyển
+  const shipping_fee = calculated_total_amount >= 800000 ? 0 : 30000
+  calculated_total_amount += shipping_fee
+
   // 3. Tạo đơn hàng
   const { data: order, error: orderError } = await supabase
     .from('orders')

@@ -310,7 +310,7 @@ export default async function ProfilePage() {
                                         <div className="flex flex-wrap gap-1">
                                           {Object.entries(item.selected_options).map(([key, value]) => (
                                             <span key={key} className="text-[8px] font-bold text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded-full border border-primary/10">
-                                              {key}: {value as string}
+                                              {key}: {String(value)}
                                             </span>
                                           ))}
                                         </div>

@@ -8,7 +8,8 @@ import {
   Users, 
   Settings, 
   Store,
-  Layers
+  Layers,
+  MessageSquare
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -44,6 +45,7 @@ export default async function AdminLayout({
           <SidebarItem href="/admin/categories" icon={<Layers size={18} />} label="Danh mục" />
           <SidebarItem href="/admin/orders" icon={<ShoppingBag size={18} />} label="Đơn hàng" />
           <SidebarItem href="/admin/users" icon={<Users size={18} />} label="Người dùng" />
+          <SidebarItem href="/admin/forum" icon={<MessageSquare size={18} />} label="Diễn đàn" />
 
           
           <Separator className="my-4" />
