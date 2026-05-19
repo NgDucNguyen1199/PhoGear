@@ -73,7 +73,36 @@ export async function createProductWithVariants(data: any) {
     return { error: `Lỗi tạo sản phẩm: ${productError.message}` }
   }
 
-  // ... (rest of create logic remains same)
+  // 2. Chèn hàng loạt biến thể vào bảng product_variants
+  if (data.variants && data.variants.length > 0) {
+    const processedVariants = handleInternalSkuDuplicates(data.variants);
+
+    const variantsToInsert = processedVariants.map((v: any) => ({
+      product_id: product.id,
+      variant_name: v.variant_name,
+      switch_type: v.switch_type || '',
+      sku: v.sku,
+      image_url: fixUnsplashUrl(v.image_url) || '',
+      price: parseFloat(v.price) || 0,
+      stock_quantity: parseInt(v.stock_quantity) || 0,
+    }))
+
+    const { error: variantsError } = await supabase
+      .from('product_variants')
+      .insert(variantsToInsert)
+
+    if (variantsError) {
+      console.error('Error creating variants:', variantsError)
+      // Nếu lỗi tạo biến thể, xóa luôn sản phẩm cha để tránh rác dữ liệu
+      await supabase.from('products').delete().eq('id', product.id)
+      return { error: `Lỗi tạo biến thể (Có thể do trùng mã SKU): ${variantsError.message}` }
+    }
+  }
+
+  revalidatePath('/admin/products')
+  revalidatePath('/products')
+  revalidatePath('/')
+  return { success: 'Đã thêm sản phẩm thành công!' }
 }
 
 export async function updateProduct(id: string, data: any) {
