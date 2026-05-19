@@ -33,7 +33,7 @@ export function ChangePasswordDialog() {
       toast.error(result.error)
     } else if (result?.success) {
       toast.success(result.success)
-      setOpen(false)
+      setIsOpen(false)
     }
   }
 

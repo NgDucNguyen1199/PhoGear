@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { createProductWithVariants } from '@/actions/admin_products'
+import { createProductWithVariants, uploadProductImages } from '@/actions/admin_products'
 import { 
   Dialog, 
   DialogContent, 
@@ -33,12 +33,12 @@ import {
   FormLabel, 
   FormMessage 
 } from '@/components/ui/form'
-import { Plus, Loader2, Box, Zap } from 'lucide-react'
+import { Plus, Loader2, Box, Zap, Upload, Image as ImageIcon, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { VariantManager } from './VariantManager'
 
 import { Switch } from '@/components/ui/switch'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const productSchema = z.object({
   name: z.string().min(2, 'Tên sản phẩm quá ngắn'),
@@ -66,6 +66,7 @@ type ProductFormInput = z.input<typeof productSchema>
 export function AddProductDialog({ categories }: { categories: any[] }) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
 
   const form = useForm<ProductFormInput>({
     resolver: zodResolver(productSchema),
@@ -75,6 +76,7 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
       description: '',
       category_id: '',
       base_price: 0,
+      images_url: '',
       is_flash_sale: false,
       flash_sale_price: 0,
       flash_sale_stock: 0,
@@ -86,6 +88,32 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
   const { control, register, watch, setValue, handleSubmit, reset, formState: { errors } } = form
   const isFlashSale = watch('is_flash_sale')
   const variants = watch('variants')
+  const currentImagesUrl = watch('images_url') || ''
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setIsUploading(true)
+    const formData = new FormData()
+    Array.from(files).forEach(file => {
+      formData.append('images', file)
+    })
+
+    const result = await uploadProductImages(formData)
+    setIsUploading(false)
+
+    if (result.error) {
+      toast.error(result.error)
+    } else if (result.urls) {
+      const newUrls = result.urls.join(', ')
+      const updatedUrls = currentImagesUrl 
+        ? `${currentImagesUrl}, ${newUrls}`
+        : newUrls
+      setValue('images_url', updatedUrls)
+      toast.success(result.success)
+    }
+  }
 
   async function onSubmit(values: ProductFormInput) {
     setIsLoading(true)
@@ -215,19 +243,63 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
                   )}
                 />
               </div>
-              <div className="col-span-full">
+
+              <div className="col-span-full space-y-4">
+                <div className="flex items-center justify-between">
+                    <Label className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                        <ImageIcon size={16} className="text-primary" /> Hình ảnh sản phẩm
+                    </Label>
+                    <label className={buttonVariants({ variant: 'outline', size: 'sm', className: 'cursor-pointer gap-2 rounded-xl h-9 border-2' })}>
+                        {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                        Tải ảnh lên từ máy
+                        <input type="file" multiple accept="image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
+                    </label>
+                </div>
+
                 <FormField
                   control={control}
                   name="images_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Link ảnh minh họa (Dấu phẩy để ngăn cách)</FormLabel>
-                      <FormControl><Textarea placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg" rows={2} {...field} /></FormControl>
-                      <FormDescription>Cung cấp các đường dẫn hình ảnh cho sản phẩm. Đặc biệt cần thiết nếu không có biến thể.</FormDescription>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Hoặc dán link ảnh tại đây (ngăn cách bằng dấu phẩy)..." 
+                          rows={3} 
+                          className="bg-background border-white/10 rounded-2xl focus:border-primary/50 text-xs font-mono"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>Link ảnh minh họa cho sản phẩm. Đặc biệt cần thiết nếu không có biến thể.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                {/* Preview images if any */}
+                {currentImagesUrl && (
+                    <div className="flex flex-wrap gap-3 mt-4">
+                        {currentImagesUrl.split(',').map((url, idx) => {
+                            const trimmedUrl = url.trim()
+                            if (!trimmedUrl) return null
+                            return (
+                                <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border-2 border-primary/10 shadow-sm">
+                                    <img src={trimmedUrl} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                                    <button 
+                                        type="button"
+                                        onClick={() => {
+                                            const urls = currentImagesUrl.split(',').map(u => u.trim()).filter(Boolean)
+                                            urls.splice(idx, 1)
+                                            setValue('images_url', urls.join(', '))
+                                        }}
+                                        className="absolute top-1 right-1 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X size={10} />
+                                    </button>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
               </div>
             </div>
 
@@ -311,4 +383,3 @@ export function AddProductDialog({ categories }: { categories: any[] }) {
     </Dialog>
   )
 }
-

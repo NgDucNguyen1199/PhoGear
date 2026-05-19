@@ -75,170 +75,170 @@ export function ProductDetailView({ product, userId }: { product: Product, userI
   }
 
   return (
-    <div className="bg-background rounded-2xl shadow-sm border p-6 md:p-10 mb-12">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        
-        {/* Product Image Gallery */}
-        <div className="space-y-6">
-          <Carousel setApi={setApi} className="w-full group">
-            <CarouselContent className="ml-0">
-              {allImages.length > 0 ? (
-                allImages.map((img, i) => (
-                  <CarouselItem key={i} className="pl-0 relative aspect-square rounded-2xl overflow-hidden bg-muted border shadow-sm">
-                    <Image 
-                      src={img} 
-                      alt={`${product.name} ${i + 1}`} 
-                      fill 
-                      className="object-cover object-center transition-all duration-700 hover:scale-110"
-                      priority={i === 0}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                  </CarouselItem>
-                ))
-              ) : (
-                <CarouselItem className="pl-0 relative aspect-square rounded-2xl overflow-hidden bg-muted border shadow-sm flex items-center justify-center text-muted-foreground">
-                  Không có hình ảnh
-                </CarouselItem>
-              )}
-            </CarouselContent>
-            {allImages.length > 1 && (
-              <>
-                <CarouselPrevious className="left-4 bg-background/80 hover:bg-background border-none shadow-md hidden group-hover:flex transition-all" />
-                <CarouselNext className="right-4 bg-background/80 hover:bg-background border-none shadow-md hidden group-hover:flex transition-all" />
-              </>
-            )}
-          </Carousel>
+    <div className="space-y-12">
+      <div className="bg-background rounded-[2.5rem] shadow-xl border border-white/5 p-6 md:p-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
           
-          {/* Gallery Thumbnails */}
-          {allImages.length > 1 && (
-            <div className="grid grid-cols-5 gap-3">
-              {allImages.map((img, i) => (
-                <button 
-                  key={i} 
-                  type="button"
-                  onClick={() => handleThumbnailClick(i)}
-                  className={cn(
-                    "relative aspect-square rounded-xl overflow-hidden border-2 transition-all hover:ring-2 hover:ring-primary/20",
-                    current === i ? "border-primary shadow-md scale-105" : "border-transparent opacity-70 hover:opacity-100"
-                  )}
-                >
-                  <Image src={img} alt={`${product.name} thumbnail ${i}`} fill className="object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Product Details */}
-        <div className="flex flex-col">
-          <div className="mb-2 flex items-center gap-2">
-            <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-              {product.brand}
-            </span>
-            {product.categories && (
-              <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-none">
-                {product.categories.name}
-              </Badge>
+          {/* LEFT: Product Image Gallery */}
+          <div className="space-y-8">
+            <Carousel setApi={setApi} className="w-full group">
+              <CarouselContent className="ml-0">
+                {allImages.length > 0 ? (
+                  allImages.map((img, i) => (
+                    <CarouselItem key={i} className="pl-0 relative aspect-square rounded-[2rem] overflow-hidden bg-muted border shadow-sm">
+                      <Image 
+                        src={img} 
+                        alt={`${product.name} ${i + 1}`} 
+                        fill 
+                        className="object-cover object-center transition-all duration-700 hover:scale-110"
+                        priority={i === 0}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                    </CarouselItem>
+                  ))
+                ) : (
+                  <CarouselItem className="pl-0 relative aspect-square rounded-[2rem] overflow-hidden bg-muted border shadow-sm flex items-center justify-center text-muted-foreground">
+                    Không có hình ảnh
+                  </CarouselItem>
+                )}
+              </CarouselContent>
+              {allImages.length > 1 && (
+                <>
+                  <CarouselPrevious className="left-4 bg-background/80 hover:bg-background border-none shadow-md hidden group-hover:flex transition-all" />
+                  <CarouselNext className="right-4 bg-background/80 hover:bg-background border-none shadow-md hidden group-hover:flex transition-all" />
+                </>
+              )}
+            </Carousel>
+            
+            {/* Gallery Thumbnails */}
+            {allImages.length > 1 && (
+              <div className="grid grid-cols-5 gap-4">
+                {allImages.map((img, i) => (
+                  <button 
+                    key={i} 
+                    type="button"
+                    onClick={() => handleThumbnailClick(i)}
+                    className={cn(
+                      "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all hover:ring-2 hover:ring-primary/20",
+                      current === i ? "border-primary shadow-md scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                    )}
+                  >
+                    <Image src={img} alt={`${product.name} thumbnail ${i}`} fill className="object-cover" />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-4 text-foreground leading-tight">
-            {product.name}
-          </h1>
-
-          <div className="flex items-center gap-4 mb-8">
-            <div className="flex items-center gap-1 bg-yellow-400/10 text-yellow-600 px-2 py-1 rounded-md border border-yellow-400/20">
-              <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-              <span className="font-bold text-sm">{product.average_rating}</span>
+          {/* RIGHT: Product Details */}
+          <div className="flex flex-col">
+            <div className="mb-4 flex items-center gap-3">
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-primary bg-primary/10 px-3 py-1 rounded-lg">
+                {product.brand}
+              </span>
+              {product.categories && (
+                <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-bold uppercase tracking-widest text-[9px]">
+                  {product.categories.name}
+                </Badge>
+              )}
             </div>
-            <Separator orientation="vertical" className="h-5" />
-            <span className="text-sm text-muted-foreground hover:underline cursor-pointer">
-              ({product.review_count || 0} đánh giá)
-            </span>
-          </div>
 
-          <p className="text-muted-foreground mb-8 leading-relaxed">
-            {product.description}
-          </p>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-6 text-foreground leading-[1.1] uppercase italic">
+              {product.name}
+            </h1>
 
-          <div className="grid grid-cols-2 gap-4 mb-8 text-sm text-left">
-            <div className="p-4 bg-muted/30 rounded-2xl border border-white/5">
-              <p className="text-[10px] uppercase font-black text-muted-foreground mb-1 tracking-widest">Layout</p>
-              <p className="font-bold">{product.layout || 'Không áp dụng'}</p>
-            </div>
-            <div className="p-4 bg-muted/30 rounded-2xl border border-white/5">
-              <p className="text-[10px] uppercase font-black text-muted-foreground mb-1 tracking-widest">Kết nối</p>
-              <p className="font-bold">{product.connectivity || 'Không áp dụng'}</p>
-            </div>
-          </div>
-
-          <Separator className="mb-6 opacity-50" />
-
-          {/* Truyền State và hàm xử lý xuống trang con */}
-          <AddToCartSection 
-            product={product} 
-            selectedVariant={selectedVariant}
-            onVariantClick={handleVariantClick}
-          />
-
-          {/* Trust Badges */}
-          <div className="mt-8 grid grid-cols-3 gap-4 border-t border-dashed pt-8">
-            <div className="flex flex-col items-center text-center gap-2">
-              <div className="p-2 bg-green-100/50 text-green-700 rounded-full border border-green-200">
-                <ShieldCheck className="h-5 w-5" />
+            <div className="flex items-center gap-6 mb-10">
+              <div className="flex items-center gap-2 bg-yellow-400/10 text-yellow-600 px-3 py-1.5 rounded-xl border border-yellow-400/20">
+                <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+                <span className="font-black text-lg leading-none">{product.average_rating}</span>
               </div>
-              <span className="text-[9px] font-black text-muted-foreground uppercase">Bảo hành 24 tháng</span>
-            </div>
-            <div className="flex flex-col items-center text-center gap-2">
-              <div className="p-2 bg-blue-100/50 text-blue-700 rounded-full border border-blue-200">
-                <Truck className="h-5 w-5" />
+              <Separator orientation="vertical" className="h-6" />
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground leading-none">Phản hồi</span>
+                <span className="text-sm font-bold text-foreground">({product.review_count || 0} đánh giá khách hàng)</span>
               </div>
-              <span className="text-[9px] font-black text-muted-foreground uppercase">Giao hàng hỏa tốc</span>
             </div>
-            <div className="flex flex-col items-center text-center gap-2">
-              <div className="p-2 bg-orange-100/50 text-orange-700 rounded-full border border-orange-200">
-                <RotateCcw className="h-5 w-5" />
+
+            <p className="text-muted-foreground mb-10 leading-relaxed font-medium text-lg">
+              {product.description}
+            </p>
+
+            <div className="grid grid-cols-2 gap-6 mb-10 text-sm text-left">
+              <div className="p-6 bg-muted/20 rounded-3xl border border-white/5 shadow-inner">
+                <p className="text-[10px] uppercase font-black text-muted-foreground mb-2 tracking-widest opacity-50">Layout Phím</p>
+                <p className="font-black text-lg italic">{product.layout || 'Mặc định'}</p>
               </div>
-              <span className="text-[9px] font-black text-muted-foreground uppercase">Đổi trả 7 ngày</span>
+              <div className="p-6 bg-muted/20 rounded-3xl border border-white/5 shadow-inner">
+                <p className="text-[10px] uppercase font-black text-muted-foreground mb-2 tracking-widest opacity-50">Phương thức Kết nối</p>
+                <p className="font-black text-lg italic">{product.connectivity || 'Có dây'}</p>
+              </div>
+            </div>
+
+            <AddToCartSection 
+              product={product} 
+              selectedVariant={selectedVariant}
+              onVariantClick={handleVariantClick}
+            />
+
+            {/* Trust Badges */}
+            <div className="mt-12 grid grid-cols-3 gap-6 pt-10 border-t border-dashed border-primary/10">
+              <BadgeItem icon={<ShieldCheck size={20} />} label="Bảo hành 24 tháng" />
+              <BadgeItem icon={<Truck size={20} />} label="Giao hàng hỏa tốc" />
+              <BadgeItem icon={<RotateCcw size={20} />} label="Đổi trả 7 ngày" />
             </div>
           </div>
         </div>
       </div>
 
-      <Separator className="my-12" />
-      
-      {/* Dedicated Gallery for Reference */}
+      {/* FULL WIDTH: Dedicated Gallery for Reference */}
       {allImages.length > 1 && (
-        <div className="space-y-10">
-            <div className="flex flex-col items-center text-center space-y-2">
-                <h2 className="text-3xl font-black uppercase tracking-tight italic text-primary">Hình ảnh thực tế</h2>
-                <p className="text-muted-foreground font-medium">Chi tiết sản phẩm từ nhiều góc độ khác nhau để bạn dễ dàng tham khảo.</p>
+        <section className="space-y-12 py-12">
+            <div className="flex flex-col items-center text-center space-y-4">
+                <Badge className="bg-primary text-primary-foreground border-none font-black uppercase tracking-[0.3em] px-4 py-1">Góc nhìn chi tiết</Badge>
+                <h2 className="text-5xl font-black uppercase tracking-tighter italic text-primary">Hình ảnh thực tế</h2>
+                <p className="text-muted-foreground font-medium max-w-2xl text-lg">
+                    Cận cảnh sản phẩm giúp bạn có cái nhìn khách quan nhất về màu sắc và chất liệu thực tế.
+                </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                 {allImages.map((img, i) => (
                     <motion.div 
                         key={i}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
                         viewport={{ once: true }}
-                        className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-xl border border-white/5"
+                        className="group relative aspect-[4/3] rounded-[3rem] overflow-hidden shadow-2xl border-4 border-background"
                     >
                         <Image 
                             src={img} 
                             alt={`${product.name} detail ${i + 1}`} 
                             fill 
-                            className="object-cover hover:scale-105 transition-transform duration-1000" 
+                            className="object-cover transition-transform duration-1000 group-hover:scale-110" 
                         />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </motion.div>
                 ))}
             </div>
-            <Separator className="my-12" />
-        </div>
+        </section>
       )}
-      
-      <ReviewSection product={product} userId={userId} />
+
+      {/* REVIEWS SECTION */}
+      <div className="pt-12">
+        <ReviewSection product={product} userId={userId} />
+      </div>
+    </div>
+  )
+}
+
+function BadgeItem({ icon, label }: { icon: React.ReactNode, label: string }) {
+  return (
+    <div className="flex flex-col items-center text-center gap-3 group">
+      <div className="p-3 bg-primary/5 text-primary rounded-2xl border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all duration-500 scale-110">
+        {icon}
+      </div>
+      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-tight">{label}</span>
     </div>
   )
 }
