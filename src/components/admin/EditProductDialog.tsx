@@ -100,6 +100,19 @@ export function EditProductDialog({ product, categories }: { product: Product, c
   const variants = watch('variants')
   const currentImagesUrl = watch('images_url') || ''
 
+  // Tự động tính toán số lượng tổng và giá bán từ biến thể
+  useEffect(() => {
+    if (variants && variants.length > 0) {
+      const totalStock = variants.reduce((acc, v) => acc + (Number(v.stock_quantity) || 0), 0)
+      const minPrice = Math.min(...variants.map(v => Number(v.price) || 0))
+      
+      setValue('stock_quantity', totalStock)
+      if (minPrice !== Infinity) {
+        setValue('base_price', minPrice)
+      }
+    }
+  }, [variants, setValue])
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
