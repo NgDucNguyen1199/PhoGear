@@ -14,14 +14,14 @@ export async function getApprovedPosts() {
     .from('posts')
     .select(`
       *,
-      profiles (full_name, avatar_url),
-      comments:comments(count)
+      author:profiles (full_name, avatar_url),
+      comments (count)
     `)
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching posts:', error)
+    console.error('Error fetching approved posts:', error.message, error.details, error.hint)
     return []
   }
 
