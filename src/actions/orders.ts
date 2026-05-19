@@ -93,11 +93,13 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
 
   // 5. Cập nhật số lượng kho hàng và flash sale sold
   for (const item of finalOrderItems) {
-    const { data: product } = await supabase
+    const { data: productData } = await supabase
       .from('products')
       .select('stock_quantity, is_flash_sale, flash_sale_sold, flash_sale_price')
       .eq('id', item.product_id)
       .single()
+    
+    const product = productData as any
     
     if (product) {
       const updates: any = { 
