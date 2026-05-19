@@ -46,7 +46,7 @@ export default async function AdminOrdersPage() {
                       <TableCell>
                         <div className="flex flex-col">
                           <span className="font-bold flex items-center gap-1">
-                            <User className="h-3 w-3" /> {order.profiles?.full_name || 'Khách vãng lai'}
+                            <User className="h-3 w-3" /> {String(order.profiles?.full_name || 'Khách vãng lai')}
                           </span>
                           <span className="text-xs text-muted-foreground">{order.phone_number}</span>
                         </div>

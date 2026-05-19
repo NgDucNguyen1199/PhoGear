@@ -136,7 +136,7 @@ export function ReviewSection({ product, userId }: ReviewSectionProps) {
                         <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-bold text-sm">{review.profiles?.full_name || 'Người dùng'}</div>
+                        <div className="font-bold text-sm">{String(review.profiles?.full_name || 'Người dùng')}</div>
                         <div className="flex items-center gap-2 mt-0.5">
                           <div className="flex">
                             {[1, 2, 3, 4, 5].map((star) => (

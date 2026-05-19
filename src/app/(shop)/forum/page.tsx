@@ -84,13 +84,16 @@ export default async function ForumPage() {
                                             <div className="space-y-4">
                                                 <div className="flex flex-wrap items-center gap-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                                                     <div className="flex items-center gap-1.5">
-                                                        <User size={12} className="text-primary" /> {post.profiles?.full_name || 'Anonymous'}
+                                                        <User size={12} className="text-primary" /> {String(post.profiles?.full_name || 'Anonymous')}
                                                     </div>
                                                     <div className="flex items-center gap-1.5">
                                                         <Calendar size={12} className="text-primary" /> {new Date(post.created_at).toLocaleDateString('vi-VN')}
                                                     </div>
                                                     <div className="flex items-center gap-1.5">
-                                                        <MessageSquare size={12} className="text-primary" /> {(post as any).comments?.[0]?.count || 0} bình luận
+                                                        <MessageSquare size={12} className="text-primary" /> 
+                                                        {Array.isArray((post as any).comments) 
+                                                            ? ((post as any).comments[0]?.count || 0) 
+                                                            : 0} bình luận
                                                     </div>
                                                 </div>
                                                 <h3 className="text-3xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors uppercase italic">

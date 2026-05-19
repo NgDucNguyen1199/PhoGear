@@ -89,7 +89,7 @@ export default function CheckoutPage() {
             Mã đơn hàng của bạn là <span className="font-mono font-bold text-foreground bg-muted px-2 py-1 rounded">#{orderId?.slice(0, 8).toUpperCase()}</span>
           </p>
           <p className="text-muted-foreground mb-12 max-w-md mx-auto">
-            Chúng tôi đã nhận được thông tin và sẽ sớm liên hệ với bạn để xác nhận đơn hàng trước khi giao.
+            Chúng tôi đã nhận được thông tin và sẽ sớm liên hệ with bạn để xác nhận đơn hàng trước khi giao.
           </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -312,7 +312,7 @@ export default function CheckoutPage() {
                                                 {item.selectedOptions && (
                                                     <div className="flex flex-wrap gap-x-2 text-[9px] font-bold text-muted-foreground uppercase tracking-tighter mt-1">
                                                         {Object.entries(item.selectedOptions).map(([k, v]) => (
-                                                            <span key={k} className="bg-muted px-1.5 py-0.5 rounded-sm">{v}</span>
+                                                            <span key={k} className="bg-muted px-1.5 py-0.5 rounded-sm">{String(v)}</span>
                                                         ))}
                                                     </div>
                                                 )}
@@ -343,9 +343,12 @@ export default function CheckoutPage() {
                                     </span>
                                 </div>
                                 {shippingFee > 0 && (
-                                    <p className="text-[9px] text-muted-foreground italic text-right">
-                                        * Mua thêm {formatPrice(800000 - subtotal)} để được Freeship
-                                    </p>
+                                    <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg border border-primary/10">
+                                        <Zap size={10} className="text-primary fill-primary animate-pulse" />
+                                        <p className="text-[9px] text-primary font-black uppercase tracking-tighter">
+                                            Mua thêm {formatPrice(800000 - subtotal)} để được Freeship
+                                        </p>
+                                    </div>
                                 )}
                                 <div className="bg-primary/5 p-4 rounded-2xl mt-4 border border-primary/10">
                                     <div className="flex justify-between items-center">

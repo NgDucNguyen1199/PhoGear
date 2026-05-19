@@ -44,7 +44,7 @@ export default async function AdminForumPage() {
                 <CardContent className="p-10 flex-1 flex flex-col justify-between space-y-6">
                   <div className="space-y-4 text-left">
                     <div className="flex items-center gap-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                        <div className="flex items-center gap-1.5"><User size={12} className="text-primary" /> {post.profiles?.full_name}</div>
+                        <div className="flex items-center gap-1.5"><User size={12} className="text-primary" /> {String(post.profiles?.full_name || 'Anonymous')}</div>
                         <div className="flex items-center gap-1.5"><Calendar size={12} /> {new Date(post.created_at).toLocaleDateString('vi-VN')}</div>
                     </div>
                     <h3 className="text-3xl font-black uppercase italic tracking-tight">{post.title}</h3>

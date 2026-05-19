@@ -61,7 +61,7 @@ export default async function PostDetailPage({ params }: { params: { id: string 
                     </div>
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tác giả</p>
-                        <p className="font-black text-lg text-primary">{post.profiles?.full_name || 'Người dùng PhoGear'}</p>
+                        <p className="font-black text-lg text-primary">{String(post.profiles?.full_name || 'Người dùng PhoGear')}</p>
                     </div>
                 </div>
              </header>

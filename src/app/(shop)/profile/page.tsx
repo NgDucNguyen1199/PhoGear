@@ -63,7 +63,7 @@ export default async function ProfilePage() {
               </div>
               <div className="flex-1 space-y-2 mb-2">
                 <div className="flex flex-col md:flex-row md:items-center gap-3">
-                  <h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground drop-shadow-sm">{profile.full_name}</h1>
+                  <h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground drop-shadow-sm">{String(profile.full_name || 'Người dùng Pho Gear')}</h1>
                   {profile.role === 'admin' && (
                     <Badge variant="default" className="w-fit mx-auto md:mx-0 uppercase font-black tracking-[0.2em] text-[10px] bg-primary text-primary-foreground px-3 py-1 rounded-full">Admin</Badge>
                   )}

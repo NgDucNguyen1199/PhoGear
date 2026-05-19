@@ -58,7 +58,7 @@ export default async function PhoTypePage() {
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-900">{entry.profiles?.full_name || 'Anonymous'}</p>
+                        <p className="text-sm font-bold text-slate-900">{String(entry.profiles?.full_name || 'Anonymous')}</p>
                         <p className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">{entry.rank_name}</p>
                       </div>
                     </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/layout/Navbar'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -10,12 +10,22 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { PlusCircle, Loader2, ArrowLeft, Image as ImageIcon, Send } from 'lucide-react'
 import { createPost } from '@/actions/forum'
+import { getProfile } from '@/actions/auth'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
 export default function CreatePostPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [profile, setProfile] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const data = await getProfile()
+      setProfile(data)
+    }
+    fetchProfile()
+  }, [])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -35,7 +45,7 @@ export default function CreatePostPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Navbar />
+      <Navbar user={profile} />
       
       <main className="flex-1 py-20">
         <div className="container mx-auto px-4 max-w-3xl">

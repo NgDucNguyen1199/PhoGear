@@ -39,7 +39,7 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
                 <div className="space-y-1">
                   <p className="text-sm font-black uppercase tracking-tight">#{order.id.slice(0, 8)}</p>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                    <User size={12} className="text-primary" /> {order.profiles?.full_name || 'Khách vãng lai'}
+                    <User size={12} className="text-primary" /> {String(order.profiles?.full_name || 'Khách vãng lai')}
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
                     <Clock size={12} /> {new Date(order.created_at).toLocaleDateString('vi-VN')}

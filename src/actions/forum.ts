@@ -15,7 +15,7 @@ export async function getApprovedPosts() {
     .select(`
       *,
       profiles (full_name, avatar_url),
-      comments (count)
+      comments:comments(count)
     `)
     .eq('status', 'approved')
     .order('created_at', { ascending: false })

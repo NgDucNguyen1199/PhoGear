@@ -90,7 +90,7 @@ export function CommentSection({ postId, comments, userId }: { postId: string, c
                 </div>
                 <div className="flex-1 space-y-3 text-left">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-black text-primary uppercase tracking-wider">{comment.profiles?.full_name || 'Người dùng PhoGear'}</h4>
+                    <h4 className="font-black text-primary uppercase tracking-wider">{String(comment.profiles?.full_name || 'Người dùng PhoGear')}</h4>
                     <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
                       <Clock size={10} /> {new Date(comment.created_at).toLocaleDateString('vi-VN')}
                     </span>

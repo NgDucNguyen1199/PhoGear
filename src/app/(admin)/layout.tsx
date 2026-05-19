@@ -59,7 +59,7 @@ export default async function AdminLayout({
         <header className="h-16 border-b bg-background flex items-center justify-between px-8">
           <h2 className="font-semibold text-lg">Hệ thống quản trị</h2>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">Xin chào, <strong>{profile.full_name}</strong></span>
+            <span className="text-sm text-muted-foreground">Xin chào, <strong>{String(profile.full_name || 'Admin')}</strong></span>
           </div>
         </header>
         <div className="p-8">

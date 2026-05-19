@@ -99,7 +99,7 @@ export function ForumFeed({ userId }: { userId?: string }) {
                                 <Calendar size={12} className="text-primary" /> {new Date(post.created_at).toLocaleDateString('vi-VN')}
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <User size={12} className="text-primary" /> {post.profiles?.full_name || 'Người dùng PhoGear'}
+                                <User size={12} className="text-primary" /> {String(post.profiles?.full_name || 'Người dùng PhoGear')}
                             </div>
                             </div>
                             <h3 className="text-2xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors uppercase italic">
@@ -115,7 +115,11 @@ export function ForumFeed({ userId }: { userId?: string }) {
                             </span>
                             <div className="flex items-center gap-1.5 text-muted-foreground">
                                 <MessageSquare size={14} />
-                                <span className="text-xs font-bold">{(post as any).comments?.[0]?.count || 0}</span>
+                                <span className="text-xs font-bold">
+                                    {Array.isArray((post as any).comments) 
+                                        ? ((post as any).comments[0]?.count || 0) 
+                                        : 0}
+                                </span>
                             </div>
                         </div>
                         </CardContent>
