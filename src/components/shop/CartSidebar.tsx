@@ -67,7 +67,7 @@ export function CartSidebar({ open, setOpen }: { open: boolean; setOpen: (open: 
                           <div className="flex flex-wrap gap-x-2 gap-y-1 mt-1">
                             {Object.entries(item.selectedOptions).map(([key, val]) => (
                               <span key={key} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-                                {key}: <span className="text-foreground font-medium">{val}</span>
+                                {key}: <span className="text-foreground font-medium">{String(val)}</span>
                               </span>
                             ))}
                           </div>
