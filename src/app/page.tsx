@@ -18,7 +18,6 @@ import { ArrowRight, Keyboard, Zap, ShieldCheck, Truck, Search, Star, Award } fr
 import { useI18n } from '@/components/providers/I18nProvider'
 import { useState, useEffect, ReactNode } from 'react'
 import { Product, Category } from '@/types'
-import { motion } from 'framer-motion'
 
 export default function HomePage() {
   const { t } = useI18n()
@@ -104,7 +103,6 @@ export default function HomePage() {
       {/* New Arrivals Section */}
       <section className="py-24 bg-muted/5">
         <div className="container mx-auto px-4">
-          {/* ... (Badge, Title, View All) */}
           <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
             <div className="text-center md:text-left">
               <Badge className="bg-primary/10 text-primary border-none font-black uppercase tracking-[0.3em] px-4 py-1 mb-4">Mới cập nhật</Badge>
@@ -129,7 +127,14 @@ export default function HomePage() {
               ))}
             </div>
           ) : (
-            {/* ... */}
+            <div className="flex flex-col items-center justify-center py-24 text-center border-4 border-dashed rounded-[3rem] bg-muted/5">
+              <Keyboard className="h-16 w-16 text-muted-foreground mb-6 opacity-10" />
+              <h3 className="text-2xl font-black uppercase tracking-tight italic">{t.home.noProducts}</h3>
+              <p className="text-muted-foreground mb-8 font-medium">{t.home.noProductsDesc}</p>
+              <Link href="/login">
+                <Button variant="outline" className="rounded-xl font-black uppercase tracking-widest text-[10px]">{t.home.loginAdmin}</Button>
+              </Link>
+            </div>
           )}
         </div>
       </section>
