@@ -95,7 +95,7 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
   for (const item of finalOrderItems) {
     const { data: product } = await supabase
       .from('products')
-      .select('stock_quantity, is_flash_sale, flash_sale_sold')
+      .select('stock_quantity, is_flash_sale, flash_sale_sold, flash_sale_price')
       .eq('id', item.product_id)
       .single()
     

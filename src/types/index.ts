@@ -39,6 +39,10 @@ export type Product = {
   connectivity: string | null
   average_rating: number
   review_count?: number
+  is_flash_sale?: boolean
+  flash_sale_price?: number | null
+  flash_sale_stock?: number
+  flash_sale_sold?: number
   options: ProductOption[]
   product_variants?: ProductVariant[]
   reviews?: Review[]
