@@ -24,10 +24,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Switch } from '@/components/ui/switch'
 
 const loginSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
   password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+  rememberMe: z.boolean().default(true),
 })
 
 type LoginValues = z.infer<typeof loginSchema>
@@ -42,6 +44,7 @@ export default function LoginPage() {
     defaultValues: {
       email: '',
       password: '',
+      rememberMe: true,
     },
   })
 
@@ -51,9 +54,10 @@ export default function LoginPage() {
       const formData = new FormData()
       formData.append('email', values.email)
       formData.append('password', values.password)
+      formData.append('rememberMe', String(values.rememberMe))
 
       const result = await login(formData)
-      
+// ... rest of the function ...
       if (result?.requiresMfa) {
         router.push(`/login/mfa?factorId=${result.factorId}`)
         return
@@ -159,6 +163,26 @@ export default function LoginPage() {
                         </div>
                       </FormControl>
                       <FormMessage className="text-[10px] font-bold" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="rememberMe"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-primary/10 bg-primary/5 p-4 shadow-sm">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-xs font-black uppercase tracking-widest text-foreground">
+                          Lưu đăng nhập
+                        </FormLabel>
+                        <p className="text-[10px] text-muted-foreground font-medium">Duy trì phiên làm việc của bạn</p>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />

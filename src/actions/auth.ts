@@ -10,6 +10,7 @@ export async function login(formData: FormData) {
 
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const rememberMe = formData.get('rememberMe') === 'true'
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
