@@ -124,11 +124,13 @@ export function Navbar({ user }: { user: any }) {
       <div className="container flex h-16 items-center justify-between mx-auto px-4">
         <div className="flex items-center gap-4 lg:gap-8">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden transition-all active:scale-90">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
+            <SheetTrigger
+              render={
+                <Button variant="ghost" size="icon" className="md:hidden transition-all active:scale-90">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              }
+            />
             <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0">
               <SheetHeader className="p-6 border-b text-left">
                 <SheetTitle className="flex items-center gap-2">

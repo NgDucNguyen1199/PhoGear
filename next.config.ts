@@ -7,6 +7,7 @@ const withPWA = require('next-pwa')({
 });
 
 const nextConfig: NextConfig = {
+  turbopack: {},
   images: {
     loader: 'custom',
     loaderFile: './src/lib/supabase/loader.ts',
