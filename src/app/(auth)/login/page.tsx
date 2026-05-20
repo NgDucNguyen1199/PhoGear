@@ -29,7 +29,7 @@ import { Switch } from '@/components/ui/switch'
 const loginSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
   password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-  rememberMe: z.boolean().default(true),
+  rememberMe: z.boolean(),
 })
 
 type LoginValues = z.infer<typeof loginSchema>
