@@ -4,7 +4,7 @@ import { getProducts, getCategories, getFlashSaleProducts } from '@/actions/prod
 import { getProfile } from '@/actions/auth'
 import { getSystemSettings } from '@/actions/admin_settings'
 import { Navbar } from '@/components/layout/Navbar'
-import { ProductCard } from '@/components/shop/ProductCard'
+import { ProductCard, ProductSkeleton } from '@/components/shop/ProductCard'
 import { HeroCarousel } from '@/components/home/HeroCarousel'
 import { KeyboardFinder } from '@/components/shop/KeyboardFinder'
 import { FlashSaleSection } from '@/components/home/FlashSaleSection'
@@ -28,28 +28,33 @@ export default function HomePage() {
   const [profile, setProfile] = useState<any>(null)
   const [settings, setSettings] = useState<any>(null)
   const [isGlobalSaleActive, setIsGlobalSaleActive] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
-      const [heroData, allProducts, flashData, categoriesData, profileData, settingsData] = await Promise.all([
-        getProducts(5),
-        getProducts(16),
-        getFlashSaleProducts(),
-        getCategories(),
-        getProfile(),
-        getSystemSettings()
-      ])
-      
-      setHeroProducts(heroData || [])
-      setNewProducts(allProducts?.slice(0, 8) || [])
-      setFlashSaleProducts(flashData || [])
-      setBestSellers(allProducts?.slice(8, 12) || [])
-      setCategories(categoriesData || [])
-      setProfile(profileData)
-      setSettings(settingsData)
+      try {
+        const [heroData, allProducts, flashData, categoriesData, profileData, settingsData] = await Promise.all([
+          getProducts(5),
+          getProducts(16),
+          getFlashSaleProducts(),
+          getCategories(),
+          getProfile(),
+          getSystemSettings()
+        ])
+        
+        setHeroProducts(heroData || [])
+        setNewProducts(allProducts?.slice(0, 8) || [])
+        setFlashSaleProducts(flashData || [])
+        setBestSellers(allProducts?.slice(8, 12) || [])
+        setCategories(categoriesData || [])
+        setProfile(profileData)
+        setSettings(settingsData)
 
-      if (settingsData?.flash_sale_enabled && settingsData?.flash_sale_end_time) {
-          setIsGlobalSaleActive(new Date(settingsData.flash_sale_end_time) > new Date())
+        if (settingsData?.flash_sale_enabled && settingsData?.flash_sale_end_time) {
+            setIsGlobalSaleActive(new Date(settingsData.flash_sale_end_time) > new Date())
+        }
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchData()
@@ -115,7 +120,13 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {newProducts.length > 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {[...Array(8)].map((_, i) => (
+                <ProductSkeleton key={i} />
+              ))}
+            </div>
+          ) : newProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {newProducts.map((product) => (
                 <ProductCard 
@@ -149,19 +160,27 @@ export default function HomePage() {
                 <p className="text-muted-foreground font-medium max-w-lg">Những mẫu bàn phím được cộng đồng săn đón và tin dùng nhiều nhất tại Pho Gear.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {bestSellers.map((product, idx) => (
-                  <div key={product.id} className="relative">
-                    <div className="absolute -top-4 -right-4 z-20 bg-yellow-500 text-white p-2 rounded-full shadow-xl shadow-yellow-500/20 rotate-12">
-                      <Star size={16} fill="white" />
-                    </div>
-                    <ProductCard 
-                        product={product} 
-                        isGlobalSaleActive={isGlobalSaleActive}
-                    />
-                  </div>
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {[...Array(4)].map((_, i) => (
+                  <ProductSkeleton key={i} />
                 ))}
-            </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {bestSellers.map((product, idx) => (
+                    <div key={product.id} className="relative">
+                      <div className="absolute -top-4 -right-4 z-20 bg-yellow-500 text-white p-2 rounded-full shadow-xl shadow-yellow-500/20 rotate-12">
+                        <Star size={16} fill="white" />
+                      </div>
+                      <ProductCard 
+                          product={product} 
+                          isGlobalSaleActive={isGlobalSaleActive}
+                      />
+                    </div>
+                  ))}
+              </div>
+            )}
         </div>
       </section>
 

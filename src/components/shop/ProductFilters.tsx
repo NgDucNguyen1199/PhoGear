@@ -16,9 +16,10 @@ interface ProductFiltersProps {
   layouts: string[]
   connectivities: string[]
   onApply?: () => void
+  isSearch?: boolean
 }
 
-export function ProductFilters({ categories, brands, layouts, connectivities, onApply }: ProductFiltersProps) {
+export function ProductFilters({ categories, brands, layouts, connectivities, onApply, isSearch }: ProductFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -32,6 +33,11 @@ export function ProductFilters({ categories, brands, layouts, connectivities, on
 
   const applyFilters = () => {
     const params = new URLSearchParams()
+    
+    // Preserve search query if on search page
+    const currentQ = searchParams.get('q')
+    if (isSearch && currentQ) params.set('q', currentQ)
+
     if (category !== 'all') params.set('category', category)
     if (brand !== 'all') params.set('brand', brand)
     if (layout !== 'all') params.set('layout', layout)
@@ -40,7 +46,8 @@ export function ProductFilters({ categories, brands, layouts, connectivities, on
     if (maxPrice) params.set('maxPrice', maxPrice)
     if (sort) params.set('sort', sort)
 
-    router.push(`/products?${params.toString()}`)
+    const basePath = isSearch ? '/search' : '/products'
+    router.push(`${basePath}?${params.toString()}`)
     if (onApply) onApply()
   }
 
@@ -52,7 +59,13 @@ export function ProductFilters({ categories, brands, layouts, connectivities, on
     setMinPrice('')
     setMaxPrice('')
     setSort('created_at-desc')
-    router.push('/products')
+    
+    if (isSearch) {
+        const currentQ = searchParams.get('q')
+        router.push(`/search?q=${currentQ || ''}`)
+    } else {
+        router.push('/products')
+    }
   }
 
   return (

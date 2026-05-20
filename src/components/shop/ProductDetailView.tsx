@@ -18,8 +18,11 @@ import {
 } from "@/components/ui/carousel"
 import { motion } from 'framer-motion'
 import { ReviewSection } from '@/components/shop/ReviewSection'
+import { useProductViewHistory } from '@/lib/utils/history'
+import { PersonalizedRecommendations } from '@/components/shop/PersonalizedRecommendations'
 
 export function ProductDetailView({ product, userId }: { product: Product, userId?: string }) {
+  useProductViewHistory(product.id)
   const variants = useMemo(() => product.product_variants || [], [product.product_variants])
   
   // Combine all unique images from product and variants
@@ -234,6 +237,8 @@ export function ProductDetailView({ product, userId }: { product: Product, userI
       <div className="pt-12">
         <ReviewSection product={product} userId={userId} />
       </div>
+
+      <PersonalizedRecommendations currentProductId={product.id} />
     </div>
   )
 }

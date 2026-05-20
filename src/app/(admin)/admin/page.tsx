@@ -2,6 +2,8 @@ import { getAdminStats } from '@/actions/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DollarSign, ShoppingBag, Package, Users, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { RevenueChart } from '@/components/admin/RevenueChart'
+import { BestSellersChart } from '@/components/admin/BestSellersChart'
+import { CategoryDistributionChart } from '@/components/admin/CategoryDistributionChart'
 import { RecentOrders } from '@/components/admin/RecentOrders'
 import { cn } from '@/lib/utils'
 
@@ -58,9 +60,16 @@ export default async function AdminDashboard() {
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-6 lg:grid-cols-7">
         <RevenueChart data={stats.monthlyRevenue} />
-        <RecentOrders orders={stats.recentOrders} />
+        <div className="lg:col-span-3">
+            <RecentOrders orders={stats.recentOrders} />
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-6">
+        <BestSellersChart data={stats.topProducts} />
+        <CategoryDistributionChart data={stats.categoryDistribution} />
       </div>
     </div>
   )

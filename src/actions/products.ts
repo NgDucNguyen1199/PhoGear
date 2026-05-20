@@ -158,14 +158,44 @@ export async function getCategories() {
   return data
 }
 
-export async function searchProducts(query: string) {
+export async function searchProducts(query: string, filters?: {
+  category?: string
+  brand?: string
+  minPrice?: number
+  maxPrice?: number
+  sort?: string
+}) {
   const supabase = await createClient()
 
-  // Thay vì dùng RPC (yêu cầu người dùng phải chạy SQL config trên Supabase),
-  // chúng ta fetch dữ liệu và lọc bằng JavaScript để hỗ trợ "không dấu" một cách an toàn.
-  const { data, error } = await supabase
+  let baseQuery = supabase
     .from('products')
     .select('*, categories(*)')
+
+  if (filters?.category && filters.category !== 'all') {
+    baseQuery = baseQuery.eq('category_id', filters.category)
+  }
+
+  if (filters?.brand && filters.brand !== 'all') {
+    baseQuery = baseQuery.eq('brand', filters.brand)
+  }
+
+  if (filters?.minPrice !== undefined) {
+    baseQuery = baseQuery.gte('price', filters.minPrice)
+  }
+
+  if (filters?.maxPrice !== undefined) {
+    baseQuery = baseQuery.lte('price', filters.maxPrice)
+  }
+
+  // Sorting
+  if (filters?.sort) {
+    const [column, order] = filters.sort.split('-')
+    baseQuery = baseQuery.order(column, { ascending: order === 'asc' })
+  } else {
+    baseQuery = baseQuery.order('created_at', { ascending: false })
+  }
+
+  const { data, error } = await baseQuery
 
   if (error) {
     console.error('Error searching products:', error.message)

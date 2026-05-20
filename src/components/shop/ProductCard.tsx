@@ -11,6 +11,31 @@ import { useWishlistStore } from '@/store/wishlistStore'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
+
+export function ProductSkeleton() {
+  return (
+    <Card className="overflow-hidden border-white/5 bg-background/50 backdrop-blur-sm flex flex-col h-full">
+      <div className="relative aspect-square bg-muted">
+        <Skeleton className="h-full w-full" />
+      </div>
+      <CardContent className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-4 w-10 rounded-full" />
+          </div>
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-2/3" />
+        </div>
+        <div className="pt-2">
+          <Skeleton className="h-7 w-24" />
+          <Skeleton className="h-3 w-32 mt-2" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
 export function ProductCard({ product, isGlobalSaleActive = true }: { product: Product, isGlobalSaleActive?: boolean }) {
   const router = useRouter()

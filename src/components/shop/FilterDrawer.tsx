@@ -18,19 +18,20 @@ interface FilterDrawerProps {
   brands: string[]
   layouts: string[]
   connectivities: string[]
+  isSearch?: boolean
 }
 
-export function FilterDrawer({ categories, brands, layouts, connectivities }: FilterDrawerProps) {
+export function FilterDrawer({ categories, brands, layouts, connectivities, isSearch }: FilterDrawerProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger render={
-        <Button variant="outline" className="h-12 w-12 md:w-auto md:px-6 rounded-2xl border-primary/20 hover:border-primary hover:bg-primary/5 transition-all shadow-lg shadow-primary/5 group">
+      <SheetTrigger asChild>
+        <Button variant="outline" className="h-12 w-full md:w-auto md:px-6 rounded-2xl border-primary/20 hover:border-primary hover:bg-primary/5 transition-all shadow-lg shadow-primary/5 group">
           <Filter className="h-5 w-5 md:mr-2 group-hover:rotate-180 transition-transform duration-500" />
-          <span className="hidden md:inline font-black uppercase tracking-widest text-xs">Bộ lọc</span>
+          <span className="font-black uppercase tracking-widest text-xs">Bộ lọc nâng cao</span>
         </Button>
-      } />
+      </SheetTrigger>
       <SheetContent side="right" className="w-[350px] sm:max-w-md p-0 border-l border-primary/10">
         <div className="h-full flex flex-col">
           <SheetHeader className="p-8 border-b bg-primary/5">
@@ -45,6 +46,7 @@ export function FilterDrawer({ categories, brands, layouts, connectivities }: Fi
               layouts={layouts} 
               connectivities={connectivities} 
               onApply={() => setIsOpen(false)}
+              isSearch={isSearch}
             />
           </div>
         </div>

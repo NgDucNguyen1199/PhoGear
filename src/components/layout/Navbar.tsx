@@ -21,6 +21,30 @@ import {
 import { Logo } from '@/components/ui/Logo'
 import { RegionSwitcher } from '@/components/layout/RegionSwitcher'
 import { useI18n } from '@/components/providers/I18nProvider'
+import { useTheme } from 'next-themes'
+import { Moon, Sun } from 'lucide-react'
+
+function ThemeToggle() {
+  const { setTheme, theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => setMounted(true), [])
+
+  if (!mounted) return <Button variant="ghost" size="icon" className="h-9 w-9" />
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-9 w-9 transition-all hover:scale-110 active:scale-95"
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+    >
+      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <span className="sr-only">Toggle theme</span>
+    </Button>
+  )
+}
 
 export function Navbar({ user }: { user: any }) {
   const { t, locale } = useI18n()
@@ -156,6 +180,8 @@ export function Navbar({ user }: { user: any }) {
               </div>
             )}
           </div>
+
+          <ThemeToggle />
 
           {/* Wishlist Icon */}
           <Button 

@@ -19,6 +19,7 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
 
   const shipping_address = formData.get('address') as string
   const phone_number = formData.get('phone') as string
+  const payment_method = formData.get('paymentMethod') as string || 'cod'
   
   if (!shipping_address || !phone_number) {
     return { error: 'Vui lòng cung cấp đầy đủ địa chỉ và số điện thoại.' }
@@ -74,7 +75,8 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
       total_amount: calculated_total_amount,
       shipping_address,
       phone_number,
-      status: 'pending'
+      status: payment_method === 'online' ? 'processing' : 'pending',
+      payment_method: payment_method
     })
     .select()
     .single()

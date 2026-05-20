@@ -4,6 +4,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { FilteredProductList } from '@/components/shop/FilteredProductList'
 import { FilterDrawer } from '@/components/shop/FilterDrawer'
 import { Suspense } from 'react'
+import { ProductSkeleton } from '@/components/shop/ProductCard'
 
 export const metadata = {
   title: 'Tất cả sản phẩm | Pho Gear',
@@ -47,11 +48,12 @@ export default async function ProductsPage() {
           </div>
         </div>
 
+// ... in the return ...
         <div className="w-full">
             <Suspense fallback={
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                  <div key={i} className="h-[400px] bg-muted animate-pulse rounded-[2.5rem]" />
+                {[...Array(8)].map((_, i) => (
+                  <ProductSkeleton key={i} />
                 ))}
               </div>
             }>

@@ -12,28 +12,60 @@ import { toast } from 'sonner'
 import { Loader2, Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { motion } from 'framer-motion'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { handleActionResponse } from '@/lib/error-handler'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+
+const loginSchema = z.object({
+  email: z.string().email('Email không hợp lệ'),
+  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+})
+
+type LoginValues = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
-  async function handleSubmit(formData: FormData) {
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  async function onSubmit(values: LoginValues) {
     setIsLoading(true)
     try {
+      const formData = new FormData()
+      formData.append('email', values.email)
+      formData.append('password', values.password)
+
       const result = await login(formData)
+      
       if (result?.requiresMfa) {
         router.push(`/login/mfa?factorId=${result.factorId}`)
         return
       }
-      
-      if (result?.error) {
-        toast.error(result.error)
-        setIsLoading(false)
-      } else if (result?.success) {
-        router.push('/')
-        router.refresh()
-      }
+
+      handleActionResponse(result, {
+        onSuccess: () => {
+          router.push('/')
+          router.refresh()
+        },
+        onError: () => setIsLoading(false)
+      })
     } catch (error) {
       toast.error('Đã có lỗi xảy ra. Vui lòng thử lại sau.')
       setIsLoading(false)
@@ -66,80 +98,96 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
 
-          <form action={handleSubmit}>
-            <CardContent className="grid gap-6 pt-8">
-              <div className="grid gap-2">
-                <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">
-                  Email
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    id="email" 
-                    name="email" 
-                    type="email" 
-                    placeholder="name@example.com" 
-                    required 
-                    className="pl-10 h-12 rounded-xl bg-muted/50 border-white/10 focus:bg-background transition-all"
-                  />
-                </div>
-              </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <CardContent className="grid gap-6 pt-8">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="grid gap-2">
+                      <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">
+                        Email
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            {...field}
+                            type="email" 
+                            placeholder="name@example.com" 
+                            className="pl-10 h-12 rounded-xl bg-muted/50 border-white/10 focus:bg-background transition-all"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-[10px] font-bold" />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="grid gap-2">
-                <div className="flex items-center justify-between ml-1">
-                  <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                    Mật khẩu
-                  </Label>
-                  <Link 
-                    href="/forgot-password" 
-                    className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-70"
-                  >
-                    Quên mật khẩu?
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="grid gap-2">
+                      <div className="flex items-center justify-between ml-1">
+                        <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                          Mật khẩu
+                        </FormLabel>
+                        <Link 
+                          href="/forgot-password" 
+                          className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-70"
+                        >
+                          Quên mật khẩu?
+                        </Link>
+                      </div>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            {...field}
+                            type={showPassword ? "text" : "password"} 
+                            className="pl-10 pr-10 h-12 rounded-xl bg-muted/50 border-white/10 focus:bg-background transition-all"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-[10px] font-bold" />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+
+              <CardFooter className="flex flex-col gap-6 pb-8">
+                <Button 
+                  className="w-full h-12 rounded-xl font-black uppercase tracking-[0.2em] text-xs shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all gap-2" 
+                  type="submit" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      Đăng nhập <ArrowRight size={16} />
+                    </>
+                  )}
+                </Button>
+
+                <div className="text-xs text-center font-bold text-muted-foreground uppercase tracking-widest">
+                  Chưa có tài khoản?{' '}
+                  <Link href="/register" className="text-primary hover:opacity-70 transition-opacity">
+                    Đăng ký ngay
                   </Link>
                 </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    id="password" 
-                    name="password" 
-                    type={showPassword ? "text" : "password"} 
-                    required 
-                    className="pl-10 pr-10 h-12 rounded-xl bg-muted/50 border-white/10 focus:bg-background transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-            </CardContent>
-
-            <CardFooter className="flex flex-col gap-6 pb-8">
-              <Button 
-                className="w-full h-12 rounded-xl font-black uppercase tracking-[0.2em] text-xs shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all gap-2" 
-                type="submit" 
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    Đăng nhập <ArrowRight size={16} />
-                  </>
-                )}
-              </Button>
-
-              <div className="text-xs text-center font-bold text-muted-foreground uppercase tracking-widest">
-                Chưa có tài khoản?{' '}
-                <Link href="/register" className="text-primary hover:opacity-70 transition-opacity">
-                  Đăng ký ngay
-                </Link>
-              </div>
-            </CardFooter>
-          </form>
+              </CardFooter>
+            </form>
+          </Form>
         </Card>
 
         <p className="mt-8 text-center text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em]">

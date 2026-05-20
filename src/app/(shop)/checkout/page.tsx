@@ -124,6 +124,9 @@ export default function CheckoutPage() {
     )
   }
 
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('cod')
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+
   const handleCheckout = async (formData: FormData) => {
     const orderItems: OrderItemInput[] = items.map(item => ({
       product_id: item.id,
@@ -132,7 +135,17 @@ export default function CheckoutPage() {
       selected_options: item.selectedOptions
     }))
 
+    if (paymentMethod === 'online') {
+      setIsProcessingPayment(true)
+      // Giả lập chuyển hướng đến cổng thanh toán VNPay/Momo
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      setIsProcessingPayment(false)
+    }
+
     startTransition(async () => {
+        // Thêm phương thức thanh toán vào formData
+        formData.append('paymentMethod', paymentMethod)
+        
         const result = await createOrder(formData, orderItems)
         if (result?.error) {
             toast.error(result.error)
@@ -246,23 +259,72 @@ export default function CheckoutPage() {
                                         <CreditCard className="h-5 w-5 text-primary" /> Phương thức thanh toán
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="pt-6">
-                                    <div className="relative border-2 border-primary bg-primary/5 rounded-2xl p-6 flex items-start gap-4 cursor-default">
-                                        <div className="bg-primary text-white p-2 rounded-full">
+                                <CardContent className="pt-6 space-y-4">
+                                    <div 
+                                      onClick={() => setPaymentMethod('cod')}
+                                      className={cn(
+                                        "relative border-2 rounded-2xl p-5 flex items-start gap-4 cursor-pointer transition-all",
+                                        paymentMethod === 'cod' ? "border-primary bg-primary/5" : "border-white/10 hover:border-primary/30"
+                                      )}
+                                    >
+                                        <div className={cn(
+                                          "p-2 rounded-full transition-colors",
+                                          paymentMethod === 'cod' ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+                                        )}>
                                             <Truck className="h-5 w-5" />
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between mb-1">
                                                 <h4 className="font-bold text-sm">Thanh toán khi nhận hàng (COD)</h4>
-                                                <div className="h-5 w-5 rounded-full border-4 border-primary bg-white shadow-inner" />
+                                                <div className={cn(
+                                                  "h-5 w-5 rounded-full border-2 transition-all",
+                                                  paymentMethod === 'cod' ? "border-primary bg-primary scale-110" : "border-muted-foreground/30 bg-transparent"
+                                                )}>
+                                                  {paymentMethod === 'cod' && <div className="h-full w-full flex items-center justify-center"><div className="h-1.5 w-1.5 bg-white rounded-full" /></div>}
+                                                </div>
                                             </div>
                                             <p className="text-xs text-muted-foreground">
                                                 Bạn sẽ chỉ thanh toán sau khi nhận được hàng và kiểm tra sản phẩm.
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="mt-4 p-4 bg-yellow-500/10 rounded-xl border border-yellow-500/20 text-[10px] font-bold uppercase tracking-wider text-yellow-700 text-center">
-                                        Dịch vụ thanh toán chuyển khoản đang được nâng cấp
+
+                                    <div 
+                                      onClick={() => setPaymentMethod('online')}
+                                      className={cn(
+                                        "relative border-2 rounded-2xl p-5 flex items-start gap-4 cursor-pointer transition-all",
+                                        paymentMethod === 'online' ? "border-primary bg-primary/5" : "border-white/10 hover:border-primary/30"
+                                      )}
+                                    >
+                                        <div className={cn(
+                                          "p-2 rounded-full transition-colors",
+                                          paymentMethod === 'online' ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+                                        )}>
+                                            <Zap className="h-5 w-5" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <div className="flex items-center gap-2">
+                                                  <h4 className="font-bold text-sm">Thanh toán trực tuyến</h4>
+                                                  <span className="bg-orange-500 text-white text-[8px] font-black h-4 px-1 flex items-center rounded-sm">MỚI</span>
+                                                </div>
+                                                <div className={cn(
+                                                  "h-5 w-5 rounded-full border-2 transition-all",
+                                                  paymentMethod === 'online' ? "border-primary bg-primary scale-110" : "border-muted-foreground/30 bg-transparent"
+                                                )}>
+                                                  {paymentMethod === 'online' && <div className="h-full w-full flex items-center justify-center"><div className="h-1.5 w-1.5 bg-white rounded-full" /></div>}
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mb-3">
+                                                Hỗ trợ VNPay, MoMo, ZaloPay và Thẻ ngân hàng nội địa.
+                                            </p>
+                                            <div className="flex items-center gap-2 opacity-60 grayscale hover:grayscale-0 transition-all">
+                                              <div className="h-6 w-10 bg-muted rounded border border-white/5" />
+                                              <div className="h-6 w-10 bg-muted rounded border border-white/5" />
+                                              <div className="h-6 w-10 bg-muted rounded border border-white/5" />
+                                              <div className="h-6 w-10 bg-muted rounded border border-white/5" />
+                                            </div>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -270,16 +332,16 @@ export default function CheckoutPage() {
                             <Button 
                                 type="submit" 
                                 className="w-full h-16 text-lg font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99]" 
-                                disabled={isPending}
+                                disabled={isPending || isProcessingPayment}
                             >
-                                {isPending ? (
+                                {isPending || isProcessingPayment ? (
                                     <>
                                         <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                                        Đang xử lý đơn hàng...
+                                        {isProcessingPayment ? 'Đang kết nối cổng thanh toán...' : 'Đang xử lý đơn hàng...'}
                                     </>
                                 ) : (
                                     <>
-                                        Xác nhận đặt hàng <ChevronRight className="ml-2 h-5 w-5" />
+                                        {paymentMethod === 'online' ? 'Thanh toán ngay' : 'Xác nhận đặt hàng'} <ChevronRight className="ml-2 h-5 w-5" />
                                     </>
                                 )}
                             </Button>
