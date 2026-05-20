@@ -49,6 +49,7 @@ CREATE TABLE public.orders (
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     total_amount NUMERIC NOT NULL CHECK (total_amount >= 0),
     status TEXT CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')) DEFAULT 'pending',
+    payment_method TEXT CHECK (payment_method IN ('cod', 'online')) DEFAULT 'cod',
     shipping_address TEXT,
     phone_number TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
