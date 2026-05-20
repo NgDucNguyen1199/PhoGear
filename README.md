@@ -1,4 +1,4 @@
-# BÁO CÁO DỰ ÁN: XÂY DỰNG HỆ THỐNG THƯƠNG MẠI ĐIỆN TỬ VÀ TRẢI NGHIỆM NGƯỜI DÙNG CHUYÊN BIỆT PHOGEAR
+# BÁO CÁO DỰ ÁN: HỆ THỐNG THƯƠNG MẠI ĐIỆN TỬ VÀ TRẢI NGHIỆM NGƯỜI DÙNG PHOGEAR
 
 <div align="center">
   <img src="public/logo_main.png" alt="PhoGear Logo" width="220" />
@@ -16,75 +16,95 @@
 
 ## 📑 Tóm tắt dự án (Abstract)
 
-**PhoGear** là một ứng dụng web Fullstack hiện đại, được thiết kế nhằm tối ưu hóa quy trình thương mại điện tử trong thị trường ngách là thiết bị ngoại vi cao cấp (Mechanical Keyboards). Dự án tích hợp các module tương tác nâng cao như **PhoType** (Typing Engine), **Forum Hub** (Diễn đàn cộng đồng) và hệ thống bảo mật đa lớp (**Multi-Factor Authentication - MFA**). Hệ thống tận dụng sức mạnh của kiến trúc **Next.js 16** với cơ chế **Proxy** (Middleware mới) và **Turbopack** để đảm bảo hiệu suất và bảo mật dữ liệu tuyệt đối.
+**PhoGear** là một ứng dụng web Fullstack hiện đại, chuyên biệt cho thị trường thiết bị ngoại vi cao cấp (Mechanical Keyboards). Dự án không chỉ là một cửa hàng trực tuyến mà còn là một hệ sinh thái cho cộng đồng đam mê bàn phím cơ, tích hợp các công cụ luyện tập và hệ thống bảo mật nghiêm ngặt. Hệ thống tận dụng sức mạnh của **Next.js 16**, **Supabase** và kiến trúc **Proxy** tiên tiến để đảm bảo trải nghiệm người dùng mượt mà và an toàn tuyệt đối.
 
 ---
 
 ## 🏛️ 1. Kiến trúc Hệ thống (System Architecture)
 
 ### 1.1 Tầng Giao diện & Xử lý (Frontend & Logic)
-- **Next.js 16 (App Router):** Sử dụng Turbopack để tối ưu tốc độ build. Triển khai cơ chế **Proxy** (`proxy.ts`) chuẩn hóa theo convention mới để quản lý session và bảo mật.
-- **Server Actions:** Xử lý nghiệp vụ phức tạp trực tiếp trên server (MFA, Forum Moderation, Order Verification, Product Management).
-- **State Management:** Sử dụng **Zustand** với cơ chế Persist để duy trì giỏ hàng và danh sách yêu thích giữa các phiên làm việc.
-- **PWA Support:** Hỗ trợ Offline mode và trải nghiệm như ứng dụng di động trên smartphone.
+- **Framework:** Next.js 16 (App Router) với engine **Turbopack** cho tốc độ phản hồi cực nhanh.
+- **Middleware Evolution:** Chuyển đổi sang convention **Proxy** (`proxy.ts`) để tối ưu hóa việc quản lý session và điều hướng bảo mật.
+- **State Management:** **Zustand** (with Persist) quản lý giỏ hàng, danh sách yêu thích và trạng thái ứng dụng.
+- **Optimization:** Tích hợp **Cloudinary** để resize/compress ảnh tự động và **PWA** cho trải nghiệm mobile app native.
 
 ### 1.2 Tầng Hạ tầng & Cơ sở dữ liệu (Backend & Database)
-- **Supabase BaaS:** Hạt nhân lưu trữ và xác thực.
-- **Cloudinary Integration:** Tự động tối ưu hóa, nén và thay đổi kích thước hình ảnh thông qua CDN để giảm tải băng thông và tăng tốc độ tải trang.
+- **Supabase BaaS:** Cung cấp hệ thống xác thực (Auth), cơ sở dữ liệu thời gian thực (Realtime DB) và lưu trữ tệp tin (Storage).
+- **PostgreSQL:** Hệ quản trị CSDL quan hệ mạnh mẽ với cơ chế **Row Level Security (RLS)** phân quyền dữ liệu đến từng dòng.
 
 ---
 
-## ✨ 2. Các Module Chức năng Cốt lõi
+## 🗄️ 2. Mô hình Dữ liệu (Database Schema)
 
-### 🛒 2.1 Module Thương mại điện tử (E-commerce Core)
-- **Hệ thống Flash Sale 3.0:** Quản lý chương trình khuyến mãi giờ vàng với bộ đếm ngược thời gian thực.
-- **Chính sách Vận chuyển Thông minh:** Tự động tính phí vận chuyển và áp dụng **Freeship cho đơn từ 800,000đ**.
-- **Xác thực Đơn hàng:** Kiểm tra giá và phí vận chuyển tại Server để chống gian lận.
+Hệ thống sử dụng cấu trúc CSDL quan hệ được thiết kế tối ưu cho thương mại điện tử và mạng xã hội thu nhỏ:
 
-### 📱 2.2 Tối ưu hóa Trải nghiệm Người dùng (UX/UI Evolution)
-- **Mobile Responsive 2.0:** Giao diện được thiết kế lại hoàn toàn cho thiết bị di động với Mobile Menu Slide-out và Search Overlay chuyên dụng.
-- **Dark Mode Support:** Hỗ trợ chế độ tối (Dark Mode) giúp bảo vệ mắt và tiết kiệm pin trên các thiết bị màn hình OLED.
-- **Personalized Recommendations:** Hệ thống gợi ý sản phẩm dựa trên sở thích và lịch sử xem của người dùng.
+### 2.1 Các thực thể chính
+- **Profiles:** Mở rộng từ `auth.users`, lưu trữ thông tin người dùng (`full_name`, `avatar_url`, `role`).
+- **Products:** Thông tin sản phẩm chi tiết (`price`, `stock`, `variants`, `flash_sale_price`).
+- **Categories:** Phân loại sản phẩm (`mechanical`, `keycap`, `switch`).
+- **Orders & Order Items:** Quản lý giao dịch, lưu giữ giá tại thời điểm mua và các tùy chọn biến thể (JSONB).
+- **Posts & Comments:** Nền tảng diễn đàn với hệ thống trạng thái `pending`, `approved`, `rejected`.
+- **System Settings:** Cấu hình toàn cục (tên site, trạng thái Flash Sale, cấu hình MFA).
 
-### 🛡️ 2.3 Bảo mật & Quản trị nâng cao
-- **Multi-Factor Authentication (MFA):** Bảo vệ tài khoản bằng mã TOTP (Google Authenticator/Authy).
-- **Automated Testing Suite:** Hệ thống kiểm thử tự động với **Vitest** và **React Testing Library**, bao phủ các luồng quan trọng như Checkout, MFA và SKU generation.
+### 2.2 Sơ đồ quan hệ (ERD Highlights)
+- **1-n:** Một `Category` chứa nhiều `Products`.
+- **1-n:** Một `User` có nhiều `Orders`.
+- **n-n:** `Orders` và `Products` thông qua bảng trung gian `Order_Items`.
+- **1-n:** Một `Post` có nhiều `Comments`.
 
 ---
 
-## 🛠️ 3. Phân tích Kỹ thuật & Công nghệ
+## ✨ 3. Các Module Chức năng Cốt lõi
 
-| Công nghệ | Vai trò trong hệ thống | Ưu điểm chính |
+### 🛒 3.1 Thương mại điện tử Nâng cao
+- **Flash Sale 3.0:** Đếm ngược thời gian thực, tự động điều chỉnh giá và cập nhật tồn kho.
+- **Smart Shipping:** Tự động tính phí vận chuyển và áp dụng chính sách Freeship thông minh.
+- **Product Management:** Admin có thể quản lý biến thể phức tạp (màu sắc, layout) và upload ảnh đa kênh.
+
+### 📱 3.2 Tối ưu hóa Di động (Mobile UX 2.0)
+- **Full Responsive:** Giao diện thích ứng hoàn hảo từ Desktop đến Smartphone.
+- **Mobile Menu & Search Overlay:** Thiết kế dành riêng cho thao tác một tay trên điện thoại.
+- **Admin Mobile Dashboard:** Quản trị viên có thể duyệt đơn hàng, duyệt bài viết và xem thống kê ngay trên thiết bị di động với các bảng dữ liệu có khả năng cuộn ngang mượt mà.
+
+### 🎮 3.3 Trải nghiệm Người dùng (Gamification)
+- **PhoType Engine:** Trình luyện gõ phím chuyên sâu, đo lường WPM và độ chính xác.
+- **Keyboard Finder:** Hệ thống gợi ý sản phẩm thông minh qua bộ câu hỏi trắc nghiệm trực quan.
+
+### 🛡️ 3.4 Bảo mật & Kiểm thử
+- **Multi-Factor Authentication (MFA):** Bảo vệ tài khoản bằng mã TOTP 6 số.
+- **Automated Testing:** Hệ thống kiểm thử toàn diện với **Vitest**, đảm bảo các luồng quan trọng (Thanh toán, Xác thực) luôn hoạt động đúng.
+
+---
+
+## 🛠️ 4. Phân tích Kỹ thuật & Công nghệ
+
+| Công nghệ | Vai trò | Ưu điểm |
 | :--- | :--- | :--- |
-| **Next.js 16** | Framework chính | Hiệu năng vượt trội, cơ chế Proxy bảo mật và Turbopack build thần tốc. |
-| **Vitest** | Automated Testing | Tốc độ chạy test cực nhanh, tương thích hoàn hảo với Next.js 16. |
-| **Cloudinary** | Image Delivery | Tự động chọn định dạng (WebP/AVIF) và chất lượng phù hợp nhất (f_auto, q_auto). |
-| **Tailwind CSS 4** | Styling | Kiến trúc CSS hiện đại, tối ưu hóa kích thước file bundle. |
-
----
-
-## 🔐 4. An toàn & Bảo mật Dữ liệu
-
-1. **Server-side Verification:** Chống gian lận giá sale bằng cách xác thực tại Server Actions.
-2. **Secure Proxy:** Quản lý session người dùng thông qua tầng Proxy bảo mật của Next.js 16.
-3. **MFA Enforcement:** Bắt buộc xác thực 2 lớp cho các thao tác nhạy cảm và quyền Admin.
+| **Next.js 16** | Core Framework | Middleware/Proxy bảo mật, Turbopack nhanh hơn 700%. |
+| **TypeScript** | Language | Hạn chế tối đa lỗi logic thông qua hệ thống Type Safety. |
+| **Tailwind CSS 4** | Styling | Tối ưu hóa bundle size, hỗ trợ Dark Mode native. |
+| **Cloudinary** | CDN Image | Tự động chọn định dạng WebP/AVIF giúp tải trang cực nhanh. |
+| **Vitest** | Testing | Chạy hàng chục bài test đơn vị và tích hợp chỉ trong vài giây. |
 
 ---
 
 ## 🚀 5. Hướng dẫn Cài đặt & Khởi chạy
 
-### Yêu cầu tiên quyết:
-- Node.js 20+ và tài khoản Supabase, Cloudinary.
+### Yêu cầu:
+- Node.js 20+
+- Tài khoản Supabase và Cloudinary.
 
-### Các bước thực hiện:
-1. **Khởi tạo:** `git clone https://github.com/NgDucNguyen1199/PhoGear.git`
-2. **Cài đặt:** `npm install`
-3. **Biến môi trường:** Cấu hình các biến trong `.env.local`:
+### Các bước:
+1. **Clone:** `git clone https://github.com/NgDucNguyen1199/PhoGear.git`
+2. **Setup:** `npm install`
+3. **Environment:** Tạo `.env.local` với các biến:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` (Tùy chọn cho image optimization)
-4. **Kiểm thử:** `npm test` để chạy toàn bộ suite test tự động.
-5. **Chạy thử:** `npm run dev`
+   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`
+4. **Build & Test:**
+   - Chạy test: `npm test`
+   - Build production: `npm run build`
+5. **Run:** `npm run dev`
 
 ---
 
