@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ShoppingCart, User, Search, Menu, LogOut, Heart, Loader2 } from 'lucide-react'
+import { ShoppingCart, User, Search, Menu, LogOut, Heart, Loader2, X, ArrowRight, Sun, Moon } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { logout } from '@/actions/auth'
 import { useCartStore } from '@/store/cartStore'
@@ -22,7 +22,14 @@ import { Logo } from '@/components/ui/Logo'
 import { RegionSwitcher } from '@/components/layout/RegionSwitcher'
 import { useI18n } from '@/components/providers/I18nProvider'
 import { useTheme } from 'next-themes'
-import { Moon, Sun } from 'lucide-react'
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetTrigger,
+  SheetTitle,
+  SheetHeader
+} from '@/components/ui/sheet'
+import { motion, AnimatePresence } from 'framer-motion'
 
 function ThemeToggle() {
   const { setTheme, theme } = useTheme()
@@ -50,6 +57,8 @@ export function Navbar({ user }: { user: any }) {
   const { t, locale } = useI18n()
   const router = useRouter()
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [suggestions, setSuggestions] = useState<Product[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -60,7 +69,6 @@ export function Navbar({ user }: { user: any }) {
   const wishlistItems = useWishlistStore((state) => state.items)
   const [mounted, setMounted] = useState(false)
 
-  // Xử lý click ra ngoài để đóng gợi ý
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -71,13 +79,12 @@ export function Navbar({ user }: { user: any }) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Logic tìm kiếm gợi ý (Debounce)
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (searchQuery.trim().length >= 2) {
         setIsSearching(true)
         const results = await searchProducts(searchQuery)
-        setSuggestions(results.slice(0, 5)) // Lấy tối đa 5 gợi ý
+        setSuggestions(results.slice(0, 5))
         setShowSuggestions(true)
         setIsSearching(false)
       } else {
@@ -98,26 +105,104 @@ export function Navbar({ user }: { user: any }) {
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
       setShowSuggestions(false)
+      setIsMobileSearchOpen(false)
     }
   }
+
+  const NavLinks = () => (
+    <>
+      <Link href="/products" className="transition-all hover:text-primary hover:scale-105 active:scale-95">{t.nav.products}</Link>
+      <Link href="/categories" className="transition-all hover:text-primary hover:scale-105 active:scale-95">{t.nav.categories}</Link>
+      <Link href="/forum" className="transition-all hover:text-primary hover:scale-105 active:scale-95">Cộng đồng</Link>
+      <Link href="/photype" className="transition-all hover:text-orange-600 font-bold text-orange-500 hover:scale-105 active:scale-95">{t.nav.photype}</Link>
+      <Link href="/about" className="transition-all hover:text-primary hover:scale-105 active:scale-95">{t.nav.about}</Link>
+    </>
+  )
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between mx-auto px-4">
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 lg:gap-8">
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden transition-all active:scale-90">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0">
+              <SheetHeader className="p-6 border-b text-left">
+                <SheetTitle className="flex items-center gap-2">
+                  <Logo width={40} height={40} />
+                  <span className="font-black italic text-xl tracking-tighter">PHO GEAR</span>
+                </SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col h-full py-6">
+                <nav className="flex flex-col gap-4 px-6 text-lg font-black uppercase tracking-tighter italic">
+                  <Link 
+                    href="/products" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between py-2 border-b border-muted group"
+                  >
+                    {t.nav.products} <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
+                  </Link>
+                  <Link 
+                    href="/categories" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between py-2 border-b border-muted group"
+                  >
+                    {t.nav.categories} <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
+                  </Link>
+                  <Link 
+                    href="/forum" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between py-2 border-b border-muted group"
+                  >
+                    Cộng đồng <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
+                  </Link>
+                  <Link 
+                    href="/photype" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between py-2 border-b border-muted group text-orange-500"
+                  >
+                    {t.nav.photype} <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
+                  </Link>
+                  <Link 
+                    href="/about" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between py-2 border-b border-muted group"
+                  >
+                    {t.nav.about} <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
+                  </Link>
+                </nav>
+                
+                <div className="mt-auto p-6 space-y-4 mb-12">
+                  <RegionSwitcher />
+                  {!user ? (
+                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button className="w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs">
+                        {t.nav.login}
+                      </Button>
+                    </Link>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button variant="outline" onClick={() => { router.push('/profile'); setIsMobileMenuOpen(false); }} className="rounded-xl font-bold text-[10px] uppercase">Hồ sơ</Button>
+                        <Button variant="destructive" onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="rounded-xl font-bold text-[10px] uppercase">Đăng xuất</Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+
           <Link href="/">
-            <Logo width={50} height={50} />
+            <Logo width={40} height={40} />
           </Link>
           <nav className="hidden md:flex gap-6 text-sm font-medium">
-            <Link href="/products" className="transition-all hover:text-primary hover:scale-105 active:scale-95">{t.nav.products}</Link>
-            <Link href="/categories" className="transition-all hover:text-primary hover:scale-105 active:scale-95">{t.nav.categories}</Link>
-            <Link href="/forum" className="transition-all hover:text-primary hover:scale-105 active:scale-95">Cộng đồng</Link>
-            <Link href="/photype" className="transition-all hover:text-orange-600 font-bold text-orange-500 hover:scale-105 active:scale-95">{t.nav.photype}</Link>
-            <Link href="/about" className="transition-all hover:text-primary hover:scale-105 active:scale-95">{t.nav.about}</Link>
+            <NavLinks />
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 sm:gap-4">
           <div ref={searchRef} className="relative hidden lg:block">
             <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -134,7 +219,6 @@ export function Navbar({ user }: { user: any }) {
               )}
             </form>
 
-            {/* Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 mt-2 w-80 bg-background border rounded-lg shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
                 <div className="p-2 border-b bg-muted/30 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
@@ -181,9 +265,17 @@ export function Navbar({ user }: { user: any }) {
             )}
           </div>
 
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="lg:hidden transition-all active:scale-90"
+            onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+          >
+            <Search className="h-5 w-5" />
+          </Button>
+
           <ThemeToggle />
 
-          {/* Wishlist Icon */}
           <Button 
             variant="ghost" 
             size="icon" 
@@ -198,7 +290,6 @@ export function Navbar({ user }: { user: any }) {
             )}
           </Button>
 
-          {/* Cart Icon */}
           <Button 
             variant="ghost" 
             size="icon" 
@@ -217,7 +308,9 @@ export function Navbar({ user }: { user: any }) {
 
           <div className="hidden sm:block border-l h-6 mx-1 opacity-20" />
           
-          <RegionSwitcher />
+          <div className="hidden sm:block">
+            <RegionSwitcher />
+          </div>
 
           {user ? (
             <DropdownMenu>
@@ -236,22 +329,46 @@ export function Navbar({ user }: { user: any }) {
                     {t.nav.admin}
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={() => logout()} className="text-destructive">
+                <DropdownMenuItem onClick={() => logout()} className="text-destructive font-bold">
                   <LogOut className="mr-2 h-4 w-4" /> {t.nav.logout}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link href="/login">
-              <Button size="sm">{t.nav.login}</Button>
+            <Link href="/login" className="hidden sm:block">
+              <Button size="sm" className="rounded-lg font-bold uppercase text-[10px] tracking-widest">{t.nav.login}</Button>
             </Link>
           )}
-          
-          <Button variant="ghost" size="icon" className="md:hidden transition-all hover:scale-110 active:scale-95 hover:text-primary">
-            <Menu className="h-5 w-5" />
-          </Button>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isMobileSearchOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="lg:hidden border-t bg-background overflow-hidden"
+          >
+            <div className="p-4 flex gap-2">
+              <form onSubmit={handleSearch} className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="search"
+                  autoFocus
+                  placeholder={t.nav.searchPlaceholder}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-xl border border-input bg-muted/30 pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </form>
+              <Button variant="ghost" size="icon" onClick={() => setIsMobileSearchOpen(false)} className="active:scale-90">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   )
 }
