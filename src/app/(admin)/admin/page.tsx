@@ -17,19 +17,19 @@ export default async function AdminDashboard() {
   }).format(stats.totalRevenue)
 
   return (
-    <div className="space-y-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-6 sm:space-y-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black uppercase tracking-tighter italic text-primary">Hệ thống quản trị</h1>
-          <p className="text-muted-foreground font-medium">Theo dõi hoạt động kinh doanh và quản lý dữ liệu Pho Gear.</p>
+          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter italic text-primary">Hệ thống quản trị</h1>
+          <p className="text-xs sm:text-base text-muted-foreground font-medium">Theo dõi hoạt động kinh doanh và quản lý dữ liệu Pho Gear.</p>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 xs:grid-cols-2 lg:grid-cols-4">
         <StatCard 
           title="Tổng doanh thu" 
           value={formattedRevenue} 
-          icon={<DollarSign className="h-5 w-5 text-primary" />}
+          icon={<DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
           description="Dựa trên đơn hàng đã giao"
           trend="+12.5%"
           trendUp={true}
@@ -37,7 +37,7 @@ export default async function AdminDashboard() {
         <StatCard 
           title="Đơn hàng" 
           value={stats.orderCount.toLocaleString('vi-VN')} 
-          icon={<ShoppingBag className="h-5 w-5 text-primary" />}
+          icon={<ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
           description="Tổng số đơn hệ thống"
           trend="+8.2%"
           trendUp={true}
@@ -45,7 +45,7 @@ export default async function AdminDashboard() {
         <StatCard 
           title="Sản phẩm" 
           value={stats.productCount.toLocaleString('vi-VN')} 
-          icon={<Package className="h-5 w-5 text-primary" />}
+          icon={<Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
           description="Mẫu mã đang kinh doanh"
           trend="+2"
           trendUp={true}
@@ -53,7 +53,7 @@ export default async function AdminDashboard() {
         <StatCard 
           title="Người dùng" 
           value={stats.userCount.toLocaleString('vi-VN')} 
-          icon={<Users className="h-5 w-5 text-primary" />}
+          icon={<Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
           description="Khách hàng đã đăng ký"
           trend="+4.1%"
           trendUp={true}
@@ -61,15 +61,21 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-7">
-        <RevenueChart data={stats.monthlyRevenue} />
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-4 overflow-hidden">
+            <RevenueChart data={stats.monthlyRevenue} />
+        </div>
+        <div className="lg:col-span-3 overflow-hidden">
             <RecentOrders orders={stats.recentOrders} />
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-6">
-        <BestSellersChart data={stats.topProducts} />
-        <CategoryDistributionChart data={stats.categoryDistribution} />
+        <div className="lg:col-span-3 overflow-hidden">
+            <BestSellersChart data={stats.topProducts} />
+        </div>
+        <div className="lg:col-span-3 overflow-hidden">
+            <CategoryDistributionChart data={stats.categoryDistribution} />
+        </div>
       </div>
     </div>
   )

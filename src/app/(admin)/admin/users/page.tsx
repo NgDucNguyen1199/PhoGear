@@ -17,62 +17,64 @@ export default async function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Người dùng</h1>
-        <p className="text-muted-foreground">Quản lý tài khoản và phân quyền người dùng trong hệ thống.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Người dùng</h1>
+        <p className="text-sm text-muted-foreground">Quản lý tài khoản và phân quyền người dùng trong hệ thống.</p>
       </div>
 
-      <Card>
+      <Card className="border-none shadow-xl rounded-[2rem] overflow-hidden">
         <CardHeader className="pb-3">
-          <CardTitle>Danh sách thành viên</CardTitle>
+          <CardTitle className="text-lg font-black uppercase tracking-tight">Danh sách thành viên</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-background rounded-md border shadow-sm">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Khách hàng</TableHead>
-                  <TableHead>Email (ID)</TableHead>
-                  <TableHead>Ngày tham gia</TableHead>
-                  <TableHead className="w-[200px]">Phân quyền</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {profiles.length > 0 ? (
-                  profiles.map((profile: any) => (
-                    <TableRow key={profile.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                            {profile.full_name?.charAt(0) || <User className="h-4 w-4" />}
+          <div className="bg-background rounded-xl border shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[150px]">Khách hàng</TableHead>
+                    <TableHead>Email (ID)</TableHead>
+                    <TableHead>Ngày tham gia</TableHead>
+                    <TableHead className="min-w-[180px]">Phân quyền</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {profiles.length > 0 ? (
+                    profiles.map((profile: any) => (
+                      <TableRow key={profile.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                              {profile.full_name?.charAt(0) || <User className="h-4 w-4" />}
+                            </div>
+                            <span className="font-bold text-sm truncate max-w-[120px]">{profile.full_name || 'Người dùng ẩn danh'}</span>
                           </div>
-                          <span className="font-medium">{profile.full_name || 'Người dùng ẩn danh'}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        <div className="flex items-center gap-1">
-                          <Mail className="h-3 w-3" /> {profile.id.slice(0, 13)}...
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          {new Date(profile.created_at).toLocaleDateString('vi-VN')}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <RoleSelector userId={profile.id} currentRole={profile.role} />
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-[10px] font-mono">
+                          <div className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" /> {profile.id.slice(0, 13)}...
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-[10px] font-bold uppercase text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(profile.created_at).toLocaleDateString('vi-VN')}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <RoleSelector userId={profile.id} currentRole={profile.role} />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-10 text-muted-foreground italic">
+                        Hệ thống chưa có người dùng nào.
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-10 text-muted-foreground italic">
-                      Hệ thống chưa có người dùng nào.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>
