@@ -85,11 +85,11 @@ export function Navbar({ user }: { user: any }) {
             <Logo width={50} height={50} />
           </Link>
           <nav className="hidden md:flex gap-6 text-sm font-medium">
-            <Link href="/products" className="transition-colors hover:text-primary">{t.nav.products}</Link>
-            <Link href="/categories" className="transition-colors hover:text-primary">{t.nav.categories}</Link>
-            <Link href="/forum" className="transition-colors hover:text-primary">Cộng đồng</Link>
-            <Link href="/photype" className="transition-colors hover:text-primary font-bold text-orange-500">{t.nav.photype}</Link>
-            <Link href="/about" className="transition-colors hover:text-primary">{t.nav.about}</Link>
+            <Link href="/products" className="transition-all hover:text-primary hover:scale-105 active:scale-95">{t.nav.products}</Link>
+            <Link href="/categories" className="transition-all hover:text-primary hover:scale-105 active:scale-95">{t.nav.categories}</Link>
+            <Link href="/forum" className="transition-all hover:text-primary hover:scale-105 active:scale-95">Cộng đồng</Link>
+            <Link href="/photype" className="transition-all hover:text-orange-600 font-bold text-orange-500 hover:scale-105 active:scale-95">{t.nav.photype}</Link>
+            <Link href="/about" className="transition-all hover:text-primary hover:scale-105 active:scale-95">{t.nav.about}</Link>
           </nav>
         </div>
 
@@ -161,7 +161,7 @@ export function Navbar({ user }: { user: any }) {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="relative"
+            className="relative transition-all hover:scale-110 active:scale-95 hover:text-primary"
             onClick={() => router.push('/wishlist')}
           >
             <Heart className="h-5 w-5" />
@@ -176,7 +176,7 @@ export function Navbar({ user }: { user: any }) {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="relative"
+            className="relative transition-all hover:scale-110 active:scale-95 hover:text-primary"
             onClick={() => setIsCartOpen(true)}
           >
             <ShoppingCart className="h-5 w-5" />
@@ -195,7 +195,7 @@ export function Navbar({ user }: { user: any }) {
 
           {user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+              <DropdownMenuTrigger className={buttonVariants({ variant: 'ghost', size: 'icon', className: "transition-all hover:scale-110 active:scale-95 hover:text-primary" })}>
                 <User className="h-5 w-5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -221,7 +221,7 @@ export function Navbar({ user }: { user: any }) {
             </Link>
           )}
           
-          <Button variant="ghost" size="icon" className="md:hidden">
+          <Button variant="ghost" size="icon" className="md:hidden transition-all hover:scale-110 active:scale-95 hover:text-primary">
             <Menu className="h-5 w-5" />
           </Button>
         </div>

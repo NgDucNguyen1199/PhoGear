@@ -16,14 +16,14 @@
 
 ## 📑 Tóm tắt dự án (Abstract)
 
-**PhoGear** là một ứng dụng web Fullstack hiện đại, được thiết kế nhằm tối ưu hóa quy trình thương mại điện tử trong thị trường ngách là thiết bị ngoại vi cao cấp (Mechanical Keyboards). Dự án tích hợp các module tương tác nâng cao như **PhoType** (Typing Engine), **Forum Hub** (Diễn đàn cộng đồng) và hệ thống bảo mật đa lớp (**Multi-Factor Authentication - MFA**). Hệ thống tận dụng sức mạnh của kiến trúc **Next.js 16** với cơ chế **Proxy Engine** mới nhất để đảm bảo hiệu suất và bảo mật dữ liệu tuyệt đối.
+**PhoGear** là một ứng dụng web Fullstack hiện đại, được thiết kế nhằm tối ưu hóa quy trình thương mại điện tử trong thị trường ngách là thiết bị ngoại vi cao cấp (Mechanical Keyboards). Dự án tích hợp các module tương tác nâng cao như **PhoType** (Typing Engine), **Forum Hub** (Diễn đàn cộng đồng) và hệ thống bảo mật đa lớp (**Multi-Factor Authentication - MFA**). Hệ thống tận dụng sức mạnh của kiến trúc **Next.js 16** với cơ chế **Middleware** để đảm bảo hiệu suất và bảo mật dữ liệu tuyệt đối.
 
 ---
 
 ## 🏛️ 1. Kiến trúc Hệ thống (System Architecture)
 
 ### 1.1 Tầng Giao diện & Xử lý (Frontend & Logic)
-- **Next.js 16 (App Router):** Sử dụng Turbopack để tăng tốc độ phát triển và deploy. Triển khai cơ chế **Proxy** thay thế cho Middleware truyền thống.
+- **Next.js 16 (App Router):** Sử dụng Turbopack để tăng tốc độ phát triển và deploy. Triển khai cơ chế **Middleware** chuẩn hóa để quản lý session và bảo mật.
 - **Server Actions:** Xử lý nghiệp vụ phức tạp trực tiếp trên server (MFA, Forum Moderation, Order Verification, Product Management).
 - **State Management:** Sử dụng **Zustand** với cơ chế Persist để duy trì giỏ hàng và danh sách yêu thích giữa các phiên làm việc.
 
@@ -66,7 +66,7 @@
 
 | Công nghệ | Vai trò trong hệ thống | Ưu điểm chính |
 | :--- | :--- | :--- |
-| **Next.js 16** | Framework chính | Hiệu năng vượt trội, cơ chế Proxy bảo mật hơn. |
+| **Next.js 16** | Framework chính | Hiệu năng vượt trội, cơ chế Middleware bảo mật hơn. |
 | **TypeScript** | Ngôn ngữ phát triển | Type Safety tuyệt đối, ngăn chặn lỗi runtime "React Child". |
 | **Supabase** | Backend | Xác thực mạnh mẽ, Storage ổn định, Database thời gian thực. |
 | **Framer Motion** | Animation | Hiệu ứng chuyển cảnh, thanh tiến trình Flash Sale và Gallery ảnh mượt mà. |
@@ -77,7 +77,7 @@
 
 1. **Server-side Verification:** Giá sản phẩm và phí vận chuyển luôn được kiểm tra lại trên Server trước khi tạo đơn hàng, chống gian lận giá sale.
 2. **Row Level Security:** Đảm bảo người dùng không thể can thiệp vào bài viết hoặc đơn hàng của người khác.
-3. **Secure Proxy:** Quản lý session người dùng thông qua tầng Proxy bảo mật của Next.js 16.
+3. **Secure Middleware:** Quản lý session người dùng thông qua tầng Middleware bảo mật của Next.js 16.
 
 ---
 
