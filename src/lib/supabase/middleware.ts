@@ -27,8 +27,18 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // refreshing the auth token
-  await supabase.auth.getUser()
+  // Do not use supabase.auth.getUser() if you are just refreshing the session.
+  // getSession() is faster and enough for refreshing.
+  // However, getUser() is safer for security checks.
+  // The important part is that we must return the response object that has the updated cookies.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // IMPORTANT: You can add logic here to redirect if needed, e.g.:
+  // if (!user && !request.nextUrl.pathname.startsWith('/login')) {
+  //   return NextResponse.redirect(new URL('/login', request.url))
+  // }
 
   return supabaseResponse
 }
