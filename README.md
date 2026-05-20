@@ -7,8 +7,8 @@
   <div>
     <img src="https://img.shields.io/badge/Next.js-16.2_Turbopack-black?style=for-the-badge&logo=next.js" alt="Next.js" />
     <img src="https://img.shields.io/badge/Supabase-Backend_as_a_Service-green?style=for-the-badge&logo=supabase" alt="Supabase" />
-    <img src="https://img.shields.io/badge/TypeScript-Strict_Type_Safety-blue?style=for-the-badge&logo=typescript" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Tailwind_CSS-Modern_UI-06B6D4?style=for-the-badge&logo=tailwind-css" alt="Tailwind" />
+    <img src="https://img.shields.io/badge/Vitest-Automated_Testing-6E9F18?style=for-the-badge&logo=vitest" alt="Vitest" />
+    <img src="https://img.shields.io/badge/Cloudinary-Image_Optimization-3448C5?style=for-the-badge&logo=cloudinary" alt="Cloudinary" />
   </div>
 </div>
 
@@ -16,49 +16,39 @@
 
 ## 📑 Tóm tắt dự án (Abstract)
 
-**PhoGear** là một ứng dụng web Fullstack hiện đại, được thiết kế nhằm tối ưu hóa quy trình thương mại điện tử trong thị trường ngách là thiết bị ngoại vi cao cấp (Mechanical Keyboards). Dự án tích hợp các module tương tác nâng cao như **PhoType** (Typing Engine), **Forum Hub** (Diễn đàn cộng đồng) và hệ thống bảo mật đa lớp (**Multi-Factor Authentication - MFA**). Hệ thống tận dụng sức mạnh của kiến trúc **Next.js 16** với cơ chế **Middleware** để đảm bảo hiệu suất và bảo mật dữ liệu tuyệt đối.
+**PhoGear** là một ứng dụng web Fullstack hiện đại, được thiết kế nhằm tối ưu hóa quy trình thương mại điện tử trong thị trường ngách là thiết bị ngoại vi cao cấp (Mechanical Keyboards). Dự án tích hợp các module tương tác nâng cao như **PhoType** (Typing Engine), **Forum Hub** (Diễn đàn cộng đồng) và hệ thống bảo mật đa lớp (**Multi-Factor Authentication - MFA**). Hệ thống tận dụng sức mạnh của kiến trúc **Next.js 16** với cơ chế **Proxy** (Middleware mới) và **Turbopack** để đảm bảo hiệu suất và bảo mật dữ liệu tuyệt đối.
 
 ---
 
 ## 🏛️ 1. Kiến trúc Hệ thống (System Architecture)
 
 ### 1.1 Tầng Giao diện & Xử lý (Frontend & Logic)
-- **Next.js 16 (App Router):** Sử dụng Turbopack để tăng tốc độ phát triển và deploy. Triển khai cơ chế **Middleware** chuẩn hóa để quản lý session và bảo mật.
+- **Next.js 16 (App Router):** Sử dụng Turbopack để tối ưu tốc độ build. Triển khai cơ chế **Proxy** (`proxy.ts`) chuẩn hóa theo convention mới để quản lý session và bảo mật.
 - **Server Actions:** Xử lý nghiệp vụ phức tạp trực tiếp trên server (MFA, Forum Moderation, Order Verification, Product Management).
 - **State Management:** Sử dụng **Zustand** với cơ chế Persist để duy trì giỏ hàng và danh sách yêu thích giữa các phiên làm việc.
+- **PWA Support:** Hỗ trợ Offline mode và trải nghiệm như ứng dụng di động trên smartphone.
 
 ### 1.2 Tầng Hạ tầng & Cơ sở dữ liệu (Backend & Database)
 - **Supabase BaaS:** Hạt nhân lưu trữ và xác thực.
-  - **PostgreSQL:** Cơ sở dữ liệu quan hệ với Row Level Security (RLS) cho bài viết và đơn hàng.
-  - **Supabase Storage:** Quản lý kho ảnh sản phẩm (Public Bucket) và ảnh đại diện người dùng với phân quyền Admin nghiêm ngặt.
+- **Cloudinary Integration:** Tự động tối ưu hóa, nén và thay đổi kích thước hình ảnh thông qua CDN để giảm tải băng thông và tăng tốc độ tải trang.
 
 ---
 
 ## ✨ 2. Các Module Chức năng Cốt lõi
 
 ### 🛒 2.1 Module Thương mại điện tử (E-commerce Core)
-- **Hệ thống Flash Sale 3.0:** Quản lý chương trình khuyến mãi giờ vàng với bộ đếm ngược thời gian thực, tự động khôi phục giá gốc khi hết giờ và giới hạn số lượng bán.
-- **Chính sách Vận chuyển Thông minh:** Tự động tính phí vận chuyển (30,000đ) và áp dụng **Freeship cho đơn từ 800,000đ** (kèm thông báo nhắc nhở mua thêm).
-- **Quản lý Sản phẩm Thông minh (Admin 2.0):** 
-    - Tự động tính toán **Số lượng tồn kho tổng** dựa trên các biến thể thời gian thực.
-    - Tự động lấy **Giá thấp nhất** của các biến thể làm giá hiển thị chính.
-    - Hỗ trợ Upload ảnh trực tiếp từ máy tính lên Cloud.
+- **Hệ thống Flash Sale 3.0:** Quản lý chương trình khuyến mãi giờ vàng với bộ đếm ngược thời gian thực.
+- **Chính sách Vận chuyển Thông minh:** Tự động tính phí vận chuyển và áp dụng **Freeship cho đơn từ 800,000đ**.
 - **Xác thực Đơn hàng:** Kiểm tra giá và phí vận chuyển tại Server để chống gian lận.
 
-### 💬 2.2 PhoGear Forum Hub (Community)
-- **Diễn đàn Chia sẻ:** Nơi thành viên đăng bài viết chia sẻ kinh nghiệm build phím với bộ sưu tập ảnh thực tế (Gallery) và hệ thống bình luận thời gian thực.
-- **Hệ thống Phê duyệt (Moderation 2.0):** 
-    - Giao diện Admin chuyên biệt để Duyệt/Từ chối bài viết với phản hồi tức thì (Toasts).
-    - Bài viết mới được giữ ở trạng thái "Pending" và chỉ hiển thị sau khi được phê duyệt.
-- **Phân quyền truy cập:** Khách vãng lai chỉ được xem, chỉ thành viên chính thức mới có quyền đăng bài và bình luận.
+### 📱 2.2 Tối ưu hóa Trải nghiệm Người dùng (UX/UI Evolution)
+- **Mobile Responsive 2.0:** Giao diện được thiết kế lại hoàn toàn cho thiết bị di động với Mobile Menu Slide-out và Search Overlay chuyên dụng.
+- **Dark Mode Support:** Hỗ trợ chế độ tối (Dark Mode) giúp bảo vệ mắt và tiết kiệm pin trên các thiết bị màn hình OLED.
+- **Personalized Recommendations:** Hệ thống gợi ý sản phẩm dựa trên sở thích và lịch sử xem của người dùng.
 
-### 🎮 2.3 Trình mô phỏng & Trắc nghiệm (User Experience)
-- **Keyboard Finder 2.0:** Công cụ trắc nghiệm đa bước với minh họa layout bằng SVG trực quan và hiệu ứng âm thanh clicky tương tác.
-- **PhoType Engine:** Trò chơi luyện gõ phím chuyên nghiệp với bảng xếp hạng thần tốc (Leaderboard).
-
-### 🛡️ 2.4 Quản trị & Bảo mật (Admin & Security)
-- **Admin Dashboard 2.0:** Hệ thống phân tích kinh doanh với biểu đồ doanh thu Recharts, quản lý bài viết diễn đàn và quản trị kho hàng an toàn.
-- **Multi-Factor Authentication (MFA):** Bảo vệ tài khoản bằng mã TOTP 6 số, bắt buộc đối với tài khoản quản trị.
+### 🛡️ 2.3 Bảo mật & Quản trị nâng cao
+- **Multi-Factor Authentication (MFA):** Bảo vệ tài khoản bằng mã TOTP (Google Authenticator/Authy).
+- **Automated Testing Suite:** Hệ thống kiểm thử tự động với **Vitest** và **React Testing Library**, bao phủ các luồng quan trọng như Checkout, MFA và SKU generation.
 
 ---
 
@@ -66,31 +56,34 @@
 
 | Công nghệ | Vai trò trong hệ thống | Ưu điểm chính |
 | :--- | :--- | :--- |
-| **Next.js 16** | Framework chính | Hiệu năng vượt trội, cơ chế Middleware bảo mật hơn. |
-| **TypeScript** | Ngôn ngữ phát triển | Type Safety tuyệt đối, ngăn chặn lỗi runtime "React Child". |
-| **Supabase** | Backend | Xác thực mạnh mẽ, Storage ổn định, Database thời gian thực. |
-| **Framer Motion** | Animation | Hiệu ứng chuyển cảnh, thanh tiến trình Flash Sale và Gallery ảnh mượt mà. |
+| **Next.js 16** | Framework chính | Hiệu năng vượt trội, cơ chế Proxy bảo mật và Turbopack build thần tốc. |
+| **Vitest** | Automated Testing | Tốc độ chạy test cực nhanh, tương thích hoàn hảo với Next.js 16. |
+| **Cloudinary** | Image Delivery | Tự động chọn định dạng (WebP/AVIF) và chất lượng phù hợp nhất (f_auto, q_auto). |
+| **Tailwind CSS 4** | Styling | Kiến trúc CSS hiện đại, tối ưu hóa kích thước file bundle. |
 
 ---
 
 ## 🔐 4. An toàn & Bảo mật Dữ liệu
 
-1. **Server-side Verification:** Giá sản phẩm và phí vận chuyển luôn được kiểm tra lại trên Server trước khi tạo đơn hàng, chống gian lận giá sale.
-2. **Row Level Security:** Đảm bảo người dùng không thể can thiệp vào bài viết hoặc đơn hàng của người khác.
-3. **Secure Middleware:** Quản lý session người dùng thông qua tầng Middleware bảo mật của Next.js 16.
+1. **Server-side Verification:** Chống gian lận giá sale bằng cách xác thực tại Server Actions.
+2. **Secure Proxy:** Quản lý session người dùng thông qua tầng Proxy bảo mật của Next.js 16.
+3. **MFA Enforcement:** Bắt buộc xác thực 2 lớp cho các thao tác nhạy cảm và quyền Admin.
 
 ---
 
 ## 🚀 5. Hướng dẫn Cài đặt & Khởi chạy
 
 ### Yêu cầu tiên quyết:
-- Node.js 20+ và tài khoản Supabase.
+- Node.js 20+ và tài khoản Supabase, Cloudinary.
 
 ### Các bước thực hiện:
 1. **Khởi tạo:** `git clone https://github.com/NgDucNguyen1199/PhoGear.git`
 2. **Cài đặt:** `npm install`
-3. **Biến môi trường:** Cấu hình `NEXT_PUBLIC_SUPABASE_URL` và `ANON_KEY` trong `.env.local`.
-4. **Database:** Chạy toàn bộ script trong thư mục `/supabase` (Đặc biệt là `forum_schema.sql`, `products_storage.sql` và `flash_sale_settings.sql`).
+3. **Biến môi trường:** Cấu hình các biến trong `.env.local`:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` (Tùy chọn cho image optimization)
+4. **Kiểm thử:** `npm test` để chạy toàn bộ suite test tự động.
 5. **Chạy thử:** `npm run dev`
 
 ---
