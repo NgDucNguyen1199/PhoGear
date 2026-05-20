@@ -8,6 +8,8 @@ const withPWA = require('next-pwa')({
 
 const nextConfig: NextConfig = {
   images: {
+    loader: 'custom',
+    loaderFile: './src/lib/supabase/loader.ts',
     remotePatterns: [
       {
         protocol: 'https',

@@ -39,6 +39,8 @@ export default function CheckoutPage() {
   const [user, setUser] = useState<any>(null)
   const [mounted, setMounted] = useState(false)
   const [orderId, setOrderId] = useState<string | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('cod')
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -123,9 +125,6 @@ export default function CheckoutPage() {
       </div>
     )
   }
-
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('cod')
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
 
   const handleCheckout = async (formData: FormData) => {
     const orderItems: OrderItemInput[] = items.map(item => ({
