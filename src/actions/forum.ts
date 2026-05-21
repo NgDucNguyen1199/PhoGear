@@ -28,10 +28,37 @@ export async function getApprovedPosts(currentUserId?: string) {
 
   const { data, error } = await query
 
-  if (error || !data) {
-    if (error) console.error('Error fetching approved posts:', error.message, error.details, error.hint)
+  if (error) {
+    const errorStr = `${error.message} ${error.details || ''} ${error.hint || ''}`.toLowerCase()
+    const isLikesError = errorStr.includes('post_likes')
+    
+    // Nếu bảng post_likes chưa được tạo hoặc quan hệ không tìm thấy, thử lấy bài viết không kèm likes
+    if (isLikesError) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          author:profiles (full_name, avatar_url),
+          comments (count)
+        `)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+      
+      if (fallbackError || !fallbackData) return []
+      
+      return (fallbackData as any[]).map(post => ({
+        ...post,
+        likes_count: 0,
+        is_liked: false
+      }))
+    }
+    
+    // Chỉ log lỗi nếu không phải do thiếu bảng post_likes
+    console.error('Error fetching approved posts:', error.message, error.details, error.hint)
     return []
   }
+
+  if (!data) return []
 
   return (data as any[]).map((post: any) => ({
     ...post,

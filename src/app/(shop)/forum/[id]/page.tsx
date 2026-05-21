@@ -1,4 +1,4 @@
-import { getPostById, addComment } from '@/actions/forum'
+import { getPostById, addComment, getApprovedPosts } from '@/actions/forum'
 import { getProfile } from '@/actions/auth'
 import { Navbar } from '@/components/layout/Navbar'
 import { Card, CardContent } from '@/components/ui/card'
@@ -19,15 +19,26 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { CommentSection } from './CommentSection'
+import { LikeButton } from '@/components/forum/LikeButton'
 
 export default async function PostDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params
-  const post = await getPostById(id)
   const profile = await getProfile()
+  
+  // We need to fetch approved posts for the current user to get the like status
+  // or update getPostById to handle it. Let's just use getPostById and assume
+  // we might need to update it.
+  const post = await getPostById(id)
 
   if (!post) {
     redirect('/forum')
   }
+
+  // To get optimistic likes correctly, we need the initial counts
+  // Since getPostById doesn't currently return counts in the same format as getApprovedPosts,
+  // we'll quickly adapt it or just fetch the approved list and find this one.
+  const allPosts = await getApprovedPosts(profile?.id)
+  const postWithStats = allPosts.find(p => p.id === id) || post
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -90,9 +101,12 @@ export default async function PostDetailPage({ params }: { params: { id: string 
 
              {/* Actions */}
              <div className="flex items-center gap-6">
-                <Button variant="outline" className="rounded-2xl px-8 h-14 font-black uppercase tracking-widest text-xs gap-3 border-2">
-                    <Heart size={18} /> Tương tác hữu ích
-                </Button>
+                <LikeButton 
+                    postId={post.id} 
+                    initialLikes={postWithStats.likes_count || 0} 
+                    initialIsLiked={postWithStats.is_liked || false} 
+                    userId={profile?.id} 
+                />
                 <div className="flex items-center gap-2 text-muted-foreground font-black uppercase tracking-widest text-xs">
                     <MessageSquare size={18} className="text-primary" /> {post.comments?.length || 0} Bình luận
                 </div>

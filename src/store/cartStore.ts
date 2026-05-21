@@ -10,6 +10,8 @@ export type CartItem = Product & {
 
 interface CartStore {
   items: CartItem[]
+  isOpen: boolean
+  setOpen: (open: boolean) => void
   addItem: (product: Product, variantId?: string, selectedOptions?: Record<string, string>, quantity?: number) => void
   removeItem: (cartItemId: string) => void
   updateQuantity: (cartItemId: string, quantity: number) => void
@@ -35,6 +37,8 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      isOpen: false,
+      setOpen: (open: boolean) => set({ isOpen: open }),
       
       addItem: (product: Product, variantId?: string, selectedOptions?: Record<string, string>, quantity: number = 1) => {
         const currentItems = get().items
@@ -48,9 +52,9 @@ export const useCartStore = create<CartStore>()(
         if (existingItemIndex > -1) {
           const updatedItems = [...currentItems]
           updatedItems[existingItemIndex].quantity += quantity
-          set({ items: updatedItems })
+          set({ items: updatedItems, isOpen: true }) // Auto-open cart on add
         } else {
-          set({ items: [...currentItems, { ...product, variantId, quantity, selectedOptions }] })
+          set({ items: [...currentItems, { ...product, variantId, quantity, selectedOptions }], isOpen: true }) // Auto-open cart on add
         }
       },
 
@@ -85,6 +89,8 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: 'pho-gear-cart',
+      // Don't persist isOpen state
+      partialize: (state) => ({ items: state.items }),
     }
   )
 )
