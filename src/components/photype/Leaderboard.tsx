@@ -101,7 +101,7 @@ export function Leaderboard() {
 
                 <div className="flex items-center gap-4">
                   <Avatar className="h-14 w-14 border-2 border-border ring-4 ring-primary/5 transition-transform group-hover:scale-110">
-                    <AvatarImage src={score.profiles?.avatar_url || null} />
+                    <AvatarImage src={score.profiles?.avatar_url || undefined} />
                     <AvatarFallback className="bg-muted text-muted-foreground">
                       <User size={20} />
                     </AvatarFallback>
