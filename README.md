@@ -26,7 +26,11 @@
 - **Framework:** Next.js 16 (App Router) với engine **Turbopack** cho tốc độ phản hồi cực nhanh.
 - **Middleware Evolution:** Chuyển đổi sang convention **Proxy** (`proxy.ts`) để tối ưu hóa việc quản lý session và điều hướng bảo mật.
 - **State Management:** **Zustand** (with Persist) quản lý giỏ hàng, danh sách yêu thích và trạng thái ứng dụng.
-- **Optimization:** Tích hợp **Cloudinary** để resize/compress ảnh tự động và **PWA** cho trải nghiệm mobile app native.
+- **Optimization:** 
+  - Tích hợp **Cloudinary** để resize/compress ảnh tự động.
+  - **PWA** cho trải nghiệm mobile app native.
+  - Cấu hình **Server Actions Body Limit (10MB)** cho phép xử lý các tác vụ admin phức tạp và tải ảnh dung lượng lớn.
+  - Tối ưu hóa **React 19 Hydration** cho các thành phần UI (Dialog, Sheet, Select).
 
 ### 1.2 Tầng Hạ tầng & Cơ sở dữ liệu (Backend & Database)
 - **Supabase BaaS:** Cung cấp hệ thống xác thực (Auth), cơ sở dữ liệu thời gian thực (Realtime DB) và lưu trữ tệp tin (Storage).
