@@ -34,9 +34,9 @@ export function Leaderboard() {
   }
 
   return (
-    <div className="w-full bg-[#1a1b23]/60 backdrop-blur-3xl border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl">
+    <div className="w-full bg-card/60 backdrop-blur-3xl border border-border rounded-[3rem] overflow-hidden shadow-2xl transition-colors">
       {/* Header with Filters */}
-      <div className="p-10 border-b border-white/10 flex flex-col md:flex-row items-center justify-between gap-8 bg-gradient-to-r from-primary/10 to-transparent">
+      <div className="p-10 border-b border-border flex flex-col md:flex-row items-center justify-between gap-8 bg-gradient-to-r from-primary/10 to-transparent">
         <div className="flex items-center gap-5">
           <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20">
             <Trophy className="h-8 w-8 text-primary" />
@@ -51,7 +51,7 @@ export function Leaderboard() {
           </div>
         </div>
 
-        <div className="flex p-2 bg-muted/50 backdrop-blur-md rounded-[1.5rem] gap-1 border border-white/5 min-w-[320px]">
+        <div className="flex p-2 bg-muted rounded-[1.5rem] gap-1 border border-border min-w-[320px]">
           {(['all-time', 'monthly', 'weekly'] as const).map((f) => (
             <button
               key={f}
@@ -59,8 +59,8 @@ export function Leaderboard() {
               className={cn(
                 "flex-1 py-3 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all duration-300",
                 filter === f 
-                  ? "bg-primary text-primary-foreground shadow-2xl scale-[1.05]" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                  ? "bg-background text-primary shadow-2xl scale-[1.05]" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5 dark:hover:bg-white/5"
               )}
             >
               {f === 'all-time' ? 'Tất cả' : f === 'monthly' ? 'Tháng này' : 'Tuần này'}
@@ -87,8 +87,8 @@ export function Leaderboard() {
               <div 
                 key={score.id}
                 className={cn(
-                  "group relative p-6 rounded-[2.5rem] transition-all duration-500 hover:bg-white/5 border border-white/5 hover:border-primary/30 hover:scale-[1.03] hover:shadow-2xl flex flex-col gap-5 bg-muted/20",
-                  index < 3 && "border-primary/10 bg-primary/[0.03]"
+                  "group relative p-6 rounded-[2.5rem] transition-all duration-500 hover:bg-muted/50 border border-border hover:border-primary/30 hover:scale-[1.03] hover:shadow-2xl flex flex-col gap-5 bg-muted/20",
+                  index < 3 && "border-primary/20 bg-primary/[0.03]"
                 )}
               >
                 {/* Rank Float */}
@@ -100,7 +100,7 @@ export function Leaderboard() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <Avatar className="h-14 w-14 border-2 border-white/10 ring-4 ring-primary/5 transition-transform group-hover:scale-110">
+                  <Avatar className="h-14 w-14 border-2 border-border ring-4 ring-primary/5 transition-transform group-hover:scale-110">
                     <AvatarImage src={score.profiles?.avatar_url || null} />
                     <AvatarFallback className="bg-muted text-muted-foreground">
                       <User size={20} />
@@ -116,7 +116,7 @@ export function Leaderboard() {
                   </div>
                 </div>
 
-                <div className="mt-auto pt-5 border-t border-dashed border-white/10 flex items-center justify-between">
+                <div className="mt-auto pt-5 border-t border-dashed border-border flex items-center justify-between">
                   <div className="flex flex-col">
                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Tốc độ</span>
                     <div className="flex items-baseline gap-1">
@@ -139,7 +139,7 @@ export function Leaderboard() {
         )}
       </div>
 
-      <div className="px-10 py-5 bg-muted/40 border-t border-white/5 flex justify-between items-center">
+      <div className="px-10 py-5 bg-muted border-t border-border flex justify-between items-center">
         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
           PhoGear Engine v2.0 • Top {scores.length} Racers
         </p>

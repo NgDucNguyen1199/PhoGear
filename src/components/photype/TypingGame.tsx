@@ -81,7 +81,7 @@ type GameTab = 'time' | 'words' | 'quote'
 
 export function TypingGame() {
   // Config
-  const [theme, setTheme] = useState<ThemeKey>('olive')
+  const [theme, setTheme] = useState<ThemeKey>('our_theme')
   const [language, setLanguage] = useState<Language>('vi')
   const [activeTab, setActiveTab] = useState<GameTab>('time')
   const [activeConfig, setActiveConfig] = useState<number>(30)
@@ -252,15 +252,15 @@ export function TypingGame() {
 
   return (
     <div 
-      className="w-full min-h-screen transition-colors duration-500 py-12 px-4" 
+      className="w-full transition-colors duration-500 py-16 px-8 rounded-[3rem] border border-border shadow-3xl overflow-hidden" 
       style={{ backgroundColor: activeColors.bg, color: activeColors.text }}
       onClick={() => inputRef.current?.focus()}
     >
       <div className="max-w-5xl mx-auto">
         {/* Config Bar */}
         <div 
-          className="flex flex-wrap items-center justify-center gap-4 mb-12 p-3 rounded-2xl border shadow-sm transition-all"
-          style={{ backgroundColor: `${activeColors.text}08`, borderColor: `${activeColors.text}10` }}
+          className="flex flex-wrap items-center justify-center gap-4 mb-12 p-3 rounded-2xl border shadow-sm transition-all backdrop-blur-md"
+          style={{ backgroundColor: `${activeColors.text}08`, borderColor: `${activeColors.text}15` }}
         >
           {/* Theme Selector */}
           <div className="flex items-center gap-2 pr-4 border-r" style={{ borderColor: `${activeColors.text}20` }}>
@@ -271,13 +271,13 @@ export function TypingGame() {
                 </SelectTrigger>
                 <SelectContent style={{ backgroundColor: activeColors.bg, borderColor: activeColors.sub }}>
                     {Object.entries(THEMES).map(([key, colors]) => (
-                        <SelectItem key={key} value={key} className="text-[10px] font-black uppercase hover:bg-white/10" style={{ color: activeColors.text }}>
+                        <SelectItem key={key} value={key} className="text-[10px] font-black uppercase hover:opacity-80" style={{ color: activeColors.text, backgroundColor: activeColors.bg }}>
                            <div className="flex items-center justify-between w-full min-w-[140px] gap-4">
                               <span>{key.replace('_', ' ')}</span>
                               <div className="flex gap-1">
-                                 <div className="w-2.5 h-2.5 rounded-full border border-white/10" style={{ backgroundColor: colors.bg }} />
-                                 <div className="w-2.5 h-2.5 rounded-full border border-white/10" style={{ backgroundColor: colors.main }} />
-                                 <div className="w-2.5 h-2.5 rounded-full border border-white/10" style={{ backgroundColor: colors.text }} />
+                                 <div className="w-2.5 h-2.5 rounded-full border border-border" style={{ backgroundColor: colors.bg }} />
+                                 <div className="w-2.5 h-2.5 rounded-full border border-border" style={{ backgroundColor: colors.main }} />
+                                 <div className="w-2.5 h-2.5 rounded-full border border-border" style={{ backgroundColor: colors.text }} />
                               </div>
                            </div>
                         </SelectItem>

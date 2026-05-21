@@ -31,10 +31,10 @@ export function UserTypingStats() {
   const avgAcc = Math.round(history.reduce((acc, s) => acc + s.accuracy, 0) / history.length)
 
   return (
-    <section className="py-24 border-t border-white/5 mt-20">
+    <section className="py-24 border-t border-border mt-20 transition-colors">
       <div className="flex flex-col items-center text-center mb-16">
         <Badge className="bg-primary/10 text-primary border-none font-black uppercase tracking-[0.3em] px-4 py-1 mb-4">Performance Insights</Badge>
-        <h2 className="text-5xl font-black uppercase tracking-tighter italic mb-4">Tiến trình của bạn</h2>
+        <h2 className="text-5xl font-black uppercase tracking-tighter italic mb-4 text-foreground">Tiến trình của bạn</h2>
         <p className="text-muted-foreground font-medium max-w-md">Theo dõi sự phát triển kỹ năng gõ phím của bạn qua từng bài tập.</p>
       </div>
 
@@ -44,10 +44,10 @@ export function UserTypingStats() {
         <StatItem icon={<Target className="text-green-500" size={24} />} title="Độ chính xác" value={`${avgAcc}%`} color="text-green-500" />
       </div>
 
-      <Card className="border border-white/10 shadow-2xl rounded-[3rem] overflow-hidden bg-[#1a1b23]/60 backdrop-blur-3xl">
+      <Card className="border border-border shadow-2xl rounded-[3rem] overflow-hidden bg-card/60 backdrop-blur-3xl transition-colors">
         <CardHeader className="p-10 pb-0">
           <CardTitle className="text-xs font-black uppercase tracking-[0.2em] flex items-center gap-3 text-muted-foreground">
-            <div className="p-2 bg-white/10 rounded-lg border border-white/5">
+            <div className="p-2 bg-muted rounded-lg border border-border">
               <History size={16} className="text-primary" />
             </div>
             Biểu đồ tiến bộ kỹ năng
@@ -62,7 +62,7 @@ export function UserTypingStats() {
                   <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground) / 0.05)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="created_at" 
                 hide 
@@ -70,11 +70,11 @@ export function UserTypingStats() {
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fontSize: 11, fontWeight: 800, fill: 'hsl(var(--muted-foreground) / 0.5)' }} 
+                tick={{ fontSize: 11, fontWeight: 800, fill: 'hsl(var(--muted-foreground))' }} 
               />
               <Tooltip 
-                contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '24px', padding: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
-                itemStyle={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase' }}
+                contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '24px', padding: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
+                itemStyle={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: 'hsl(var(--card-foreground))' }}
                 labelStyle={{ display: 'none' }}
               />
               <Line 
@@ -91,7 +91,7 @@ export function UserTypingStats() {
                 type="monotone" 
                 dataKey="accuracy" 
                 name="Chính xác (%)"
-                stroke="hsl(var(--muted-foreground) / 0.3)" 
+                stroke="hsl(var(--muted-foreground))" 
                 strokeWidth={2} 
                 strokeDasharray="5 5"
                 dot={false}
@@ -106,8 +106,8 @@ export function UserTypingStats() {
 
 function StatItem({ icon, title, value, color }: { icon: React.ReactNode, title: string, value: string, color: string }) {
   return (
-    <div className="group bg-muted/20 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 shadow-xl flex items-center gap-6 transition-all hover:scale-[1.03] hover:bg-muted/30">
-      <div className="p-5 bg-background/50 rounded-2xl border border-white/5 group-hover:scale-110 transition-transform shadow-inner">
+    <div className="group bg-card/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-border shadow-xl flex items-center gap-6 transition-all hover:scale-[1.03] hover:bg-card/60">
+      <div className="p-5 bg-muted rounded-2xl border border-border group-hover:scale-110 transition-transform shadow-inner">
         {icon}
       </div>
       <div>
