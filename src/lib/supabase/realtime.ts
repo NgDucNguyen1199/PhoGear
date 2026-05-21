@@ -9,9 +9,11 @@ export function useRealtimeProduct(initialProduct: Product) {
   const supabase = createClient()
 
   useEffect(() => {
-    // Subscribe to changes in the products table for this specific product
+    // Generate a unique channel name for this specific hook instance 
+    // to avoid collisions if multiple components watch the same product
+    const instanceId = Math.random().toString(36).substring(2, 9)
     const channel = supabase
-      .channel(`realtime-product-${initialProduct.id}`)
+      .channel(`product-${initialProduct.id}-${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -42,8 +44,9 @@ export function useRealtimeProducts(initialProducts: Product[]) {
   const supabase = createClient()
 
   useEffect(() => {
+    const instanceId = Math.random().toString(36).substring(2, 9)
     const channel = supabase
-      .channel('realtime-products')
+      .channel(`products-list-${instanceId}`)
       .on(
         'postgres_changes',
         {
