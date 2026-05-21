@@ -397,7 +397,7 @@ export default function CheckoutPage() {
                         <CardContent className="p-8 space-y-6">
                             <div className="max-h-[350px] overflow-y-auto pr-2 -mx-2 px-2 space-y-4 custom-scrollbar">
                                 {items.map((item) => {
-                                    const cartId = getCartItemId(item.id, item.selectedOptions)
+                                    const cartId = getCartItemId(item.id, item.variantId, item.selectedOptions)
                                     return (
                                         <div key={cartId} className="flex gap-4 group">
                                             <div className="relative h-16 w-16 rounded-2xl border bg-muted flex-shrink-0 overflow-hidden group-hover:border-primary transition-colors">

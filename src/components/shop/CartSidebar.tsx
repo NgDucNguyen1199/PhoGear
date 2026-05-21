@@ -16,8 +16,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
-export function CartSidebar({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
-  const { items, removeItem, updateQuantity, getTotalPrice } = useCartStore()
+export function CartSidebar() {
+  const { items, removeItem, updateQuantity, getTotalPrice, isOpen, setOpen } = useCartStore()
   const [isMounted, setIsMounted] = useState(false)
 
   // Fix hydration mismatch
@@ -33,7 +33,7 @@ export function CartSidebar({ open, setOpen }: { open: boolean; setOpen: (open: 
   }).format(getTotalPrice())
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={isOpen} onOpenChange={setOpen}>
       <SheetContent className="w-full sm:max-w-md flex flex-col">
         <SheetHeader className="flex flex-row items-center gap-2 space-y-0">
           <ShoppingCart className="h-5 w-5" />
@@ -47,7 +47,7 @@ export function CartSidebar({ open, setOpen }: { open: boolean; setOpen: (open: 
             <ScrollArea className="h-full pr-4">
               <div className="space-y-4">
                 {items.map((item) => {
-                  const cartId = getCartItemId(item.id, item.selectedOptions)
+                  const cartId = getCartItemId(item.id, item.variantId, item.selectedOptions)
                   return (
                     <div key={cartId} className="flex gap-4 items-start">
                       <div className="relative h-20 w-20 rounded-md overflow-hidden bg-muted border flex-shrink-0">
