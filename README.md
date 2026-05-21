@@ -30,9 +30,10 @@
   - Tích hợp **Cloudinary** để resize/compress ảnh tự động.
   - **PWA** cho trải nghiệm mobile app native.
   - Cấu hình **Server Actions Body Limit (10MB)** cho phép xử lý các tác vụ admin phức tạp và tải ảnh dung lượng lớn.
-  - **Real-time Inventory:** Tích hợp **Supabase Realtime** tự động cập nhật số lượng tồn kho trên giao diện mà không cần load lại trang.
-  - **Optimistic UI:** Sử dụng `useOptimistic` (React 19) cho các hành động tương tác như **Thả tim bài viết**, tạo cảm giác phản hồi tức thì.
+  - **Real-time Inventory:** Tích hợp **Supabase Realtime** tự động cập nhật tồn kho sản phẩm và biến thể (variants) ngay lập tức.
+  - **Optimistic UI:** Sử dụng `useOptimistic` (React 19) cho các hành động tương tác như **Thả tim bài viết** và **Mở giỏ hàng tức thì**.
   - **Deep Skeleton Loading:** Thiết kế Skeleton khớp 1:1 với Layout của Product Card, loại bỏ hiện tượng nhảy giao diện (Layout Shift).
+  - **Adaptive Theme:** Tối ưu hóa hiển thị cho cả **Light & Dark Mode** trên toàn bộ module PhoType.
 
 ### 1.2 Tầng Hạ tầng & Cơ sở dữ liệu (Backend & Database)
 - **Supabase BaaS:** Cung cấp hệ thống xác thực (Auth), cơ sở dữ liệu thời gian thực (Realtime DB) và lưu trữ tệp tin (Storage).
@@ -46,122 +47,50 @@ Hệ thống sử dụng cấu trúc CSDL quan hệ được thiết kế tối 
 
 ### 2.1 Các thực thể chính
 - **Profiles:** Mở rộng từ `auth.users`, lưu trữ thông tin người dùng (`full_name`, `avatar_url`, `role`).
-- **Products:** Thông tin sản phẩm chi tiết (`price`, `stock`, `variants`, `flash_sale_price`).
-- **Categories:** Phân loại sản phẩm (`mechanical`, `keycap`, `switch`).
-- **Coupons:** Quản lý mã giảm giá (`code`, `type`, `value`, `min_order_amount`, `usage_limit`).
-- **Orders & Order Items:** Quản lý giao dịch, lưu giữ giá tại thời điểm mua, các tùy chọn biến thể (JSONB) và thông tin giảm giá (`coupon_id`, `discount_amount`).
-- **Posts & Comments:** Nền tảng diễn đàn với hệ thống trạng thái `pending`, `approved`, `rejected`.
-- **System Settings:** Cấu hình toàn cục (tên site, trạng thái Flash Sale, cấu hình MFA).
-
-### 2.2 Sơ đồ quan hệ (ERD Highlights)
-- **1-n:** Một `Category` chứa nhiều `Products`.
-- **1-n:** Một `User` có nhiều `Orders`.
-- **1-n:** Một `Coupon` có thể được áp dụng cho nhiều `Orders`.
-- **n-n:** `Orders` và `Products` thông qua bảng trung gian `Order_Items`.
-- **1-n:** Một `Post` có nhiều `Comments`.
+- **Products & Variants:** Quản lý tồn kho chính xác cho từng phiên bản sản phẩm (switch, màu sắc).
+- **Coupons:** Quản lý mã giảm giá với các ràng buộc đa tầng.
+- **Orders & Order Items:** Tích hợp logic **trừ kho khi mua** và **hoàn kho khi hủy đơn**.
+- **Post Likes & Notifications:** Hệ thống tương tác cộng đồng và thông báo thời gian thực.
+- **Typing Scores:** Lưu trữ kỷ lục luyện gõ phím phục vụ bảng xếp hạng.
 
 ---
 
 ## ✨ 3. Các Module Chức năng Cốt lõi
 
 ### 🛒 3.1 Thương mại điện tử Nâng cao
-- **Flash Sale 3.0:** Đếm ngược thời gian thực, tự động điều chỉnh giá và cập nhật tồn kho.
-- **Smart Shipping:** Tự động tính phí vận chuyển và áp dụng chính sách Freeship thông minh.
+- **Precise Inventory Management:** Hệ thống tự động khấu trừ tồn kho cho cả sản phẩm chính và biến thể cụ thể khi đặt hàng thành công.
+- **Smart Stock Restoration:** Tự động hoàn trả số lượng vào kho nếu đơn hàng bị hủy bởi Admin hoặc người dùng.
 - **Hệ thống Mã giảm giá (Coupons):** 
   - Hỗ trợ đa dạng loại giảm giá: Giảm theo phần trăm (%), giảm số tiền cố định (VND) hoặc Miễn phí vận chuyển (Freeship).
   - Thiết lập điều kiện linh hoạt: Đơn hàng tối thiểu, mức giảm tối đa, giới hạn lượt dùng và thời gian hiệu lực.
-  - Quản lý tập trung: Admin có dashboard riêng để theo dõi hiệu quả và trạng thái của từng mã.
-- **Order Tracking & Details:** 
-  - Khách hàng có thể xem chi tiết hành trình đơn hàng, minh bạch các khoản tạm tính, phí ship và giảm giá.
-  - Admin có hộp thoại chi tiết đơn hàng (Modal Detail) để xử lý nhanh chóng mà không cần chuyển trang.
-- **Product Management:** Admin có thể quản lý biến thể phức tạp (màu sắc, layout) và upload ảnh đa kênh.
 
-### 📱 3.2 Tối ưu hóa Di động (Mobile UX 2.0)
-- **Full Responsive:** Giao diện thích ứng hoàn hảo từ Desktop đến Smartphone.
-- **Mobile Menu & Search Overlay:** Thiết kế dành riêng cho thao tác một tay trên điện thoại.
-- **Admin Mobile Dashboard:** Quản trị viên có thể duyệt đơn hàng, duyệt bài viết và xem thống kê ngay trên thiết bị di động với các bảng dữ liệu có khả năng cuộn ngang mượt mà.
+### 🔔 3.2 Notification Center (Thời gian thực)
+- **Instant Alerts:** Người dùng nhận được thông báo ngay lập tức khi trạng thái đơn hàng thay đổi (Shipped, Delivered) hoặc có tương tác mới.
+- **In-app UI:** Trung tâm thông báo tích hợp ngay trên Navbar với hiệu ứng "glowing" cho các tin nhắn chưa đọc.
 
 ### 🎮 3.3 Trải nghiệm Người dùng (Gamification)
 - **PhoType Engine:** Trình luyện gõ phím chuyên sâu, đo lường WPM và độ chính xác.
-  - **Global Leaderboard:** Hệ thống bảng xếp hạng thời gian thực với các bộ lọc: Tất cả thời gian, Theo tháng và Theo tuần.
-- **Keyboard Finder:** Hệ thống gợi ý sản phẩm thông minh qua bộ câu hỏi trắc nghiệm trực quan.
-
-### 🛡️ 3.4 Bảo mật & Kiểm thử
-- **Multi-Factor Authentication (MFA):** Bảo vệ tài khoản bằng mã TOTP 6 số.
-- **Automated Testing:** Hệ thống kiểm thử toàn diện với **Vitest**, đảm bảo các luồng quan trọng (Thanh toán, Xác thực) luôn hoạt động đúng.
-
----
-
-## 🛠️ 4. Phân tích Kỹ thuật & Công nghệ
-
-| Công nghệ | Vai trò | Ưu điểm |
-| :--- | :--- | :--- |
-| **Next.js 16** | Core Framework | Middleware/Proxy bảo mật, Turbopack nhanh hơn 700%. |
-| **TypeScript** | Language | Hạn chế tối đa lỗi logic thông qua hệ thống Type Safety. |
-| **Tailwind CSS 4** | Styling | Tối ưu hóa bundle size, hỗ trợ Dark Mode native. |
-| **Cloudinary** | CDN Image | Tự động chọn định dạng WebP/AVIF giúp tải trang cực nhanh. |
-| **Vitest** | Testing | Chạy hàng chục bài test đơn vị và tích hợp chỉ trong vài giây. |
-
----
-
-## 📖 5. Hướng dẫn Sử dụng & Các trường hợp điển hình (Use Cases)
-
-Dự án phục vụ hai đối tượng chính với các quy trình nghiệp vụ chuyên biệt:
-
-### 5.1 Đối với Khách hàng (End Users)
-- **Khám phá & Tìm kiếm:** Người dùng có thể duyệt sản phẩm theo danh mục hoặc sử dụng công cụ **Keyboard Finder** để nhận gợi ý bàn phím phù hợp với nhu cầu thông qua bộ câu hỏi trực quan.
-- **Trải nghiệm PhoType:** Truy cập module **Photype** để kiểm tra tốc độ gõ phím (WPM) và độ chính xác. Hệ thống sẽ lưu trữ lịch sử để người dùng theo dõi sự tiến bộ.
-- **Mua sắm thông minh:** 
-  - Săn hàng giảm giá trong các đợt **Flash Sale** với đồng hồ đếm ngược thời gian thực.
-  - Áp dụng **Mã giảm giá (Coupons)** tại trang Checkout để tối ưu chi phí.
-- **Quản lý đơn hàng:** Theo dõi trạng thái đơn hàng từ lúc `Pending` đến khi `Delivered` với thông tin chi tiết về sản phẩm và thanh toán.
-
-### 5.2 Đối với Quản trị viên (Admin)
-- **Quản lý Sản phẩm & Tồn kho:** Thêm mới, chỉnh sửa thông tin sản phẩm, quản lý biến thể (variants) và cập nhật số lượng tồn kho theo thời gian thực.
-- **Điều phối Đơn hàng:** Dashboard Admin cung cấp cái nhìn tổng thể về doanh thu, biểu đồ tăng trưởng và danh sách đơn hàng cần xử lý. Admin có thể cập nhật trạng thái đơn hàng (Shipped, Cancelled, etc.)
-- **Marketing & Khuyến mãi:** Tạo và quản lý các chiến dịch mã giảm giá (Phần trăm, Số tiền cố định, Freeship) với các ràng buộc về thời gian và giới hạn sử dụng.
-- **Kiểm duyệt Diễn đàn:** Duyệt hoặc từ chối các bài viết/bình luận từ cộng đồng để đảm bảo môi trường thảo luận văn minh.
+  - **Horizontal Global Leaderboard:** Bảng xếp hạng 10fastfingers-style với các bộ lọc: Tất cả thời gian, Theo tháng và Theo tuần.
+  - **Personal Insights:** Biểu đồ đường (Line Chart) theo dõi tiến bộ kỹ năng qua thời gian.
 
 ---
 
 ## 🚀 6. Hướng dẫn Cài đặt & Khởi chạy
 
-### Yêu cầu:
-- Node.js 20+
-- Tài khoản Supabase và Cloudinary.
-
 ### Các bước:
-1. **Clone:** `git clone https://github.com/NgDucNguyen1199/PhoGear.git`
-2. **Setup:** `npm install`
-3. **Database Setup:** 
-   Hệ thống yêu cầu các bảng dữ liệu trong Supabase. Truy cập **SQL Editor** trong Supabase Dashboard và chạy các tệp tin theo thứ tự:
+1. **Clone & Setup:** `git clone ...` và `npm install`
+2. **Database Setup:** 
+   Truy cập **SQL Editor** trong Supabase Dashboard và chạy các tệp tin theo thứ tự:
    - Chạy `supabase/schema.sql` (Cấu trúc nền tảng)
    - Chạy `supabase/coupons_schema.sql` (Hệ thống mã giảm giá)
-   - Chạy `supabase/forum_schema.sql` (Hệ thống diễn đàn)
-   - Chạy `supabase/forum_likes.sql` (Hệ thống tương tác bài viết)
-   - Chạy `supabase/typing_scores_schema.sql` (Hệ thống bảng xếp hạng gõ phím)
-   - Chạy `supabase/add_variant_id_to_order_items.sql` (Hỗ trợ quản lý tồn kho biến thể)
-   - Chạy các tệp `.sql` còn lại trong thư mục `supabase/` để kích hoạt đầy đủ tính năng.
+   - Chạy `supabase/forum_schema.sql` & `supabase/forum_likes.sql` (Hệ thống diễn đàn)
+   - Chạy `supabase/typing_scores_schema.sql` (Hệ thống bảng xếp hạng)
+   - Chạy `supabase/notifications_schema.sql` (Trung tâm thông báo)
+   - Chạy `supabase/add_variant_id_to_order_items.sql` (Quản lý tồn kho biến thể)
    - Chạy `supabase/seed.sql` để có dữ liệu mẫu.
-4. **Environment:** Tạo `.env.local` với các biến:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`
-4. **Build & Test:**
-   - Chạy test: `npm test`
-   - Build production: `npm run build`
-5. **Run:** `npm run dev`
 
 ---
 
-## 👤 Thông tin Tác giả
-
-- **Họ và tên:** Nguyễn Đức Nguyên (MSSV: 2212429)
-- **Trường:** Đại học Đà Lạt
-- **Email:** [2212429@dlu.edu.vn](mailto:2212429@dlu.edu.vn)
-- **Github:** [NgDucNguyen1199](https://github.com/NgDucNguyen1199)
-
----
 <div align="center">
   <p>© 2026 PHO GEAR PROJECT - ALL RIGHTS RESERVED.</p>
 </div>

@@ -9,89 +9,67 @@
 1. **PHẦN MỞ ĐẦU**
    - 1.1. Lý do chọn đề tài
    - 1.2. Mục tiêu nghiên cứu
-   - 1.3. Đối tượng và phạm vi nghiên cứu
 2. **CHƯƠNG I: KHẢO SÁT VÀ PHÂN TÍCH HỆ THỐNG**
-   - 2.1. Khảo sát thực trạng thị trường bàn phím cơ
-   - 2.2. Phân tích yêu cầu chức năng (Functional Requirements)
-   - 2.3. Phân tích yêu cầu phi chức năng (Non-functional Requirements)
-   - 2.4. Xác định các thực thể và mối quan hệ (ERD)
+   - 2.1. Phân tích yêu cầu chức năng mở rộng
+   - 2.2. Xác định các thực thể mới (Inventory & Social)
 3. **CHƯƠNG II: THIẾT KẾ KIẾN TRÚC VÀ CÔNG NGHỆ**
-   - 3.1. Lựa chọn công nghệ (Next.js 16, React 19, Supabase)
-   - 3.2. Kiến trúc Isomorphic và Server Actions
-   - 3.3. Giải pháp bảo mật Row Level Security (RLS)
+   - 3.1. Ứng dụng Real-time & Optimistic Updates
+   - 3.2. Giải pháp Deep Skeleton Loading
 4. **CHƯƠNG III: XÂY DỰNG VÀ CÀI ĐẶT HỆ THỐNG**
-   - 4.1. Cấu trúc mã nguồn và Proxy Middleware
-   - 4.2. Xây dựng Module Coupons & Marketing
-   - 4.3. Xây dựng Module PhoType & Gamification
-   - 4.4. Tối ưu hóa hiệu suất (Turbopack & Cloudinary)
+   - 4.1. Hệ thống quản lý tồn kho biến thể (Variant-level Inventory)
+   - 4.2. Trung tâm thông báo tập trung (Notification Center)
+   - 4.3. Bảng xếp hạng PhoType đa chiều
 5. **CHƯƠNG IV: ĐÁNH GIÁ VÀ KẾT LUẬN**
-   - 5.1. Kết quả thử nghiệm và kiểm thử (Vitest)
-   - 5.2. Hướng phát triển và mở rộng
+   - 5.1. Kết quả giải quyết bài toán hiệu suất & UX
 6. **TÀI LIỆU THAM KHẢO**
-
----
-
-## 1. PHẦN MỞ ĐẦU
-
-### 1.1. Lý do chọn đề tài
-Thị trường thiết bị ngoại vi, đặc biệt là bàn phím cơ, đã chuyển mình từ một thị trường ngách thành một ngành công nghiệp văn hóa và công nghệ trị giá hàng tỷ USD. Người dùng hiện nay không chỉ tìm kiếm một công cụ nhập liệu mà còn tìm kiếm sự cá nhân hóa (Customization). Việc xây dựng một nền tảng thương mại điện tử chuyên biệt như PhoGear là cần thiết để kết nối nhà cung cấp với cộng đồng người dùng đam mê kỹ thuật.
-
-### 1.2. Mục tiêu nghiên cứu
-- Nghiên cứu khả năng ứng dụng của Next.js 16 và React 19 trong việc tối ưu hóa SEO và trải nghiệm người dùng.
-- Xây dựng hệ thống quản lý dữ liệu thời gian thực với Supabase.
-- Thiết kế các module đặc thù như luyện gõ phím và gợi ý sản phẩm thông minh.
 
 ---
 
 ## 2. CHƯƠNG I: KHẢO SÁT VÀ PHÂN TÍCH HỆ THỐNG
 
-### 2.2. Phân tích yêu cầu chức năng
-Hệ thống được chia thành 3 phân hệ lớn:
-1.  **Phân hệ Người dùng:** Cho phép khách hàng tìm kiếm, đặt hàng, quản lý hồ sơ và tham gia diễn đàn. Đặc biệt là tính năng **PhoType** cho phép đo tốc độ gõ phím thực tế.
-2.  **Phân hệ Quản trị (Admin):** Cung cấp các công cụ quản lý kho hàng, xử lý đơn hàng, điều phối mã giảm giá và kiểm duyệt nội dung cộng đồng.
-3.  **Phân hệ Tự động hóa:** Bao gồm logic tự động tính phí vận chuyển, áp dụng coupon và điều chỉnh giá trong các phiên Flash Sale.
-
-### 2.4. Thiết kế Cơ sở dữ liệu (ERD)
-Dữ liệu được tổ chức chặt chẽ trên PostgreSQL:
--   **Table `coupons`:** Lưu trữ logic khuyến mãi phức tạp (min_order, max_discount, usage_limit).
--   **Table `orders`:** Liên kết với `profiles` và `coupons` để quản lý dòng tiền và lịch sử mua sắm.
--   **Table `posts` & `comments`:** Cấu trúc dạng cây (Tree structure) để hỗ trợ thảo luận diễn đàn.
+### 2.1. Phân tích yêu cầu chức năng mở rộng
+Hệ thống hiện tại đã được nâng cấp để hỗ trợ các quy trình nghiệp vụ phức tạp:
+- **Tồn kho chính xác:** Đảm bảo khi khách hàng chọn một switch cụ thể (VD: Red Switch), chỉ số lượng của biến thể đó bị giảm trừ trong kho.
+- **Tương tác xã hội:** Người dùng có thể thả tim bài viết, nhận thông báo đẩy (push notifications) khi Admin thay đổi trạng thái đơn hàng.
 
 ---
 
 ## 3. CHƯƠNG II: THIẾT KẾ KIẾN TRÚC VÀ CÔNG NGHỆ
 
-### 3.2. Kiến trúc Isomorphic và Server Actions
-PhoGear không sử dụng kiến trúc API REST truyền thống mà tận dụng **Server Actions**. Điều này giúp:
-- Giảm số lượng API Endpoint cần bảo trì.
-- Tăng tính bảo mật vì logic thực thi trực tiếp trên máy chủ.
-- Tự động revalidate dữ liệu qua `revalidatePath`, giúp giao diện luôn cập nhật mới nhất.
+### 3.1. Ứng dụng Real-time & Optimistic Updates
+Dự án áp dụng mô hình **Cập nhật tức thời**:
+- **Supabase Realtime:** Sử dụng WebSockets để truyền tải thay đổi dữ liệu từ Postgres đến trực tiếp trình duyệt người dùng mà không cần reload.
+- **Optimistic UI:** Khi người dùng thực hiện các thao tác nhẹ (like, add to cart), giao diện sẽ giả định thành công và cập nhật ngay lập tức, mang lại cảm giác mượt mà tuyệt đối.
+
+### 3.2. Giải pháp Deep Skeleton Loading
+Để đạt điểm số **Lighthouse Core Web Vitals** tối ưu, hệ thống sử dụng Skeletons khớp 1:1 với kích thước Product Card thật, giúp triệt tiêu chỉ số CLS (Cumulative Layout Shift) - một trong những tiêu chí đánh giá trải nghiệm người dùng quan trọng nhất của Google.
 
 ---
 
 ## 4. CHƯƠNG III: XÂY DỰNG VÀ CÀI ĐẶT HỆ THỐNG
 
-### 4.2. Xây dựng Module Coupons
-Module này được thiết kế với cơ chế kiểm tra điều kiện (Validator) đa tầng:
-1. Kiểm tra tính tồn tại và trạng thái `is_active`.
-2. Kiểm tra thời hạn hiệu lực (`start_date`, `end_date`).
-3. Kiểm tra ngưỡng đơn hàng tối thiểu (`min_order_amount`).
-4. Kiểm tra giới hạn lượt sử dụng (`usage_limit` vs `usage_count`).
+### 4.1. Hệ thống quản lý tồn kho biến thể
+Logic trừ kho được thực hiện qua Server Action bảo mật:
+- Khi tạo đơn hàng (`createOrder`), hệ thống xác định `variant_id`.
+- Thực hiện cập nhật đồng thời ở bảng `products` (tổng kho) và `product_variants` (kho chi tiết).
+- Hỗ trợ hoàn kho tự động (`Smart Restoration`) khi đơn hàng chuyển sang trạng thái `cancelled`.
+
+### 4.3. Bảng xếp hạng PhoType đa chiều
+Module PhoType được tái cấu trúc bố cục ngang theo phong cách **10fastfingers**, tập trung tối đa vào khu vực gõ. Bảng xếp hạng hỗ trợ:
+- Lọc theo thời gian: Tuần (Weekly), Tháng (Monthly), Tất cả (All-time).
+- Glassmorphism UI: Hiệu ứng làm mờ nền hiện đại, hỗ trợ hoàn hảo cho cả Light Mode và Dark Mode.
 
 ---
 
 ## 5. CHƯƠNG IV: ĐÁNH GIÁ VÀ KẾT LUẬN
 
-### 5.1. Kết quả đạt được
-Hệ thống đã giải quyết triệt để các lỗi về:
--   **Hydration:** Tối ưu hóa việc render Dialog và Sheet trên React 19.
--   **Payload:** Mở rộng giới hạn Server Actions lên 10MB để xử lý ảnh sản phẩm 4K.
--   **Type Safety:** 100% mã nguồn được kiểm soát bởi TypeScript.
+### 5.1. Kết quả giải quyết bài toán hiệu suất & UX
+Hệ thống đã loại bỏ hoàn toàn các lỗi về Hydration và vượt ngưỡng giới hạn Payload (nâng lên 10MB). Trải nghiệm người dùng được nâng tầm nhờ vào sự kết hợp giữa Real-time và Optimistic Updates.
 
 ---
 
 ## 6. TÀI LIỆU THAM KHẢO
 1. Next.js Documentation (2026).
-2. React 19 Upgrade Guide.
-3. Supabase Row Level Security Patterns.
-4. Tailwind CSS v4 Engineering Blog.
+2. Supabase Realtime & Postgres Replication Guide.
+3. React 19 useOptimistic API Reference.
+4. Google Search Central - Core Web Vitals Optimization.
