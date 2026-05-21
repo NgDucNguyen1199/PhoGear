@@ -20,8 +20,10 @@ import { motion } from 'framer-motion'
 import { ReviewSection } from '@/components/shop/ReviewSection'
 import { useProductViewHistory } from '@/lib/utils/history'
 import { PersonalizedRecommendations } from '@/components/shop/PersonalizedRecommendations'
+import { useRealtimeProduct } from '@/lib/supabase/realtime'
 
-export function ProductDetailView({ product, userId }: { product: Product, userId?: string }) {
+export function ProductDetailView({ product: initialProduct, userId }: { product: Product, userId?: string }) {
+  const product = useRealtimeProduct(initialProduct)
   useProductViewHistory(product.id)
   const variants = useMemo(() => product.product_variants || [], [product.product_variants])
   
