@@ -101,7 +101,7 @@ export function EditCouponDialog({ coupon }: { coupon: any }) {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="type">Loại giảm giá</Label>
-                <Select value={type} onValueChange={setType}>
+                <Select value={type} onValueChange={(val) => val && setType(val)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn loại" />
                   </SelectTrigger>
