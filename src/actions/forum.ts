@@ -28,12 +28,12 @@ export async function getApprovedPosts(currentUserId?: string) {
 
   const { data, error } = await query
 
-  if (error) {
-    console.error('Error fetching approved posts:', error.message, error.details, error.hint)
+  if (error || !data) {
+    if (error) console.error('Error fetching approved posts:', error.message, error.details, error.hint)
     return []
   }
 
-  return data.map(post => ({
+  return (data as any[]).map((post: any) => ({
     ...post,
     likes_count: post.likes?.[0]?.count || 0,
     is_liked: currentUserId ? (post.user_liked && post.user_liked.length > 0) : false
