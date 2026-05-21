@@ -81,6 +81,7 @@ Hệ thống sử dụng cấu trúc CSDL quan hệ được thiết kế tối 
 
 ### 🎮 3.3 Trải nghiệm Người dùng (Gamification)
 - **PhoType Engine:** Trình luyện gõ phím chuyên sâu, đo lường WPM và độ chính xác.
+  - **Global Leaderboard:** Hệ thống bảng xếp hạng thời gian thực với các bộ lọc: Tất cả thời gian, Theo tháng và Theo tuần.
 - **Keyboard Finder:** Hệ thống gợi ý sản phẩm thông minh qua bộ câu hỏi trắc nghiệm trực quan.
 
 ### 🛡️ 3.4 Bảo mật & Kiểm thử
@@ -135,6 +136,7 @@ Dự án phục vụ hai đối tượng chính với các quy trình nghiệp v
    - Chạy `supabase/schema.sql` (Cấu trúc nền tảng)
    - Chạy `supabase/coupons_schema.sql` (Hệ thống mã giảm giá)
    - Chạy `supabase/forum_schema.sql` (Hệ thống diễn đàn)
+   - Chạy `supabase/typing_scores_schema.sql` (Hệ thống bảng xếp hạng gõ phím)
    - Chạy các tệp `.sql` còn lại trong thư mục `supabase/` để kích hoạt đầy đủ tính năng.
    - Chạy `supabase/seed.sql` để có dữ liệu mẫu.
 4. **Environment:** Tạo `.env.local` với các biến:

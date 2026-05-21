@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { TypingScore } from '@/types'
 
 export async function saveTypingScore(score: {
   wpm: number
@@ -27,27 +28,39 @@ export async function saveTypingScore(score: {
   return { success: true }
 }
 
-export async function getLeaderboard() {
+export async function getLeaderboard(filter: 'all-time' | 'weekly' | 'monthly' = 'all-time'): Promise<TypingScore[]> {
   const supabase = await createClient()
-
-  const { data, error } = await supabase
+  
+  let query = supabase
     .from('typing_scores')
     .select(`
       *,
       profiles (full_name, avatar_url)
     `)
     .order('wpm', { ascending: false })
-    .limit(23)
+    .limit(20)
+
+  if (filter === 'weekly') {
+    const lastWeek = new Date()
+    lastWeek.setDate(lastWeek.getDate() - 7)
+    query = query.gte('created_at', lastWeek.toISOString())
+  } else if (filter === 'monthly') {
+    const lastMonth = new Date()
+    lastMonth.setMonth(lastMonth.getMonth() - 1)
+    query = query.gte('created_at', lastMonth.toISOString())
+  }
+
+  const { data, error } = await query
 
   if (error) {
     console.error('Error fetching leaderboard:', error)
     return []
   }
 
-  return data
+  return data as TypingScore[]
 }
 
-export async function getUserTypingHistory() {
+export async function getUserTypingHistory(): Promise<TypingScore[]> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

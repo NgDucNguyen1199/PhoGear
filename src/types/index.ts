@@ -110,3 +110,17 @@ export type Coupon = {
   created_at: string
   updated_at: string
 }
+
+export type TypingScore = {
+  id: string
+  user_id: string
+  wpm: number
+  accuracy: number
+  mode: string
+  rank_name: string
+  created_at: string
+  profiles?: {
+    full_name: string | null
+    avatar_url: string | null
+  }
+}
