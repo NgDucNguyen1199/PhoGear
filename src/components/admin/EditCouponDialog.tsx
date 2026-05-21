@@ -118,6 +118,7 @@ export function EditCouponDialog({ coupon }: { coupon: any }) {
               <div className="grid gap-2">
                 <Label htmlFor="value">Giá trị giảm</Label>
                 <Input 
+                  key={`value-${type}`}
                   id="value" 
                   name="value" 
                   type="number" 
@@ -128,31 +129,61 @@ export function EditCouponDialog({ coupon }: { coupon: any }) {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="min_order_amount">Đơn tối thiểu (VND)</Label>
-                <Input id="min_order_amount" name="min_order_amount" type="number" defaultValue={coupon.min_order_amount} />
+                <Input 
+                  key={`min_order_amount-${coupon.id}`}
+                  id="min_order_amount" 
+                  name="min_order_amount" 
+                  type="number" 
+                  defaultValue={coupon.min_order_amount} 
+                />
               </div>
             </div>
 
             {type === 'percentage' && (
               <div className="grid gap-2">
                 <Label htmlFor="max_discount_amount">Giảm tối đa (VND - Tùy chọn)</Label>
-                <Input id="max_discount_amount" name="max_discount_amount" type="number" defaultValue={coupon.max_discount_amount || ''} />
+                <Input 
+                  key={`max_discount_amount-${coupon.id}`}
+                  id="max_discount_amount" 
+                  name="max_discount_amount" 
+                  type="number" 
+                  defaultValue={coupon.max_discount_amount || ''} 
+                />
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="start_date">Ngày bắt đầu</Label>
-                <Input id="start_date" name="start_date" type="datetime-local" defaultValue={formatDateTime(coupon.start_date)} />
+                <Input 
+                  key={`start_date-${coupon.id}`}
+                  id="start_date" 
+                  name="start_date" 
+                  type="datetime-local" 
+                  defaultValue={formatDateTime(coupon.start_date)} 
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="end_date">Ngày kết thúc (Tùy chọn)</Label>
-                <Input id="end_date" name="end_date" type="datetime-local" defaultValue={formatDateTime(coupon.end_date)} />
+                <Input 
+                  key={`end_date-${coupon.id}`}
+                  id="end_date" 
+                  name="end_date" 
+                  type="datetime-local" 
+                  defaultValue={formatDateTime(coupon.end_date)} 
+                />
               </div>
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="usage_limit">Giới hạn số lần dùng (Tùy chọn)</Label>
-              <Input id="usage_limit" name="usage_limit" type="number" defaultValue={coupon.usage_limit || ''} />
+              <Input 
+                key={`usage_limit-${coupon.id}`}
+                id="usage_limit" 
+                name="usage_limit" 
+                type="number" 
+                defaultValue={coupon.usage_limit || ''} 
+              />
             </div>
 
             <DialogFooter className="pt-4 flex justify-between sm:justify-between items-center">

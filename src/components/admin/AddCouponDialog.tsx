@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { createCoupon } from '@/actions/admin_coupons'
 import { 
   Dialog, 
@@ -21,6 +21,10 @@ export function AddCouponDialog() {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [type, setType] = useState('percentage')
+
+  const initialStartDate = useMemo(() => {
+    return new Date().toISOString().slice(0, 16)
+  }, [open])
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true)
@@ -106,17 +110,34 @@ export function AddCouponDialog() {
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="start_date">Ngày bắt đầu</Label>
-              <Input id="start_date" name="start_date" type="datetime-local" defaultValue={new Date().toISOString().slice(0, 16)} />
+              <Input 
+                key={`start_date-${open}`}
+                id="start_date" 
+                name="start_date" 
+                type="datetime-local" 
+                defaultValue={initialStartDate} 
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="end_date">Ngày kết thúc (Tùy chọn)</Label>
-              <Input id="end_date" name="end_date" type="datetime-local" />
+              <Input 
+                key={`end_date-${open}`}
+                id="end_date" 
+                name="end_date" 
+                type="datetime-local" 
+              />
             </div>
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="usage_limit">Giới hạn số lần dùng (Tùy chọn)</Label>
-            <Input id="usage_limit" name="usage_limit" type="number" placeholder="Ví dụ: 100" />
+            <Input 
+              key={`usage_limit-${open}`}
+              id="usage_limit" 
+              name="usage_limit" 
+              type="number" 
+              placeholder="Ví dụ: 100" 
+            />
           </div>
 
           <DialogFooter className="pt-4">
