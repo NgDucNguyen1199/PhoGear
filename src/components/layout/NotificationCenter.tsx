@@ -12,10 +12,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { getNotifications, markAsRead, markAllAsRead } from '@/actions/notifications'
 import { createClient } from '@/lib/supabase/client'
-import { cn } from '@/lib/utils'
+import { cn, formatTimeAgo } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { formatDistanceToNow } from 'date-fns'
-import { vi } from 'date-fns/locale'
 
 export function NotificationCenter() {
   const [notifications, setNotifications] = useState<any[]>([])
@@ -120,7 +118,7 @@ export function NotificationCenter() {
                     {notif.content}
                   </p>
                   <p className="text-[10px] font-bold text-muted-foreground/60 uppercase">
-                    {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: vi })}
+                    {formatTimeAgo(new Date(notif.created_at))}
                   </p>
                 </div>
                 {!notif.is_read && (
