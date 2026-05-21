@@ -4,12 +4,13 @@ import { Product } from '@/types'
 
 export type CartItem = Product & {
   quantity: number
+  variantId?: string
   selectedOptions?: Record<string, string>
 }
 
 interface CartStore {
   items: CartItem[]
-  addItem: (product: Product, selectedOptions?: Record<string, string>, quantity?: number) => void
+  addItem: (product: Product, variantId?: string, selectedOptions?: Record<string, string>, quantity?: number) => void
   removeItem: (cartItemId: string) => void
   updateQuantity: (cartItemId: string, quantity: number) => void
   clearCart: () => void
@@ -17,14 +18,17 @@ interface CartStore {
   getTotalPrice: () => number
 }
 
-// Helper to generate a unique key for a cart item based on product ID and options
-export const getCartItemId = (productId: string, options?: Record<string, string>) => {
-  if (!options || Object.keys(options).length === 0) return productId
+// Helper to generate a unique key for a cart item based on product ID and variant/options
+export const getCartItemId = (productId: string, variantId?: string, options?: Record<string, string>) => {
+  let id = productId
+  if (variantId) id += `-${variantId}`
+  if (!options || Object.keys(options).length === 0) return id
+  
   const optionsString = Object.entries(options)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, value]) => `${key}:${value}`)
     .join('|')
-  return `${productId}-${optionsString}`
+  return `${id}-${optionsString}`
 }
 
 export const useCartStore = create<CartStore>()(
@@ -32,14 +36,12 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
       
-      addItem: (product: Product, selectedOptions?: Record<string, string>, quantity: number = 1) => {
+      addItem: (product: Product, variantId?: string, selectedOptions?: Record<string, string>, quantity: number = 1) => {
         const currentItems = get().items
-        const cartItemId = getCartItemId(product.id, selectedOptions)
+        const cartItemId = getCartItemId(product.id, variantId, selectedOptions)
         
-        // We need a unique ID for the cart item, but we'll use a virtual one for comparison
-        // Let's add a `cartId` field to CartItem for easier management
         const existingItemIndex = currentItems.findIndex((item) => {
-          const itemCartId = getCartItemId(item.id, item.selectedOptions)
+          const itemCartId = getCartItemId(item.id, item.variantId, item.selectedOptions)
           return itemCartId === cartItemId
         })
 
@@ -48,14 +50,13 @@ export const useCartStore = create<CartStore>()(
           updatedItems[existingItemIndex].quantity += quantity
           set({ items: updatedItems })
         } else {
-          set({ items: [...currentItems, { ...product, quantity, selectedOptions }] })
+          set({ items: [...currentItems, { ...product, variantId, quantity, selectedOptions }] })
         }
       },
 
       removeItem: (cartItemId: string) => {
-        // cartItemId here is the composite key
         set({
-          items: get().items.filter((item) => getCartItemId(item.id, item.selectedOptions) !== cartItemId),
+          items: get().items.filter((item) => getCartItemId(item.id, item.variantId, item.selectedOptions) !== cartItemId),
         })
       },
 
@@ -67,7 +68,7 @@ export const useCartStore = create<CartStore>()(
 
         set({
           items: get().items.map((item) =>
-            getCartItemId(item.id, item.selectedOptions) === cartItemId ? { ...item, quantity } : item
+            getCartItemId(item.id, item.variantId, item.selectedOptions) === cartItemId ? { ...item, quantity } : item
           ),
         })
       },

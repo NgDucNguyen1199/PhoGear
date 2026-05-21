@@ -162,6 +162,7 @@ export default function CheckoutPage() {
   const handleCheckout = async (formData: FormData) => {
     const orderItems: OrderItemInput[] = items.map(item => ({
       product_id: item.id,
+      variant_id: item.variantId,
       quantity: item.quantity,
       price_at_time: item.price,
       selected_options: item.selectedOptions

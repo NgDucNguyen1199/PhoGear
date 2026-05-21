@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 
 export type OrderItemInput = {
   product_id: string
+  variant_id?: string
   quantity: number
   price_at_time: number
   selected_options?: Record<string, string>
@@ -170,21 +171,30 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
   }
 
   // 4. Tạo chi tiết đơn hàng
-  const finalOrderItems = verifiedOrderItems.map(vItem => ({
+  const finalOrderItems = verifiedOrderItems.map((vItem, index) => ({
     ...vItem,
-    order_id: order.id
+    order_id: order.id,
+    variant_id: items[index].variant_id // Đồng bộ variant_id từ input ban đầu
   }))
 
   const { error: itemsError } = await supabase
     .from('order_items')
-    .insert(finalOrderItems)
+    .insert(finalOrderItems.map(({ order_id, product_id, variant_id, quantity, price_at_time, selected_options }) => ({
+       order_id,
+       product_id,
+       variant_id,
+       quantity,
+       price_at_time,
+       selected_options
+    })))
 
   if (itemsError) {
     return { error: `Lỗi lưu chi tiết đơn hàng: ${itemsError.message}` }
   }
 
-  // 5. Cập nhật số lượng kho hàng và flash sale sold
+  // 5. Cập nhật số lượng kho hàng (Trừ kho ngay khi đặt hàng để giữ chỗ)
   for (const item of finalOrderItems) {
+    // 5.1. Trừ kho sản phẩm chính
     const { data: productData } = await supabase
       .from('products')
       .select('stock_quantity, is_flash_sale, flash_sale_sold, flash_sale_price')
@@ -198,7 +208,7 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
         stock_quantity: Math.max(0, product.stock_quantity - item.quantity) 
       }
 
-      // Nếu mua với giá flash sale (xác định bằng cách so sánh giá áp dụng với giá flash sale)
+      // Nếu mua với giá flash sale
       if (isGlobalFlashSaleActive && product.is_flash_sale && item.price_at_time === product.flash_sale_price) {
         updates.flash_sale_sold = (product.flash_sale_sold || 0) + item.quantity
       }
@@ -207,6 +217,24 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
         .from('products')
         .update(updates)
         .eq('id', item.product_id)
+    }
+
+    // 5.2. Trừ kho biến thể (nếu có)
+    if (item.variant_id) {
+        const { data: variantData } = await supabase
+            .from('product_variants')
+            .select('stock_quantity')
+            .eq('id', item.variant_id)
+            .single()
+        
+        const variant = variantData as any
+        
+        if (variant) {
+            await supabase
+                .from('product_variants')
+                .update({ stock_quantity: Math.max(0, variant.stock_quantity - item.quantity) })
+                .eq('id', item.variant_id)
+        }
     }
   }
 

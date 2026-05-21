@@ -29,13 +29,64 @@ export async function getAllOrders() {
 export async function updateOrderStatus(orderId: string, status: string) {
   const supabase = await createClient()
 
-  const { error } = await supabase
+  // 1. Lấy thông tin đơn hàng hiện tại để kiểm tra trạng thái cũ và lấy danh sách sản phẩm
+  const { data: order, error: fetchError } = await supabase
+    .from('orders')
+    .select('status, order_items(*)')
+    .eq('id', orderId)
+    .single()
+
+  if (fetchError) return { error: `Lỗi lấy thông tin đơn hàng: ${fetchError.message}` }
+
+  const oldStatus = order.status
+  
+  // 2. Cập nhật trạng thái mới
+  const { error: updateError } = await supabase
     .from('orders')
     .update({ status })
     .eq('id', orderId)
 
-  if (error) {
-    return { error: error.message }
+  if (updateError) return { error: updateError.message }
+
+  // 3. Xử lý logic kho hàng dựa trên chuyển đổi trạng thái
+  
+  // TRƯỜNG HỢP: Huỷ đơn hàng (Hoàn lại kho)
+  // Chỉ hoàn lại nếu trạng thái cũ KHÔNG PHẢI là cancelled
+  if (status === 'cancelled' && oldStatus !== 'cancelled') {
+    for (const item of order.order_items) {
+      // Hoàn kho sản phẩm chính
+      const { data: product } = await supabase.from('products').select('stock_quantity').eq('id', item.product_id).single()
+      if (product) {
+        await supabase.from('products').update({ stock_quantity: product.stock_quantity + item.quantity }).eq('id', item.product_id)
+      }
+
+      // Hoàn kho biến thể (nếu có)
+      if (item.variant_id) {
+        const { data: variant } = await supabase.from('product_variants').select('stock_quantity').eq('id', item.variant_id).single()
+        if (variant) {
+          await supabase.from('product_variants').update({ stock_quantity: variant.stock_quantity + item.quantity }).eq('id', item.variant_id)
+        }
+      }
+    }
+  }
+  
+  // TRƯỜNG HỢP: Phục hồi đơn hàng từ 'cancelled' sang trạng thái khác (Trừ lại kho)
+  else if (oldStatus === 'cancelled' && status !== 'cancelled') {
+     for (const item of order.order_items) {
+      // Trừ kho sản phẩm chính
+      const { data: product } = await supabase.from('products').select('stock_quantity').eq('id', item.product_id).single()
+      if (product) {
+        await supabase.from('products').update({ stock_quantity: Math.max(0, product.stock_quantity - item.quantity) }).eq('id', item.product_id)
+      }
+
+      // Trừ kho biến thể (nếu có)
+      if (item.variant_id) {
+        const { data: variant } = await supabase.from('product_variants').select('stock_quantity').eq('id', item.variant_id).single()
+        if (variant) {
+          await supabase.from('product_variants').update({ stock_quantity: Math.max(0, variant.stock_quantity - item.quantity) }).eq('id', item.variant_id)
+        }
+      }
+    }
   }
 
   revalidatePath('/admin/orders')

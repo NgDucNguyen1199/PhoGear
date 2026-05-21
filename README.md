@@ -140,6 +140,7 @@ Dự án phục vụ hai đối tượng chính với các quy trình nghiệp v
    - Chạy `supabase/forum_schema.sql` (Hệ thống diễn đàn)
    - Chạy `supabase/forum_likes.sql` (Hệ thống tương tác bài viết)
    - Chạy `supabase/typing_scores_schema.sql` (Hệ thống bảng xếp hạng gõ phím)
+   - Chạy `supabase/add_variant_id_to_order_items.sql` (Hỗ trợ quản lý tồn kho biến thể)
    - Chạy các tệp `.sql` còn lại trong thư mục `supabase/` để kích hoạt đầy đủ tính năng.
    - Chạy `supabase/seed.sql` để có dữ liệu mẫu.
 4. **Environment:** Tạo `.env.local` với các biến:

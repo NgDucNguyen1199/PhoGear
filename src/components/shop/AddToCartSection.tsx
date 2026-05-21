@@ -72,7 +72,7 @@ export function AddToCartSection({ product, selectedVariant, onVariantClick }: A
     
     // Khi thêm vào giỏ, ta gửi giá hiện tại (đã bao gồm giá sale nếu có)
     const productWithPrice = { ...product, price: currentPrice }
-    addItem(productWithPrice, options, quantity)
+    addItem(productWithPrice, selectedVariant?.id, options, quantity)
     toast.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`)
   }
 
@@ -86,7 +86,7 @@ export function AddToCartSection({ product, selectedVariant, onVariantClick }: A
       ? { "Phiên bản": selectedVariant.variant_name } 
       : {}
     const productWithPrice = { ...product, price: currentPrice }
-    addItem(productWithPrice, options, quantity)
+    addItem(productWithPrice, selectedVariant?.id, options, quantity)
     router.push('/checkout')
   }
 
