@@ -6,8 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuHeader,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { getNotifications, markAsRead, markAllAsRead } from '@/actions/notifications'
@@ -18,6 +16,7 @@ import { useRouter } from 'next/navigation'
 export function NotificationCenter() {
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [open, setOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -73,17 +72,20 @@ export function NotificationCenter() {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative transition-all hover:scale-110 active:scale-95">
-          <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white animate-in zoom-in duration-300">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="relative transition-all hover:scale-110 active:scale-95"
+        onClick={() => setOpen(true)}
+      >
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white animate-in zoom-in duration-300">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </Button>
       <DropdownMenuContent align="end" className="w-80 sm:w-96 p-0 rounded-2xl overflow-hidden shadow-2xl border-white/5 bg-background/95 backdrop-blur-xl">
         <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
           <h3 className="font-black uppercase tracking-tight text-xs flex items-center gap-2">
