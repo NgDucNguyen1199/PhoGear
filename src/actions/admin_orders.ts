@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createNotification } from './notifications'
 
 export async function getAllOrders() {
   const supabase = await createClient()
@@ -32,7 +33,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
   // 1. Lấy thông tin đơn hàng hiện tại để kiểm tra trạng thái cũ và lấy danh sách sản phẩm
   const { data: order, error: fetchError } = await supabase
     .from('orders')
-    .select('status, order_items(*)')
+    .select('status, user_id, order_items(*)')
     .eq('id', orderId)
     .single()
 
@@ -48,19 +49,32 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
   if (updateError) return { error: updateError.message }
 
-  // 3. Xử lý logic kho hàng dựa trên chuyển đổi trạng thái
+  // 3. Tạo thông báo cho người dùng
+  const statusLabels: Record<string, string> = {
+    'pending': 'đang chờ xác nhận',
+    'processing': 'đang được xử lý',
+    'shipped': 'đang trên đường giao đến bạn',
+    'delivered': 'đã được giao thành công',
+    'cancelled': 'đã bị hủy'
+  }
+
+  await createNotification({
+    user_id: order.user_id,
+    type: 'order_status',
+    title: `Cập nhật đơn hàng #${orderId.slice(0, 8).toUpperCase()}`,
+    content: `Đơn hàng của bạn hiện tại ${statusLabels[status] || status}.`,
+    link: '/orders'
+  })
+
+  // 4. Xử lý logic kho hàng dựa trên chuyển đổi trạng thái
   
   // TRƯỜNG HỢP: Huỷ đơn hàng (Hoàn lại kho)
-  // Chỉ hoàn lại nếu trạng thái cũ KHÔNG PHẢI là cancelled
   if (status === 'cancelled' && oldStatus !== 'cancelled') {
     for (const item of order.order_items) {
-      // Hoàn kho sản phẩm chính
       const { data: product } = await supabase.from('products').select('stock_quantity').eq('id', item.product_id).single()
       if (product) {
         await supabase.from('products').update({ stock_quantity: product.stock_quantity + item.quantity }).eq('id', item.product_id)
       }
-
-      // Hoàn kho biến thể (nếu có)
       if (item.variant_id) {
         const { data: variant } = await supabase.from('product_variants').select('stock_quantity').eq('id', item.variant_id).single()
         if (variant) {
@@ -70,16 +84,13 @@ export async function updateOrderStatus(orderId: string, status: string) {
     }
   }
   
-  // TRƯỜNG HỢP: Phục hồi đơn hàng từ 'cancelled' sang trạng thái khác (Trừ lại kho)
+  // TRƯỜNG HỢP: Phục hồi đơn hàng từ 'cancelled'
   else if (oldStatus === 'cancelled' && status !== 'cancelled') {
      for (const item of order.order_items) {
-      // Trừ kho sản phẩm chính
       const { data: product } = await supabase.from('products').select('stock_quantity').eq('id', item.product_id).single()
       if (product) {
         await supabase.from('products').update({ stock_quantity: Math.max(0, product.stock_quantity - item.quantity) }).eq('id', item.product_id)
       }
-
-      // Trừ kho biến thể (nếu có)
       if (item.variant_id) {
         const { data: variant } = await supabase.from('product_variants').select('stock_quantity').eq('id', item.variant_id).single()
         if (variant) {

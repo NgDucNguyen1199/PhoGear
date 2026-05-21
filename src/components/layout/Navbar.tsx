@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Logo } from '@/components/ui/Logo'
 import { RegionSwitcher } from '@/components/layout/RegionSwitcher'
+import { NotificationCenter } from '@/components/layout/NotificationCenter'
 import { useI18n } from '@/components/providers/I18nProvider'
 import { useTheme } from 'next-themes'
 import { 
@@ -56,7 +57,7 @@ function ThemeToggle() {
 export function Navbar({ user }: { user: any }) {
   const { t, locale } = useI18n()
   const router = useRouter()
-  const [isCartOpen, setIsCartOpen] = useState(false)
+  const { isOpen: isCartOpen, setOpen: setIsCartOpen } = useCartStore()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -277,6 +278,8 @@ export function Navbar({ user }: { user: any }) {
           </Button>
 
           <ThemeToggle />
+          
+          {mounted && user && <NotificationCenter />}
 
           <Button 
             variant="ghost" 
@@ -306,7 +309,7 @@ export function Navbar({ user }: { user: any }) {
             )}
           </Button>
 
-          <CartSidebar open={isCartOpen} setOpen={setIsCartOpen} />
+          <CartSidebar />
 
           <div className="hidden sm:block border-l h-6 mx-1 opacity-20" />
           
