@@ -1,137 +1,189 @@
-# BÁO CÁO CHI TIẾT DỰ ÁN: HỆ THỐNG PHOGEAR
+<div align="center">
 
-## 📑 MỤC LỤC
-1. [Tổng quan](#1-tổng-quan)
-2. [Khảo sát và phân tích hệ thống](#2-khảo-sát-và-phân-tích-hệ-thống)
-3. [Cài đặt hệ thống](#3-cài-đặt-hệ-thống)
-4. [Kết luận và hướng phát triển](#4-kết-luận-và-hướng-phát-triển)
-5. [Tài liệu tham khảo](#5-tài-liệu-tham khảo)
+**TRƯỜNG ĐẠI HỌC ĐÀ LẠT**  
+**KHOA CÔNG NGHỆ THÔNG TIN**  
+---o0o---
 
----
+**BÁO CÁO THUYẾT MINH KỸ THUẬT DỰ ÁN TỐT NGHIỆP**
 
-## 1. TỔNG QUAN
+**ĐỀ TÀI: NGHIÊN CỨU VÀ XÂY DỰNG NỀN TẢNG THƯƠNG MẠI ĐIỆN TỬ TÍCH HỢP TRẢI NGHIỆM NGƯỜI DÙNG PHOGEAR**
 
-### 1.1 Khái niệm
-**PhoGear** là một nền tảng thương mại điện tử (E-commerce) thế hệ mới, được thiết kế chuyên biệt cho cộng đồng đam mê bàn phím cơ (Mechanical Keyboards). Không chỉ dừng lại ở việc mua bán, PhoGear còn tích hợp các yếu tố cộng đồng và trò chơi hóa (Gamification) để tạo ra một hệ sinh thái toàn diện cho người dùng.
-
-### 1.2 Các thành phần của hệ thống
-Hệ thống bao gồm 4 module chính:
-- **PhoShop:** Cửa hàng trực tuyến với đầy đủ tính năng giỏ hàng, thanh toán, mã giảm giá và Flash Sale.
-- **PhoType:** Trình luyện gõ phím chuyên nghiệp giúp đo lường chỉ số WPM và độ chính xác.
-- **PhoForum:** Diễn đàn thảo luận, nơi người dùng có thể chia sẻ kinh nghiệm và kiến thức.
-- **Admin Dashboard:** Hệ thống quản trị tập trung dành cho chủ cửa hàng để quản lý toàn bộ quy trình vận hành.
-
-### 1.3 Ưu và nhược điểm
-**Ưu điểm:**
-- **Hiệu năng:** Sử dụng Next.js 16 và Turbopack giúp tốc độ tải trang cực nhanh.
-- **Trải nghiệm:** Giao diện tối ưu cho di động (Mobile First) và hỗ trợ PWA.
-- **Bảo mật:** Cơ chế Row Level Security (RLS) của Supabase bảo vệ dữ liệu ở mức dòng.
-- **Tính năng:** Tích hợp nhiều công cụ hỗ trợ người dùng như Keyboard Finder.
-
-**Nhược điểm:**
-- Phụ thuộc vào hạ tầng đám mây (Supabase/Cloudinary).
-- Đòi hỏi cấu hình ban đầu về Database SQL khá chi tiết.
+</div>
 
 ---
 
-## 2. KHẢO SÁT VÀ PHÂN TÍCH HỆ THỐNG
-
-### 2.1 Tên đề tài
-*Xây dựng hệ thống thương mại điện tử và trải nghiệm người dùng tích hợp cho thiết bị ngoại vi PhoGear.*
-
-### 2.2 Phân tích yêu cầu đề tài
-Đề tài đặt ra bài toán giải quyết nhu cầu mua sắm thiết bị chuyên biệt kết hợp với việc xây dựng cộng đồng. Yêu cầu hệ thống phải xử lý được các tác vụ thời gian thực (như Flash Sale) và đảm bảo tính nhất quán của dữ liệu đơn hàng.
-
-### 2.3 Mô tả PhoGear
-PhoGear đóng vai trò là một "Hub" cho người chơi phím cơ. Tại đây, khách hàng có thể tìm thấy từ những bộ kit bàn phím cao cấp đến những switch hiếm, đồng thời có thể kiểm tra kỹ năng gõ phím của mình ngay trên nền tảng.
-
-### 2.4 Yêu cầu đặt ra
-- Giao diện hiện đại, tối giản nhưng đậm chất công nghệ.
-- Tốc độ phản hồi dưới 2 giây cho mọi thao tác.
-- Hệ thống mã giảm giá linh hoạt và bảo mật.
-- Quản lý kho hàng chính xác, tránh tình trạng "over-selling".
-
-### 2.5 Thiết bị và phần mềm
-- **Môi trường:** Node.js (v20+), Git.
-- **Backend:** Supabase (PostgreSQL, Auth, Storage).
-- **Lưu trữ ảnh:** Cloudinary CDN.
-- **Công cụ lập trình:** VS Code, Supabase SQL Editor.
-
-### 2.6 Các chức năng chính
-- **Người dùng:** Đăng ký/Đăng nhập (MFA), Tìm kiếm sản phẩm, Giỏ hàng, Đặt hàng, Áp dụng coupon, Luyện gõ phím, Đăng bài viết.
-- **Quản trị viên:** Quản lý sản phẩm, Quản lý đơn hàng, Thống kê doanh thu, Thiết lập hệ thống, Kiểm duyệt nội dung.
-
-### 2.7 Phân tích và thiết kế hệ thống
-Hệ thống được thiết kế theo kiến trúc **Server Components** của Next.js, kết hợp với các **Server Actions** để xử lý logic backend, giúp giảm thiểu JavaScript tải về phía client.
-
-### 2.8 Xác định các thực thể cơ sở dữ liệu
-- `profiles`: Thông tin người dùng và phân quyền.
-- `products`: Thông tin sản phẩm và biến thể.
-- `categories`: Danh mục sản phẩm.
-- `coupons`: Mã giảm giá và điều kiện áp dụng.
-- `orders` & `order_items`: Chi tiết giao dịch.
-- `posts` & `comments`: Dữ liệu diễn đàn.
-- `system_settings`: Cấu hình toàn cục.
-
-### 2.9 Biểu đồ thực thể quan hệ (ERD Overview)
-- Một **Category** có nhiều **Products**.
-- Một **User** tạo nhiều **Orders**.
-- Một **Order** bao gồm nhiều **Order_Items**.
-- Một **Order** có thể liên kết với một **Coupon**.
-- Một **User** có thể đăng nhiều **Posts** và **Comments**.
+**CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM**  
+**Độc lập - Tự do - Hạnh phúc**
 
 ---
 
-## 3. CÀI ĐẶT HỆ THỐNG
+**THÔNG TIN CHUNG VỀ DỰ ÁN**
+- **Tên dự án:** PhoGear - Mechanical Keyboard Ecosystem.
+- **Sinh viên thực hiện:** Nguyễn Đức Nguyên.
+- **Mã số sinh viên:** 2212429.
+- **Đơn vị đào tạo:** Khoa Công nghệ Thông tin - Trường Đại học Đà Lạt.
+- **Thời gian thực hiện:** Năm 2026.
 
-### 3.1 Thư viện và ngôn ngữ sử dụng
-- **Ngôn ngữ:** TypeScript (Đảm bảo Type Safety).
-- **Frontend:** React 19, Tailwind CSS 4, Framer Motion.
-- **Quản lý trạng thái:** Zustand.
-- **Testing:** Vitest.
-- **UI Components:** Shadcn/UI (Base UI).
+---
 
-### 3.2 Hướng dẫn cài đặt
-1. Tải mã nguồn: `git clone https://github.com/NgDucNguyen1199/PhoGear.git`
-2. Cài đặt thư viện: `npm install`
+## **LỜI NÓI ĐẦU**
 
-### 3.3 Nhập cơ sở dữ liệu
-Truy cập Supabase SQL Editor và chạy các script theo thứ tự:
-1. `supabase/schema.sql`
-2. `supabase/coupons_schema.sql`
-3. `supabase/forum_schema.sql`
-4. `supabase/seed.sql` (Dữ liệu mẫu)
+Trong bối cảnh chuyển đổi số đang diễn ra mạnh mẽ, thương mại điện tử không còn đơn thuần là việc mua bán trực tuyến mà đã phát triển thành một trải nghiệm cá nhân hóa sâu sắc. Thị trường thiết bị ngoại vi, đặc biệt là bàn phím cơ, đang chứng kiến sự bùng nổ về nhu cầu tùy biến và kết nối cộng đồng.
 
-### 3.4 Cài đặt máy chủ
-1. Tạo Project trên Supabase.
-2. Cấu hình Authentication (Email/Password).
-3. Tạo Storage Buckets: `avatars` và `products` với quyền truy cập public.
+Dự án **PhoGear** được hình thành với mục tiêu xây dựng một nền tảng không chỉ phục vụ mục đích thương mại mà còn là một hệ sinh thái kỹ thuật, hỗ trợ người dùng từ khâu lựa chọn linh kiện đến việc nâng cao kỹ năng sử dụng. Báo cáo này trình bày chi tiết quá trình khảo sát, phân tích, thiết kế và cài đặt hệ thống PhoGear dựa trên những công nghệ hiện đại nhất hiện nay như Next.js 16, Supabase và kiến trúc Server Components.
 
-### 3.5 Cài đặt và khởi chạy PhoGear
-Tạo tệp `.env.local` và điền các thông số:
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+---
+
+## **CHƯƠNG I: TỔNG QUAN VỀ DỰ ÁN VÀ THỊ TRƯỜNG**
+
+### **1.1. Khái niệm và Bối cảnh**
+Dự án PhoGear là một ứng dụng Web Fullstack (Fullstack Web Application) chuyên biệt cho lĩnh vực thiết bị ngoại vi máy tính cao cấp. Khác với các sàn thương mại điện tử đa ngành, PhoGear tập trung vào ngách thị trường "Mechanical Keyboard" - một cộng đồng đòi hỏi sự chi tiết, tính thẩm mỹ và hiệu năng cao.
+
+### **1.2. Mục tiêu dự án**
+- **Về mặt kỹ thuật:** Áp dụng kiến trúc Next.js 16 (App Router) để tối ưu hóa hiệu suất và SEO. Sử dụng Supabase làm giải pháp Backend-as-a-Service (BaaS) để quản lý dữ liệu thời gian thực.
+- **Về mặt trải nghiệm:** Tích hợp công cụ luyện gõ phím (PhoType) và hệ thống gợi ý (Keyboard Finder) để tăng tính tương tác.
+- **Về mặt quản lý:** Xây dựng Dashboard thông minh hỗ trợ quản trị viên theo dõi doanh thu và điều phối chuỗi cung ứng mã giảm giá.
+
+### **1.3. Ưu điểm của hệ thống PhoGear**
+- **Kiến trúc Serverless:** Giảm thiểu chi phí vận hành máy chủ vật lý, tăng khả năng mở rộng (Scalability).
+- **Tốc độ phản hồi:** Sử dụng engine Turbopack cho phép thời gian build và phản hồi giao diện nhanh hơn 700% so với Webpack truyền thống.
+- **Bảo mật dữ liệu:** Hệ thống xác thực đa nhân tố (MFA) kết hợp với Row Level Security (RLS) đảm bảo dữ liệu người dùng được bảo vệ tuyệt đối ở mức nhân cơ sở dữ liệu.
+- **Tính năng độc bản:** Module PhoType tích hợp đo lường WPM (Words Per Minute) là điểm nhấn khác biệt so với các đối thủ cạnh tranh.
+
+### **1.4. Nhược điểm và Thách thức**
+- **Phụ thuộc bên thứ ba:** Hệ thống phụ thuộc nhiều vào Supabase và Cloudinary, đòi hỏi kết nối internet ổn định và quản lý chi phí API.
+- **Độ phức tạp của Schema:** Việc quản lý các biến thể sản phẩm (variants) và mã giảm giá (coupons) đòi hỏi logic xử lý SQL phức tạp.
+
+---
+
+## **CHƯƠNG II: KHẢO SÁT VÀ PHÂN TÍCH HỆ THỐNG**
+
+### **2.1. Phân tích yêu cầu đề tài**
+Dự án được phân tích dựa trên 3 nhóm yêu cầu cốt lõi:
+1. **Yêu cầu hệ thống (System Requirements):** Đảm bảo hoạt động trên môi trường Web, hỗ trợ đa thiết bị (Responsive), tích hợp PWA (Progressive Web App).
+2. **Yêu cầu chức năng (Functional Requirements):** Đặt hàng, thanh toán, quản lý kho, diễn đàn cộng đồng, luyện gõ phím.
+3. **Yêu cầu phi chức năng (Non-functional Requirements):** Tính bảo mật, tính sẵn sàng (Availability), khả năng bảo trì (Maintainability) và tốc độ tải trang.
+
+### **2.2. Mô tả chi tiết hệ thống PhoGear**
+PhoGear hoạt động như một hệ sinh thái khép kín:
+- **Tầng khách hàng:** Duyệt sản phẩm -> Tư vấn qua Finder -> Mua hàng -> Nhận ưu đãi qua Coupon -> Tham gia diễn đàn -> Luyện gõ phím.
+- **Tầng quản trị:** Theo dõi đơn hàng -> Cập nhật kho hàng -> Tạo mã giảm giá -> Kiểm duyệt nội dung diễn đàn -> Cấu hình hệ thống.
+
+### **2.3. Thiết bị và Phần mềm sử dụng**
+- **Hệ điều hành:** Windows/Linux/MacOS.
+- **Ngôn ngữ lập trình:** TypeScript (phiên bản 5.x).
+- **Framework chính:** Next.js 16.2.4 (React 19).
+- **Cơ sở dữ liệu:** PostgreSQL (Managed by Supabase).
+- **Thư viện UI:** Tailwind CSS 4, Lucide Icons, Shadcn/UI (Base UI).
+- **Công cụ kiểm thử:** Vitest 4.x.
+
+### **2.4. Phân tích chức năng (Functional Analysis)**
+
+#### **2.4.1. Module Thương mại điện tử (PhoShop)**
+- **Quản lý sản phẩm:** Hiển thị danh sách, chi tiết, đánh giá và sản phẩm liên quan.
+- **Giỏ hàng & Thanh toán:** Xử lý logic tính tiền, phí vận chuyển và áp dụng mã giảm giá.
+- **Flash Sale:** Đồng hồ đếm ngược thời gian thực (Real-time Countdown) và giới hạn tồn kho trong thời gian khuyến mãi.
+
+#### **2.4.2. Module Luyện gõ phím (PhoType)**
+- Xử lý sự kiện bàn phím ở mức thấp (low-level keyboard events) để đo tốc độ gõ.
+- Tính toán chỉ số WPM và Accuracy dựa trên thuật toán so khớp chuỗi văn bản.
+- Lưu trữ lịch sử luyện tập của người dùng vào cơ sở dữ liệu.
+
+#### **2.4.3. Module Quản trị (Admin Dashboard)**
+- **Thống kê:** Biểu đồ doanh thu (Revenue Chart), phân bổ danh mục (Category Distribution) bằng thư viện Recharts.
+- **Coupon Management:** Tạo mã giảm giá theo % hoặc số tiền cố định, thiết lập ngày bắt đầu/kết thúc và giới hạn sử dụng.
+
+### **2.5. Phân tích và Thiết kế hệ thống (System Design)**
+
+#### **2.5.1. Kiến trúc ứng dụng**
+PhoGear áp dụng mô hình **Isomorphic Web Application**:
+- **Server-Side Rendering (SSR):** Cho các trang sản phẩm và tin tức để tối ưu SEO.
+- **Client-Side Rendering (CSR):** Cho các thành phần tương tác như giỏ hàng và game luyện gõ phím.
+- **Server Actions:** Thay thế cho API Endpoints truyền thống, giúp giao tiếp trực tiếp giữa Client và Database một cách bảo mật.
+
+#### **2.5.2. Xác định các thực thể Cơ sở dữ liệu (ERD)**
+1. **Profiles (Người dùng):** `id (UUID)`, `full_name`, `avatar_url`, `role (admin/customer)`.
+2. **Products (Sản phẩm):** `id`, `name`, `price`, `stock_quantity`, `is_flash_sale`, `variants (JSONB)`.
+3. **Categories (Danh mục):** `id`, `name`, `slug`, `description`.
+4. **Orders (Đơn hàng):** `id`, `user_id`, `total_amount`, `status`, `coupon_id`.
+5. **Coupons (Mã giảm giá):** `id`, `code`, `type`, `value`, `min_order_amount`, `usage_limit`.
+6. **Posts (Bài viết):** `id`, `author_id`, `title`, `content`, `status (pending/approved)`.
+
+---
+
+## **CHƯƠNG III: CÀI ĐẶT VÀ TRIỂN KHAI HỆ THỐNG**
+
+### **3.1. Ngôn ngữ và Thư viện lập trình**
+- **TypeScript:** Sử dụng để định nghĩa Interface/Type cho toàn bộ hệ thống, giảm thiểu lỗi runtime.
+- **Zustand:** Thư viện quản lý trạng thái (State Management) nhỏ gọn, thay thế cho Redux để quản lý giỏ hàng.
+- **Supabase SSR:** Thư viện hỗ trợ quản lý session và cookies trong môi trường Next.js App Router.
+
+### **3.2. Hướng dẫn cài đặt chi tiết**
+
+#### **Bước 1: Chuẩn bị môi trường**
+Yêu cầu Node.js phiên bản 20 trở lên. Thực hiện lệnh:
+```bash
+git clone https://github.com/NgDucNguyen1199/PhoGear.git
+cd PhoGear
+npm install
 ```
-Chạy ứng dụng: `npm run dev`
+
+#### **Bước 2: Cấu hình Cơ sở dữ liệu**
+1. Đăng nhập vào Supabase Console.
+2. Tại mục **SQL Editor**, thực thi các script trong thư mục `/supabase` theo trình tự:
+   - `schema.sql`: Khởi tạo các bảng cốt lõi.
+   - `coupons_schema.sql`: Cấu trúc hệ thống khuyến mãi.
+   - `forum_schema.sql`: Cấu trúc diễn đàn.
+   - `system_settings.sql`: Cấu hình hệ thống.
+   - `seed.sql`: Nạp dữ liệu mẫu để kiểm thử.
+
+#### **Bước 3: Thiết lập biến môi trường**
+Tạo tệp `.env.local` với nội dung:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-url.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloudinary-name
+```
+
+#### **Bước 4: Khởi chạy hệ thống**
+```bash
+npm run dev
+```
+Ứng dụng sẽ khả dụng tại địa chỉ `http://localhost:3000`.
 
 ---
 
-## 4. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+## **CHƯƠNG IV: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN**
 
-### 4.1 Kết luận
-Dự án PhoGear đã hoàn thành các mục tiêu đề ra, xây dựng được một nền tảng thương mại điện tử hoạt động ổn định, mượt mà với đầy đủ các tính năng hiện đại. Hệ thống đáp ứng tốt các tiêu chuẩn về bảo mật và trải nghiệm người dùng.
+### **4.1. Kết quả đạt được**
+- Xây dựng thành công nền tảng PhoGear với hiệu suất cao, đạt điểm số Lighthouse tối ưu.
+- Triển khai hệ thống mã giảm giá (Coupons) hoạt động ổn định, có logic kiểm tra điều kiện chặt chẽ.
+- Hoàn thiện module PhoType với khả năng xử lý Real-time chính xác.
+- Hệ thống quản trị (Admin) trực quan, cho phép điều phối dữ liệu một cách dễ dàng.
 
-### 4.2 Hướng phát triển
-- Tích hợp cổng thanh toán trực tuyến (VNPAY, MoMo).
-- Xây dựng hệ thống gợi ý sản phẩm dựa trên AI (Machine Learning).
-- Phát triển ứng dụng di động Native bằng Flutter để tối ưu hóa trải nghiệm PWA hiện tại.
+### **4.2. Hướng phát triển tương lai**
+1. **Thanh toán tích hợp:** Kết nối với các cổng thanh toán nội địa (VNPAY) và quốc tế (Stripe).
+2. **Mobile App:** Sử dụng React Native hoặc Flutter để chuyển đổi hệ thống thành ứng dụng di động thực thụ.
+3. **AI Recommendation:** Sử dụng các dịch vụ Machine Learning của Supabase để gợi ý sản phẩm dựa trên hành vi người dùng.
+4. **Hệ thống Rank:** Bổ sung bảng xếp hạng (Leaderboard) toàn cầu cho module PhoType để tăng tính cạnh tranh.
 
 ---
 
-## 5. TÀI LIỆU THAM KHẢO
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Supabase Documentation](https://supabase.com/docs)
-- [React 19 & Server Actions Guide](https://react.dev)
-- [Tailwind CSS 4 Documentation](https://tailwindcss.com)
+## **TÀI LIỆU THAM KHẢO**
+
+1.  **Next.js Documentation** - https://nextjs.org/docs (Truy cập lần cuối: 2026).
+2.  **Supabase & PostgreSQL Guide** - https://supabase.com/docs.
+3.  **Tailwind CSS Documentation** - https://tailwindcss.com/docs.
+4.  **React 19 Experimental Features** - https://react.dev.
+5.  **Cơ sở dữ liệu nâng cao** - Tài liệu giảng dạy Khoa CNTT, Đại học Đà Lạt.
+
+---
+
+<div align="right">
+*Đà Lạt, ngày 21 tháng 05 năm 2026*  
+**Người lập báo cáo**  
+
+*(Đã ký)*  
+
+**Nguyễn Đức Nguyên**
+</div>
