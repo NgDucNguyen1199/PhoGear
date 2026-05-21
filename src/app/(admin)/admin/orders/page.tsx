@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatusSelector } from '@/components/admin/StatusSelector'
+import { OrderDetailDialog } from '@/components/admin/OrderDetailDialog'
 import { Search, ShoppingBag, User, Calendar, CreditCard } from 'lucide-react'
 
 export default async function AdminOrdersPage() {
@@ -31,19 +32,20 @@ export default async function AdminOrdersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">Mã đơn</TableHead>
+                    <TableHead className="w-[80px]">Mã đơn</TableHead>
                     <TableHead className="min-w-[150px]">Khách hàng</TableHead>
                     <TableHead>Ngày đặt</TableHead>
                     <TableHead>Tổng tiền</TableHead>
                     <TableHead className="min-w-[200px]">Địa chỉ giao hàng</TableHead>
-                    <TableHead className="min-w-[200px]">Trạng thái</TableHead>
+                    <TableHead className="min-w-[180px]">Trạng thái</TableHead>
+                    <TableHead className="w-[60px] text-right">Chi tiết</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {orders.length > 0 ? (
                     orders.map((order: any) => (
                       <TableRow key={order.id}>
-                        <TableCell className="font-medium text-xs">#{order.id.slice(0, 8)}</TableCell>
+                        <TableCell className="font-medium text-[10px] uppercase">#{order.id.slice(0, 8)}</TableCell>
                         <TableCell>
                           <div className="flex flex-col">
                             <span className="font-bold text-sm flex items-center gap-1">
@@ -59,9 +61,14 @@ export default async function AdminOrdersPage() {
                           </div>
                         </TableCell>
                         <TableCell className="font-bold text-primary text-sm">
-                          <div className="flex items-center gap-1">
-                            <CreditCard className="h-3 w-3" />
-                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total_amount)}
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-1">
+                              <CreditCard className="h-3 w-3" />
+                              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total_amount)}
+                            </div>
+                            {order.discount_amount > 0 && (
+                              <span className="text-[9px] text-green-600 font-bold uppercase tracking-tighter">Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.discount_amount)}</span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="max-w-[200px] text-xs truncate" title={order.shipping_address}>
@@ -70,11 +77,14 @@ export default async function AdminOrdersPage() {
                         <TableCell>
                           <StatusSelector orderId={order.id} currentStatus={order.status} />
                         </TableCell>
+                        <TableCell className="text-right">
+                          <OrderDetailDialog order={order} />
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-10 text-muted-foreground italic">
+                      <TableCell colSpan={7} className="text-center py-10 text-muted-foreground italic">
                         Hệ thống chưa có đơn hàng nào.
                       </TableCell>
                     </TableRow>

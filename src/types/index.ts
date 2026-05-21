@@ -94,3 +94,19 @@ export type Review = {
     avatar_url: string | null
   }
 }
+
+export type Coupon = {
+  id: string
+  code: string
+  type: 'percentage' | 'fixed_amount' | 'free_shipping'
+  value: number
+  min_order_amount: number
+  max_discount_amount: number | null
+  start_date: string
+  end_date: string | null
+  is_active: boolean
+  usage_limit: number | null
+  usage_count: number
+  created_at: string
+  updated_at: string
+}

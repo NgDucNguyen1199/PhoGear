@@ -42,13 +42,15 @@ Hệ thống sử dụng cấu trúc CSDL quan hệ được thiết kế tối 
 - **Profiles:** Mở rộng từ `auth.users`, lưu trữ thông tin người dùng (`full_name`, `avatar_url`, `role`).
 - **Products:** Thông tin sản phẩm chi tiết (`price`, `stock`, `variants`, `flash_sale_price`).
 - **Categories:** Phân loại sản phẩm (`mechanical`, `keycap`, `switch`).
-- **Orders & Order Items:** Quản lý giao dịch, lưu giữ giá tại thời điểm mua và các tùy chọn biến thể (JSONB).
+- **Coupons:** Quản lý mã giảm giá (`code`, `type`, `value`, `min_order_amount`, `usage_limit`).
+- **Orders & Order Items:** Quản lý giao dịch, lưu giữ giá tại thời điểm mua, các tùy chọn biến thể (JSONB) và thông tin giảm giá (`coupon_id`, `discount_amount`).
 - **Posts & Comments:** Nền tảng diễn đàn với hệ thống trạng thái `pending`, `approved`, `rejected`.
 - **System Settings:** Cấu hình toàn cục (tên site, trạng thái Flash Sale, cấu hình MFA).
 
 ### 2.2 Sơ đồ quan hệ (ERD Highlights)
 - **1-n:** Một `Category` chứa nhiều `Products`.
 - **1-n:** Một `User` có nhiều `Orders`.
+- **1-n:** Một `Coupon` có thể được áp dụng cho nhiều `Orders`.
 - **n-n:** `Orders` và `Products` thông qua bảng trung gian `Order_Items`.
 - **1-n:** Một `Post` có nhiều `Comments`.
 
@@ -59,6 +61,13 @@ Hệ thống sử dụng cấu trúc CSDL quan hệ được thiết kế tối 
 ### 🛒 3.1 Thương mại điện tử Nâng cao
 - **Flash Sale 3.0:** Đếm ngược thời gian thực, tự động điều chỉnh giá và cập nhật tồn kho.
 - **Smart Shipping:** Tự động tính phí vận chuyển và áp dụng chính sách Freeship thông minh.
+- **Hệ thống Mã giảm giá (Coupons):** 
+  - Hỗ trợ đa dạng loại giảm giá: Giảm theo phần trăm (%), giảm số tiền cố định (VND) hoặc Miễn phí vận chuyển (Freeship).
+  - Thiết lập điều kiện linh hoạt: Đơn hàng tối thiểu, mức giảm tối đa, giới hạn lượt dùng và thời gian hiệu lực.
+  - Quản lý tập trung: Admin có dashboard riêng để theo dõi hiệu quả và trạng thái của từng mã.
+- **Order Tracking & Details:** 
+  - Khách hàng có thể xem chi tiết hành trình đơn hàng, minh bạch các khoản tạm tính, phí ship và giảm giá.
+  - Admin có hộp thoại chi tiết đơn hàng (Modal Detail) để xử lý nhanh chóng mà không cần chuyển trang.
 - **Product Management:** Admin có thể quản lý biến thể phức tạp (màu sắc, layout) và upload ảnh đa kênh.
 
 ### 📱 3.2 Tối ưu hóa Di động (Mobile UX 2.0)
@@ -97,7 +106,14 @@ Hệ thống sử dụng cấu trúc CSDL quan hệ được thiết kế tối 
 ### Các bước:
 1. **Clone:** `git clone https://github.com/NgDucNguyen1199/PhoGear.git`
 2. **Setup:** `npm install`
-3. **Environment:** Tạo `.env.local` với các biến:
+3. **Database Setup:** 
+   Hệ thống yêu cầu các bảng dữ liệu trong Supabase. Truy cập **SQL Editor** trong Supabase Dashboard và chạy các tệp tin theo thứ tự:
+   - Chạy `supabase/schema.sql` (Cấu trúc nền tảng)
+   - Chạy `supabase/coupons_schema.sql` (Hệ thống mã giảm giá)
+   - Chạy `supabase/forum_schema.sql` (Hệ thống diễn đàn)
+   - Chạy các tệp `.sql` còn lại trong thư mục `supabase/` để kích hoạt đầy đủ tính năng.
+   - Chạy `supabase/seed.sql` để có dữ liệu mẫu.
+4. **Environment:** Tạo `.env.local` với các biến:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`

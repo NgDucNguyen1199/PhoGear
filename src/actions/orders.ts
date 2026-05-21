@@ -10,6 +10,66 @@ export type OrderItemInput = {
   selected_options?: Record<string, string>
 }
 
+export async function validateCoupon(code: string, subtotal: number) {
+  const supabase = await createClient()
+  
+  const { data: coupon, error } = await supabase
+    .from('coupons')
+    .select('*')
+    .eq('code', code.toUpperCase())
+    .eq('is_active', true)
+    .single()
+
+  if (error || !coupon) {
+    return { error: 'Mã giảm giá không tồn tại hoặc đã hết hạn.' }
+  }
+
+  // Kiểm tra ngày bắt đầu/kết thúc
+  const now = new Date()
+  if (coupon.start_date && new Date(coupon.start_date) > now) {
+    return { error: 'Mã giảm giá chưa đến thời gian sử dụng.' }
+  }
+  if (coupon.end_date && new Date(coupon.end_date) < now) {
+    return { error: 'Mã giảm giá đã hết hạn.' }
+  }
+
+  // Kiểm tra giới hạn sử dụng
+  if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) {
+    return { error: 'Mã giảm giá đã hết lượt sử dụng.' }
+  }
+
+  // Kiểm tra đơn hàng tối thiểu
+  if (subtotal < coupon.min_order_amount) {
+    return { error: `Đơn hàng tối thiểu ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(coupon.min_order_amount)} để sử dụng mã này.` }
+  }
+
+  let discountAmount = 0
+  let isFreeShipping = false
+
+  if (coupon.type === 'percentage') {
+    discountAmount = (subtotal * coupon.value) / 100
+    if (coupon.max_discount_amount && discountAmount > coupon.max_discount_amount) {
+      discountAmount = coupon.max_discount_amount
+    }
+  } else if (coupon.type === 'fixed_amount') {
+    discountAmount = coupon.value
+  } else if (coupon.type === 'free_shipping') {
+    isFreeShipping = true
+  }
+
+  return { 
+    success: true, 
+    coupon: {
+      id: coupon.id,
+      code: coupon.code,
+      type: coupon.type,
+      value: coupon.value,
+      discountAmount,
+      isFreeShipping
+    }
+  }
+}
+
 export async function createOrder(formData: FormData, items: OrderItemInput[]) {
   const supabase = await createClient()
   
@@ -20,6 +80,7 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
   const shipping_address = formData.get('address') as string
   const phone_number = formData.get('phone') as string
   const payment_method = formData.get('paymentMethod') as string || 'cod'
+  const coupon_code = formData.get('couponCode') as string
   
   if (!shipping_address || !phone_number) {
     return { error: 'Vui lòng cung cấp đầy đủ địa chỉ và số điện thoại.' }
@@ -32,7 +93,7 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
     new Date(settings.flash_sale_end_time) > new Date()
 
   const verifiedOrderItems = []
-  let calculated_total_amount = 0
+  let calculated_subtotal = 0
 
   for (const item of items) {
     const { data: product } = await supabase
@@ -53,7 +114,7 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
         }
     }
 
-    calculated_total_amount += price_to_apply * item.quantity
+    calculated_subtotal += price_to_apply * item.quantity
     verifiedOrderItems.push({
       order_id: '', // Will be set after order creation
       product_id: item.product_id,
@@ -63,16 +124,36 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
     })
   }
 
+  // Áp dụng mã giảm giá nếu có
+  let discount_amount = 0
+  let coupon_id = null
+  let is_free_shipping = false
+
+  if (coupon_code) {
+    const couponResult = await validateCoupon(coupon_code, calculated_subtotal)
+    if (couponResult.success && couponResult.coupon) {
+      coupon_id = couponResult.coupon.id
+      discount_amount = couponResult.coupon.discountAmount
+      is_free_shipping = couponResult.coupon.isFreeShipping
+    }
+  }
+
   // Tính phí vận chuyển
-  const shipping_fee = calculated_total_amount >= 800000 ? 0 : 30000
-  calculated_total_amount += shipping_fee
+  let shipping_fee = calculated_subtotal >= 800000 ? 0 : 30000
+  if (is_free_shipping) {
+    shipping_fee = 0
+  }
+
+  const final_total_amount = Math.max(0, calculated_subtotal + shipping_fee - discount_amount)
 
   // 3. Tạo đơn hàng
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({
       user_id: user.id,
-      total_amount: calculated_total_amount,
+      total_amount: final_total_amount,
+      discount_amount: discount_amount,
+      coupon_id: coupon_id,
       shipping_address,
       phone_number,
       status: payment_method === 'online' ? 'processing' : 'pending',
@@ -82,6 +163,11 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
     .single()
 
   if (orderError) return { error: `Lỗi tạo đơn hàng: ${orderError.message}` }
+
+  // Cập nhật số lượng sử dụng coupon
+  if (coupon_id) {
+    await supabase.rpc('increment_coupon_usage', { coupon_id })
+  }
 
   // 4. Tạo chi tiết đơn hàng
   const finalOrderItems = verifiedOrderItems.map(vItem => ({

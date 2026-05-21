@@ -86,51 +86,77 @@ async function OrderList({ searchParams }: { searchParams: any }) {
                 <p className="text-4xl font-black text-primary tracking-tight">
                   {order.total_amount.toLocaleString('vi-VN')}đ
                 </p>
+                {order.discount_amount > 0 && (
+                  <p className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mt-1">
+                    Đã giảm: {order.discount_amount.toLocaleString('vi-VN')}đ
+                  </p>
+                )}
               </div>
             </div>
 
             <Separator className="mb-10 opacity-50" />
 
             <div className="space-y-6">
-              {order.order_items.map((item: any) => (
-                <div key={item.id} className="flex items-center gap-6 p-4 rounded-3xl hover:bg-muted/30 transition-colors border border-transparent hover:border-muted/50">
-                  <div className="relative h-20 w-20 rounded-2xl bg-white overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
-                    {item.products?.images_url?.[0] ? (
-                      <Image src={item.products.images_url[0]} alt={item.products.name} fill className="object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-muted"><Package className="text-muted-foreground opacity-20" /></div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <Link href={`/products/${item.product_id}`} className="font-bold text-base hover:text-primary transition-colors line-clamp-1">
-                        {item.products?.name}
-                    </Link>
-                    <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-muted-foreground">
-                        <span>{item.price_at_time.toLocaleString('vi-VN')}đ</span>
-                        <span className="h-1 w-1 bg-muted-foreground rounded-full opacity-30"></span>
-                        <span>Số lượng: {item.quantity}</span>
+              {order.order_items.map((item: any) => {
+                const itemTotal = item.price_at_time * item.quantity
+                return (
+                  <div key={item.id} className="flex items-center gap-6 p-4 rounded-3xl hover:bg-muted/30 transition-colors border border-transparent hover:border-muted/50">
+                    <div className="relative h-20 w-20 rounded-2xl bg-white overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
+                      {item.products?.images_url?.[0] ? (
+                        <Image src={item.products.images_url[0]} alt={item.products.name} fill className="object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted"><Package className="text-muted-foreground opacity-20" /></div>
+                      )}
                     </div>
-                    {item.selected_options && Object.keys(item.selected_options).length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {Object.entries(item.selected_options).map(([key, value]) => (
-                          <span key={key} className="text-[9px] font-bold text-primary/70 bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
-                            {key}: {String(value)}
-                          </span>
-                        ))}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <Link href={`/products/${item.product_id}`} className="font-bold text-base hover:text-primary transition-colors line-clamp-1">
+                          {item.products?.name}
+                      </Link>
+                      <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                          <span>{item.price_at_time.toLocaleString('vi-VN')}đ</span>
+                          <span className="h-1 w-1 bg-muted-foreground rounded-full opacity-30"></span>
+                          <span>Số lượng: {item.quantity}</span>
                       </div>
-                    )}
+                      {item.selected_options && Object.keys(item.selected_options).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {Object.entries(item.selected_options).map(([key, value]) => (
+                            <span key={key} className="text-[9px] font-bold text-primary/70 bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
+                              {key}: {String(value)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right hidden sm:block">
+                      <p className="text-lg font-black text-foreground">{itemTotal.toLocaleString('vi-VN')}đ</p>
+                    </div>
                   </div>
-                  <div className="text-right hidden sm:block">
-                    <p className="text-lg font-black text-foreground">{(item.price_at_time * item.quantity).toLocaleString('vi-VN')}đ</p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
             
-            <div className="mt-10 flex justify-end">
-                <Button variant="ghost" className="rounded-xl font-black uppercase tracking-[0.2em] text-[10px] gap-2 group/btn">
-                    Xem chi tiết <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
-                </Button>
+            <div className="mt-10 p-6 bg-muted/10 rounded-3xl border border-dashed border-muted-foreground/20">
+                <div className="flex flex-col gap-2 max-w-xs ml-auto">
+                    <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                        <span>Tạm tính:</span>
+                        <span>{(order.total_amount + (order.discount_amount || 0) - (order.total_amount >= 800000 ? 0 : 30000)).toLocaleString('vi-VN')}đ</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                        <span>Vận chuyển:</span>
+                        <span>{order.total_amount >= 800000 ? '0đ' : '30,000đ'}</span>
+                    </div>
+                    {order.discount_amount > 0 && (
+                        <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-green-600">
+                            <span>Giảm giá:</span>
+                            <span>-{order.discount_amount.toLocaleString('vi-VN')}đ</span>
+                        </div>
+                    )}
+                    <Separator className="my-1" />
+                    <div className="flex justify-between text-sm font-black uppercase tracking-widest text-primary">
+                        <span>Tổng cộng:</span>
+                        <span>{order.total_amount.toLocaleString('vi-VN')}đ</span>
+                    </div>
+                </div>
             </div>
           </CardContent>
         </Card>

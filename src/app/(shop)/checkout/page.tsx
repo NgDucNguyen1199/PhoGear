@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCartStore, getCartItemId } from '@/store/cartStore'
-import { createOrder, OrderItemInput } from '@/actions/orders'
+import { createOrder, OrderItemInput, validateCoupon } from '@/actions/orders'
 import { getUser } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,7 +24,10 @@ import {
   User as UserIcon,
   MessageSquare,
   ChevronRight,
-  Zap
+  Zap,
+  Ticket,
+  X,
+  Check
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -41,6 +44,11 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState<string | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('cod')
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+
+  // Coupon states
+  const [couponCode, setCouponCode] = useState('')
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -126,6 +134,31 @@ export default function CheckoutPage() {
     )
   }
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return
+    
+    setIsValidatingCoupon(true)
+    try {
+      const result = await validateCoupon(couponCode, getTotalPrice())
+      if (result.error) {
+        toast.error(result.error)
+        setAppliedCoupon(null)
+      } else if (result.success) {
+        setAppliedCoupon(result.coupon)
+        toast.success(`Đã áp dụng mã ${result.coupon.code} thành công!`)
+      }
+    } catch (error) {
+      toast.error('Lỗi khi kiểm tra mã giảm giá')
+    } finally {
+      setIsValidatingCoupon(false)
+    }
+  }
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponCode('')
+  }
+
   const handleCheckout = async (formData: FormData) => {
     const orderItems: OrderItemInput[] = items.map(item => ({
       product_id: item.id,
@@ -144,6 +177,9 @@ export default function CheckoutPage() {
     startTransition(async () => {
         // Thêm phương thức thanh toán vào formData
         formData.append('paymentMethod', paymentMethod)
+        if (appliedCoupon) {
+            formData.append('couponCode', appliedCoupon.code)
+        }
         
         const result = await createOrder(formData, orderItems)
         if (result?.error) {
@@ -387,6 +423,58 @@ export default function CheckoutPage() {
                                 })}
                             </div>
                             
+                            <div className="space-y-4">
+                                <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">Mã giảm giá</Label>
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                                        <Input 
+                                            placeholder="NHẬP MÃ TẠI ĐÂY..." 
+                                            className="h-11 pl-10 bg-muted/20 border-white/10 rounded-xl focus:ring-primary font-bold uppercase placeholder:font-normal placeholder:lowercase"
+                                            value={couponCode}
+                                            onChange={(e) => setCouponCode(e.target.value)}
+                                            disabled={!!appliedCoupon || isValidatingCoupon}
+                                        />
+                                        {appliedCoupon && (
+                                            <button 
+                                                onClick={removeCoupon}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center bg-muted rounded-full hover:bg-destructive hover:text-white transition-colors"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    {!appliedCoupon && (
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            className="h-11 px-6 rounded-xl font-bold uppercase tracking-wider border-primary text-primary hover:bg-primary hover:text-white transition-all"
+                                            onClick={handleApplyCoupon}
+                                            disabled={!couponCode.trim() || isValidatingCoupon}
+                                        >
+                                            {isValidatingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Áp dụng'}
+                                        </Button>
+                                    )}
+                                </div>
+                                {appliedCoupon && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/20 rounded-xl"
+                                    >
+                                        <div className="bg-green-500 text-white p-1 rounded-full">
+                                            <Check className="h-3 w-3" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-[10px] font-black uppercase text-green-600">Đã áp dụng mã: {appliedCoupon.code}</p>
+                                            <p className="text-[9px] font-bold text-green-600/70">
+                                                {appliedCoupon.type === 'free_shipping' ? 'Miễn phí vận chuyển' : `Giảm ${formatPrice(appliedCoupon.discountAmount)}`}
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </div>
+
                             <Separator className="bg-muted/50" />
                             
                             <div className="space-y-3">
@@ -394,16 +482,24 @@ export default function CheckoutPage() {
                                     <span className="text-muted-foreground font-medium uppercase text-[10px] tracking-widest">Tạm tính</span>
                                     <span className="font-bold">{formatPrice(subtotal)}</span>
                                 </div>
+                                
+                                {appliedCoupon && appliedCoupon.discountAmount > 0 && (
+                                    <div className="flex justify-between text-sm text-green-600">
+                                        <span className="font-medium uppercase text-[10px] tracking-widest">Giảm giá ({appliedCoupon.code})</span>
+                                        <span className="font-bold">-{formatPrice(appliedCoupon.discountAmount)}</span>
+                                    </div>
+                                )}
+
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground font-medium uppercase text-[10px] tracking-widest">Vận chuyển</span>
                                     <span className={cn(
                                         "font-black uppercase text-[10px]",
-                                        shippingFee === 0 ? "text-green-600" : "text-foreground"
+                                        (shippingFee === 0 || appliedCoupon?.isFreeShipping) ? "text-green-600" : "text-foreground"
                                     )}>
-                                        {shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}
+                                        {(shippingFee === 0 || appliedCoupon?.isFreeShipping) ? "Miễn phí" : formatPrice(shippingFee)}
                                     </span>
                                 </div>
-                                {shippingFee > 0 && (
+                                {shippingFee > 0 && !appliedCoupon?.isFreeShipping && (
                                     <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg border border-primary/10">
                                         <Zap size={10} className="text-primary fill-primary animate-pulse" />
                                         <p className="text-[9px] text-primary font-black uppercase tracking-tighter">
@@ -414,7 +510,9 @@ export default function CheckoutPage() {
                                 <div className="bg-primary/5 p-4 rounded-2xl mt-4 border border-primary/10">
                                     <div className="flex justify-between items-center">
                                         <span className="text-xs font-black uppercase tracking-[0.2em] italic">Tổng cộng</span>
-                                        <span className="text-2xl font-black text-primary drop-shadow-sm tracking-tighter">{formatPrice(total)}</span>
+                                        <span className="text-2xl font-black text-primary drop-shadow-sm tracking-tighter">
+                                            {formatPrice(Math.max(0, subtotal + (appliedCoupon?.isFreeShipping ? 0 : shippingFee) - (appliedCoupon?.discountAmount || 0)))}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
