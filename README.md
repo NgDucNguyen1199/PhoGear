@@ -101,7 +101,27 @@ Hệ thống sử dụng cấu trúc CSDL quan hệ được thiết kế tối 
 
 ---
 
-## 🚀 5. Hướng dẫn Cài đặt & Khởi chạy
+## 📖 5. Hướng dẫn Sử dụng & Các trường hợp điển hình (Use Cases)
+
+Dự án phục vụ hai đối tượng chính với các quy trình nghiệp vụ chuyên biệt:
+
+### 5.1 Đối với Khách hàng (End Users)
+- **Khám phá & Tìm kiếm:** Người dùng có thể duyệt sản phẩm theo danh mục hoặc sử dụng công cụ **Keyboard Finder** để nhận gợi ý bàn phím phù hợp với nhu cầu thông qua bộ câu hỏi trực quan.
+- **Trải nghiệm PhoType:** Truy cập module **Photype** để kiểm tra tốc độ gõ phím (WPM) và độ chính xác. Hệ thống sẽ lưu trữ lịch sử để người dùng theo dõi sự tiến bộ.
+- **Mua sắm thông minh:** 
+  - Săn hàng giảm giá trong các đợt **Flash Sale** với đồng hồ đếm ngược thời gian thực.
+  - Áp dụng **Mã giảm giá (Coupons)** tại trang Checkout để tối ưu chi phí.
+- **Quản lý đơn hàng:** Theo dõi trạng thái đơn hàng từ lúc `Pending` đến khi `Delivered` với thông tin chi tiết về sản phẩm và thanh toán.
+
+### 5.2 Đối với Quản trị viên (Admin)
+- **Quản lý Sản phẩm & Tồn kho:** Thêm mới, chỉnh sửa thông tin sản phẩm, quản lý biến thể (variants) và cập nhật số lượng tồn kho theo thời gian thực.
+- **Điều phối Đơn hàng:** Dashboard Admin cung cấp cái nhìn tổng thể về doanh thu, biểu đồ tăng trưởng và danh sách đơn hàng cần xử lý. Admin có thể cập nhật trạng thái đơn hàng (Shipped, Cancelled, etc.)
+- **Marketing & Khuyến mãi:** Tạo và quản lý các chiến dịch mã giảm giá (Phần trăm, Số tiền cố định, Freeship) với các ràng buộc về thời gian và giới hạn sử dụng.
+- **Kiểm duyệt Diễn đàn:** Duyệt hoặc từ chối các bài viết/bình luận từ cộng đồng để đảm bảo môi trường thảo luận văn minh.
+
+---
+
+## 🚀 6. Hướng dẫn Cài đặt & Khởi chạy
 
 ### Yêu cầu:
 - Node.js 20+
