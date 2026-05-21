@@ -7,25 +7,73 @@ import { Post, PostComment } from '@/types'
 /**
  * Lấy danh sách các bài viết đã được duyệt
  */
-export async function getApprovedPosts() {
+export async function getApprovedPosts(currentUserId?: string) {
   const supabase = await createClient()
   
-  const { data, error } = await supabase
+  let query = supabase
     .from('posts')
     .select(`
       *,
       author:profiles (full_name, avatar_url),
-      comments (count)
+      comments (count),
+      likes:post_likes (count)
+      ${currentUserId ? `, user_liked:post_likes!left(user_id)` : ''}
     `)
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
+
+  if (currentUserId) {
+    query = query.eq('user_liked.user_id', currentUserId)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     console.error('Error fetching approved posts:', error.message, error.details, error.hint)
     return []
   }
 
-  return data as any[]
+  return data.map(post => ({
+    ...post,
+    likes_count: post.likes?.[0]?.count || 0,
+    is_liked: currentUserId ? (post.user_liked && post.user_liked.length > 0) : false
+  }))
+}
+
+/**
+ * Thả tim hoặc Bỏ tim bài viết
+ */
+export async function toggleLikePost(postId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: 'Bạn cần đăng nhập để thả tim.' }
+
+  // Kiểm tra xem đã like chưa
+  const { data: existingLike } = await supabase
+    .from('post_likes')
+    .select('*')
+    .eq('post_id', postId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (existingLike) {
+    const { error } = await supabase
+      .from('post_likes')
+      .delete()
+      .eq('post_id', postId)
+      .eq('user_id', user.id)
+    
+    if (error) return { error: error.message }
+    return { success: 'Đã bỏ tim', action: 'removed' }
+  } else {
+    const { error } = await supabase
+      .from('post_likes')
+      .insert({ post_id: postId, user_id: user.id })
+
+    if (error) return { error: error.message }
+    return { success: 'Đã thả tim', action: 'added' }
+  }
 }
 
 /**

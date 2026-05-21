@@ -6,39 +6,41 @@ import { Product } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Star, Heart, Eye } from 'lucide-react'
+import { Star, Heart, Eye, ShoppingCart } from 'lucide-react'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useRealtimeProduct } from '@/lib/supabase/realtime'
 
 export function ProductSkeleton() {
   return (
-    <Card className="overflow-hidden border-white/5 bg-background/50 backdrop-blur-sm flex flex-col h-full">
+    <Card className="overflow-hidden border-white/5 bg-background/50 backdrop-blur-sm flex flex-col h-full rounded-[2rem]">
       <div className="relative aspect-square bg-muted">
         <Skeleton className="h-full w-full" />
       </div>
-      <CardContent className="p-5 space-y-3 flex-1 flex flex-col justify-between">
-        <div className="space-y-2">
+      <CardContent className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-4 w-10 rounded-full" />
+            <Skeleton className="h-2.5 w-16" />
+            <Skeleton className="h-5 w-8 rounded-full" />
           </div>
-          <Skeleton className="h-5 w-full" />
-          <Skeleton className="h-5 w-2/3" />
+          <Skeleton className="h-6 w-full" />
+          <Skeleton className="h-6 w-4/5" />
         </div>
-        <div className="pt-2">
-          <Skeleton className="h-7 w-24" />
-          <Skeleton className="h-3 w-32 mt-2" />
+        <div className="pt-2 space-y-2">
+          <Skeleton className="h-8 w-28" />
+          <Skeleton className="h-3 w-40" />
         </div>
       </CardContent>
     </Card>
   )
 }
 
-export function ProductCard({ product, isGlobalSaleActive = true }: { product: Product, isGlobalSaleActive?: boolean }) {
+export function ProductCard({ product: initialProduct, isGlobalSaleActive = true }: { product: Product, isGlobalSaleActive?: boolean }) {
   const router = useRouter()
+  const product = useRealtimeProduct(initialProduct)
   const { toggleItem, isInWishlist } = useWishlistStore()
   const isLiked = isInWishlist(product.id)
 

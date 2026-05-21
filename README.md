@@ -30,7 +30,9 @@
   - Tích hợp **Cloudinary** để resize/compress ảnh tự động.
   - **PWA** cho trải nghiệm mobile app native.
   - Cấu hình **Server Actions Body Limit (10MB)** cho phép xử lý các tác vụ admin phức tạp và tải ảnh dung lượng lớn.
-  - Tối ưu hóa **React 19 Hydration** cho các thành phần UI (Dialog, Sheet, Select).
+  - **Real-time Inventory:** Tích hợp **Supabase Realtime** tự động cập nhật số lượng tồn kho trên giao diện mà không cần load lại trang.
+  - **Optimistic UI:** Sử dụng `useOptimistic` (React 19) cho các hành động tương tác như **Thả tim bài viết**, tạo cảm giác phản hồi tức thì.
+  - **Deep Skeleton Loading:** Thiết kế Skeleton khớp 1:1 với Layout của Product Card, loại bỏ hiện tượng nhảy giao diện (Layout Shift).
 
 ### 1.2 Tầng Hạ tầng & Cơ sở dữ liệu (Backend & Database)
 - **Supabase BaaS:** Cung cấp hệ thống xác thực (Auth), cơ sở dữ liệu thời gian thực (Realtime DB) và lưu trữ tệp tin (Storage).
@@ -136,6 +138,7 @@ Dự án phục vụ hai đối tượng chính với các quy trình nghiệp v
    - Chạy `supabase/schema.sql` (Cấu trúc nền tảng)
    - Chạy `supabase/coupons_schema.sql` (Hệ thống mã giảm giá)
    - Chạy `supabase/forum_schema.sql` (Hệ thống diễn đàn)
+   - Chạy `supabase/forum_likes.sql` (Hệ thống tương tác bài viết)
    - Chạy `supabase/typing_scores_schema.sql` (Hệ thống bảng xếp hạng gõ phím)
    - Chạy các tệp `.sql` còn lại trong thư mục `supabase/` để kích hoạt đầy đủ tính năng.
    - Chạy `supabase/seed.sql` để có dữ liệu mẫu.

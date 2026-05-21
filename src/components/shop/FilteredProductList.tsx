@@ -3,15 +3,17 @@
 import { useEffect, useState } from 'react'
 import { Product } from '@/types'
 import { getFilteredProducts } from '@/actions/products'
-import { ProductCard } from './ProductCard'
+import { ProductCard, ProductSkeleton } from './ProductCard'
 import { Keyboard, Loader2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
+import { useRealtimeProducts } from '@/lib/supabase/realtime'
 
 import { getSystemSettings } from '@/actions/admin_settings'
 
 export function FilteredProductList({ initialProducts }: { initialProducts: Product[] }) {
   const searchParams = useSearchParams()
-  const [products, setProducts] = useState<Product[]>(initialProducts)
+  const [baseProducts, setBaseProducts] = useState<Product[]>(initialProducts)
+  const products = useRealtimeProducts(baseProducts)
   const [isLoading, setIsLoading] = useState(false)
   const [isGlobalSaleActive, setIsGlobalSaleActive] = useState(false)
 
@@ -39,7 +41,7 @@ export function FilteredProductList({ initialProducts }: { initialProducts: Prod
       }
       
       const results = await getFilteredProducts(filters)
-      setProducts(results)
+      setBaseProducts(results)
       setIsLoading(false)
     }
 
@@ -47,15 +49,16 @@ export function FilteredProductList({ initialProducts }: { initialProducts: Prod
     if (searchParams.toString()) {
       fetchFiltered()
     } else {
-      setProducts(initialProducts)
+      setBaseProducts(initialProducts)
     }
   }, [searchParams, initialProducts])
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Đang lọc sản phẩm...</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {[...Array(8)].map((_, i) => (
+          <ProductSkeleton key={i} />
+        ))}
       </div>
     )
   }

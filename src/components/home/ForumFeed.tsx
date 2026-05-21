@@ -10,19 +10,20 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getApprovedPosts } from '@/actions/forum'
 import { Post } from '@/types'
+import { LikeButton } from '@/components/forum/LikeButton'
 
 export function ForumFeed({ userId }: { userId?: string }) {
-  const [posts, setPosts] = useState<Post[]>([])
+  const [posts, setPosts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const data = await getApprovedPosts()
-      setPosts(data as any)
+      const data = await getApprovedPosts(userId)
+      setPosts(data)
       setIsLoading(false)
     }
     fetchPosts()
-  }, [])
+  }, [userId])
 
   return (
     <section className="py-24 bg-muted/20 border-t overflow-hidden relative">
@@ -114,13 +115,21 @@ export function ForumFeed({ userId }: { userId?: string }) {
                             <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary group-hover:gap-3 transition-all">
                                 Xem chi tiết <ArrowRight size={14} />
                             </span>
-                            <div className="flex items-center gap-1.5 text-muted-foreground">
-                                <MessageSquare size={14} />
-                                <span className="text-xs font-bold">
-                                    {Array.isArray((post as any).comments) && (post as any).comments.length > 0
-                                        ? (post as any).comments[0].count 
-                                        : 0}
-                                </span>
+                            <div className="flex items-center gap-4 text-muted-foreground">
+                                <LikeButton 
+                                    postId={post.id} 
+                                    initialLikes={post.likes_count} 
+                                    initialIsLiked={post.is_liked} 
+                                    userId={userId} 
+                                />
+                                <div className="flex items-center gap-1.5">
+                                    <MessageSquare size={14} />
+                                    <span className="text-xs font-bold">
+                                        {Array.isArray((post as any).comments) && (post as any).comments.length > 0
+                                            ? (post as any).comments[0].count 
+                                            : 0}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         </CardContent>

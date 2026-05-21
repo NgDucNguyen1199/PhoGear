@@ -7,14 +7,15 @@ import { Badge } from '@/components/ui/badge'
 import { PlusCircle, MessageSquare, Calendar, User, ArrowRight, Search, Lock } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { LikeButton } from '@/components/forum/LikeButton'
 
 export const metadata = {
   title: 'Diễn đàn Cộng đồng Pho Gear | Chia sẻ kinh nghiệm build phím cơ',
 }
 
 export default async function ForumPage() {
-  const posts = await getApprovedPosts()
   const profile = await getProfile()
+  const posts = await getApprovedPosts(profile?.id)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -95,6 +96,12 @@ export default async function ForumPage() {
                                                             ? (post as any).comments[0].count 
                                                             : 0} bình luận
                                                     </div>
+                                                    <LikeButton 
+                                                        postId={post.id} 
+                                                        initialLikes={post.likes_count} 
+                                                        initialIsLiked={post.is_liked} 
+                                                        userId={profile?.id} 
+                                                    />
                                                 </div>
                                                 <h3 className="text-3xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors uppercase italic">
                                                     {post.title}
