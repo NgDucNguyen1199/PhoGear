@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createNotification } from './notifications'
 
 export type OrderItemInput = {
   product_id: string
@@ -13,7 +14,7 @@ export type OrderItemInput = {
 
 export async function validateCoupon(code: string, subtotal: number) {
   const supabase = await createClient()
-  
+
   const { data: coupon, error } = await supabase
     .from('coupons')
     .select('*')
@@ -25,7 +26,6 @@ export async function validateCoupon(code: string, subtotal: number) {
     return { error: 'Mã giảm giá không tồn tại hoặc đã hết hạn.' }
   }
 
-  // Kiểm tra ngày bắt đầu/kết thúc
   const now = new Date()
   if (coupon.start_date && new Date(coupon.start_date) > now) {
     return { error: 'Mã giảm giá chưa đến thời gian sử dụng.' }
@@ -33,13 +33,9 @@ export async function validateCoupon(code: string, subtotal: number) {
   if (coupon.end_date && new Date(coupon.end_date) < now) {
     return { error: 'Mã giảm giá đã hết hạn.' }
   }
-
-  // Kiểm tra giới hạn sử dụng
   if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) {
     return { error: 'Mã giảm giá đã hết lượt sử dụng.' }
   }
-
-  // Kiểm tra đơn hàng tối thiểu
   if (subtotal < coupon.min_order_amount) {
     return { error: `Đơn hàng tối thiểu ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(coupon.min_order_amount)} để sử dụng mã này.` }
   }
@@ -61,85 +57,76 @@ export async function validateCoupon(code: string, subtotal: number) {
   return { 
     success: true, 
     coupon: {
-      id: coupon.id,
-      code: coupon.code,
-      type: coupon.type,
-      value: coupon.value,
+      ...coupon,
       discountAmount,
       isFreeShipping
-    }
+    } 
   }
 }
 
 export async function createOrder(formData: FormData, items: OrderItemInput[]) {
   const supabase = await createClient()
-  
-  // 1. Kiểm tra đăng nhập
   const { data: { user } } = await supabase.auth.getUser()
+
   if (!user) return { error: 'Bạn cần đăng nhập để đặt hàng.' }
 
   const shipping_address = formData.get('address') as string
   const phone_number = formData.get('phone') as string
-  const payment_method = formData.get('paymentMethod') as string || 'cod'
+  const payment_method = formData.get('paymentMethod') as string
   const coupon_code = formData.get('couponCode') as string
-  
+
   if (!shipping_address || !phone_number) {
-    return { error: 'Vui lòng cung cấp đầy đủ địa chỉ và số điện thoại.' }
+    return { error: 'Vui lòng điền đầy đủ thông tin giao hàng.' }
   }
 
-  // 2. Xác thực giá tiền thực tế (Flash Sale check)
-  const { data: settings } = await supabase.from('system_settings').select('*').eq('id', 'main').single()
-  const isGlobalFlashSaleActive = settings?.flash_sale_enabled && 
-    settings?.flash_sale_end_time && 
-    new Date(settings.flash_sale_end_time) > new Date()
-
-  const verifiedOrderItems = []
+  // 1. Kiểm tra lại giá và tồn kho thực tế
   let calculated_subtotal = 0
+  const verifiedOrderItems = []
+
+  // Lấy trạng thái Flash Sale hiện tại
+  const { data: settings } = await supabase.from('system_settings').select('is_flash_sale_active').single()
+  const isGlobalFlashSaleActive = settings?.is_flash_sale_active || false
 
   for (const item of items) {
     const { data: product } = await supabase
       .from('products')
-      .select('price, is_flash_sale, flash_sale_price, flash_sale_stock, flash_sale_sold')
+      .select('price, stock_quantity, is_flash_sale, flash_sale_price')
       .eq('id', item.product_id)
       .single()
 
-    if (!product) return { error: `Sản phẩm với ID ${item.product_id} không tồn tại.` }
-
-    let price_to_apply = product.price
-
-    // Nếu flash sale đang bật toàn hệ thống và sản phẩm cũng bật flash sale
-    if (isGlobalFlashSaleActive && product.is_flash_sale && product.flash_sale_price) {
-        // Kiểm tra xem còn lượt sale không
-        if ((product.flash_sale_sold || 0) < (product.flash_sale_stock || 0)) {
-            price_to_apply = product.flash_sale_price
-        }
+    if (!product) return { error: `Sản phẩm không tồn tại.` }
+    if (product.stock_quantity < item.quantity) {
+      return { error: `Sản phẩm hiện không đủ số lượng tồn kho.` }
     }
 
-    calculated_subtotal += price_to_apply * item.quantity
+    // Xác định giá áp dụng: nếu flash sale đang active và sản phẩm có flash sale
+    const activePrice = (isGlobalFlashSaleActive && product.is_flash_sale) 
+      ? product.flash_sale_price 
+      : product.price
+
+    calculated_subtotal += activePrice * item.quantity
     verifiedOrderItems.push({
-      order_id: '', // Will be set after order creation
       product_id: item.product_id,
       quantity: item.quantity,
-      price_at_time: price_to_apply,
-      selected_options: item.selected_options || {}
+      price_at_time: activePrice,
+      selected_options: item.selected_options
     })
   }
 
-  // Áp dụng mã giảm giá nếu có
+  // 2. Xử lý Coupon
   let discount_amount = 0
-  let coupon_id = null
   let is_free_shipping = false
+  let coupon_id = null
 
   if (coupon_code) {
     const couponResult = await validateCoupon(coupon_code, calculated_subtotal)
-    if (couponResult.success && couponResult.coupon) {
-      coupon_id = couponResult.coupon.id
+    if (couponResult.success) {
       discount_amount = couponResult.coupon.discountAmount
       is_free_shipping = couponResult.coupon.isFreeShipping
+      coupon_id = couponResult.coupon.id
     }
   }
 
-  // Tính phí vận chuyển
   let shipping_fee = calculated_subtotal >= 800000 ? 0 : 30000
   if (is_free_shipping) {
     shipping_fee = 0
@@ -241,6 +228,16 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
   revalidatePath('/orders')
   revalidatePath('/admin/orders')
   revalidatePath('/')
+
+  // 6. Tạo thông báo cho người dùng
+  await createNotification({
+    user_id: user.id,
+    type: 'order_status',
+    title: 'Đặt hàng thành công!',
+    content: `Đơn hàng #${order.id.slice(0, 8).toUpperCase()} của bạn đã được tiếp nhận và đang chờ xử lý.`,
+    link: '/orders'
+  })
+
   return { success: 'Đặt hàng thành công!', orderId: order.id }
 }
 

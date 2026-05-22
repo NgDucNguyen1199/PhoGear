@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { createNotification } from './notifications'
+import { logAuditAction } from './audit'
 
 export async function getAllOrders() {
   const supabase = await createClient()
@@ -48,6 +49,15 @@ export async function updateOrderStatus(orderId: string, status: string) {
     .eq('id', orderId)
 
   if (updateError) return { error: updateError.message }
+
+  // Log audit action
+  await logAuditAction({
+    action: 'UPDATE_ORDER_STATUS',
+    target_type: 'order',
+    target_id: orderId,
+    old_values: { status: oldStatus },
+    new_values: { status }
+  })
 
   // 3. Tạo thông báo cho người dùng
   const statusLabels: Record<string, string> = {

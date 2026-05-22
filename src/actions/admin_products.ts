@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logAuditAction } from './audit'
 
 /**
  * Hàm hỗ trợ sửa lỗi URL Unsplash bị thiếu dấu '?' trước query params
@@ -99,6 +100,14 @@ export async function createProductWithVariants(data: any) {
     }
   }
 
+  // Log audit action
+  await logAuditAction({
+    action: 'CREATE_PRODUCT',
+    target_type: 'product',
+    target_id: product.id,
+    new_values: { ...data, finalPrice, totalStock }
+  })
+
   revalidatePath('/admin/products')
   revalidatePath('/products')
   revalidatePath('/')
@@ -107,6 +116,13 @@ export async function createProductWithVariants(data: any) {
 
 export async function updateProduct(id: string, data: any) {
   const supabase = await createClient()
+
+  // Fetch old data for audit log
+  const { data: oldProduct } = await supabase
+    .from('products')
+    .select('*, variants:product_variants(*)')
+    .eq('id', id)
+    .single()
   
   const totalStock = data.variants && data.variants.length > 0
     ? data.variants.reduce((acc: number, v: any) => acc + (parseInt(v.stock_quantity) || 0), 0) 
@@ -175,6 +191,15 @@ export async function updateProduct(id: string, data: any) {
     await supabase.from('product_variants').delete().eq('product_id', id)
   }
 
+  // Log audit action
+  await logAuditAction({
+    action: 'UPDATE_PRODUCT',
+    target_type: 'product',
+    target_id: id,
+    old_values: oldProduct,
+    new_values: { ...updates, variants: data.variants }
+  })
+
   revalidatePath('/admin/products')
   revalidatePath('/products')
   revalidatePath(`/products/${id}`)
@@ -218,13 +243,31 @@ export async function uploadProductImages(formData: FormData) {
 
 export async function deleteProduct(id: string) {
   const supabase = await createClient()
+
+  // Fetch old data for audit log
+  const { data: oldProduct } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .single()
+
   const { error } = await supabase.from('products').delete().eq('id', id)
   if (error) {
     console.error('Error deleting product:', error)
     return { error: error.message }
   }
+
+  // Log audit action
+  await logAuditAction({
+    action: 'DELETE_PRODUCT',
+    target_type: 'product',
+    target_id: id,
+    old_values: oldProduct
+  })
+
   revalidatePath('/admin/products')
   revalidatePath('/products')
   revalidatePath('/')
   return { success: 'Đã xóa sản phẩm thành công!' }
 }
+

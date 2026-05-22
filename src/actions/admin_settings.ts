@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logAuditAction } from './audit'
 
 export async function getSystemSettings() {
   const supabase = await createClient()
@@ -67,6 +68,13 @@ export async function updateSystemSettings(formData: FormData) {
     return { error: 'Bạn không có quyền thực hiện hành động này.' }
   }
 
+  // Fetch old data for audit log
+  const { data: oldSettings } = await supabase
+    .from('system_settings')
+    .select('*')
+    .eq('id', 'main')
+    .maybeSingle()
+
   const updates = {
     site_name: formData.get('siteName') as string,
     contact_email: formData.get('contactEmail') as string,
@@ -100,6 +108,15 @@ export async function updateSystemSettings(formData: FormData) {
   }
 
   console.log('Upsert successful, returned data:', data)
+
+  // Log audit action
+  await logAuditAction({
+    action: 'UPDATE_SYSTEM_SETTINGS',
+    target_type: 'system_settings',
+    target_id: 'main',
+    old_values: oldSettings,
+    new_values: updates
+  })
 
   revalidatePath('/', 'layout')
   revalidatePath('/admin/settings')

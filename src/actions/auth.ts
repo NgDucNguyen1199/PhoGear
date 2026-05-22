@@ -4,8 +4,15 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
+import { checkRateLimit } from './rate_limit'
 
 export async function login(formData: FormData) {
+  // Check rate limit (max 5 attempts per minute)
+  const isAllowed = await checkRateLimit('login', 5, 1)
+  if (!isAllowed) {
+    return { error: 'Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau 1 phút.' }
+  }
+
   const supabase = await createClient()
 
   const email = formData.get('email') as string

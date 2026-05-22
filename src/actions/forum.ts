@@ -3,6 +3,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { Post, PostComment } from '@/types'
+import { createNotification } from './notifications'
+import { checkRateLimit } from './rate_limit'
+import { logAuditAction } from './audit'
 
 /**
  * Lấy danh sách các bài viết đã được duyệt
@@ -53,7 +56,6 @@ export async function getApprovedPosts(currentUserId?: string) {
       }))
     }
     
-    // Chỉ log lỗi nếu không phải do thiếu bảng post_likes
     console.error('Error fetching approved posts:', error.message, error.details, error.hint)
     return []
   }
@@ -99,12 +101,25 @@ export async function toggleLikePost(postId: string) {
       .insert({ post_id: postId, user_id: user.id })
 
     if (error) return { error: error.message }
+    
+    // Notify post author (async, don't wait)
+    const { data: post } = await supabase.from('posts').select('author_id, title').eq('id', postId).single()
+    if (post && post.author_id !== user.id) {
+       createNotification({
+         user_id: post.author_id,
+         type: 'forum_reply',
+         title: 'Tương tác mới',
+         content: `Ai đó đã thả tim bài viết "${post.title}" của bạn.`,
+         link: `/forum/${postId}`
+       })
+    }
+
     return { success: 'Đã thả tim', action: 'added' }
   }
 }
 
 /**
- * Lấy chi tiết bài viết và bình luận
+ * Lấy chi tiết bài viết
  */
 export async function getPostById(id: string) {
   const supabase = await createClient()
@@ -134,6 +149,12 @@ export async function getPostById(id: string) {
  * Tạo bài viết mới (Mặc định ở trạng thái pending)
  */
 export async function createPost(formData: FormData) {
+  // Check rate limit (max 2 posts per 5 minutes)
+  const isAllowed = await checkRateLimit('create_post', 2, 5)
+  if (!isAllowed) {
+    return { error: 'Bạn đang đăng bài quá nhanh. Vui lòng thử lại sau vài phút.' }
+  }
+
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -173,6 +194,12 @@ export async function createPost(formData: FormData) {
  * Gửi bình luận cho bài viết
  */
 export async function addComment(postId: string, content: string) {
+  // Check rate limit (max 5 comments per minute)
+  const isAllowed = await checkRateLimit('add_comment', 5, 1)
+  if (!isAllowed) {
+    return { error: 'Bạn đang bình luận quá nhanh. Vui lòng thử lại sau.' }
+  }
+
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -190,6 +217,18 @@ export async function addComment(postId: string, content: string) {
 
   if (error) {
     return { error: `Lỗi bình luận: ${error.message}` }
+  }
+
+  // Notify post author
+  const { data: post } = await supabase.from('posts').select('author_id, title').eq('id', postId).single()
+  if (post && post.author_id !== user.id) {
+    await createNotification({
+      user_id: post.author_id,
+      type: 'forum_reply',
+      title: 'Bình luận mới',
+      content: `Ai đó đã bình luận trong bài viết "${post.title}" của bạn.`,
+      link: `/forum/${postId}`
+    })
   }
 
   revalidatePath(`/forum/${postId}`)
@@ -240,6 +279,8 @@ export async function adminModeratePost(postId: string, status: 'approved' | 're
   if (profile?.role !== 'admin') {
     return { error: 'Bạn không có quyền thực hiện thao tác này.' }
   }
+
+  const { data: post } = await supabase.from('posts').select('author_id, title').eq('id', postId).single()
   
   const { error } = await supabase
     .from('posts')
@@ -248,6 +289,25 @@ export async function adminModeratePost(postId: string, status: 'approved' | 're
 
   if (error) {
     return { error: `Lỗi cập nhật trạng thái: ${error.message}` }
+  }
+
+  // Log audit action
+  await logAuditAction({
+    action: 'MODERATE_POST',
+    target_type: 'post',
+    target_id: postId,
+    new_values: { status }
+  })
+
+  // Notify author
+  if (post) {
+    await createNotification({
+      user_id: post.author_id,
+      type: 'system',
+      title: 'Kiểm duyệt bài viết',
+      content: `Bài viết "${post.title}" của bạn đã ${status === 'approved' ? 'được phê duyệt và hiển thị' : 'bị từ chối'}.`,
+      link: '/forum'
+    })
   }
 
   revalidatePath('/admin/forum')
