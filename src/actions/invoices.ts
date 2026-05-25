@@ -164,7 +164,7 @@ export async function generateInvoiceDocx(orderId: string) {
           alignment: AlignmentType.CENTER,
           spacing: { before: 800 },
           children: [
-            new TextRun({ text: "Cảm ơn quý khách đã tin tưởng Pho Gear!", italic: true }),
+            new TextRun({ text: "Cảm ơn quý khách đã tin tưởng Pho Gear!", italics: true }),
           ],
         }),
       ],
