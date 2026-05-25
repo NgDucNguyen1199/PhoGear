@@ -70,6 +70,10 @@ export async function saveTypingScore(score: {
             // Tạo mã giảm giá độc nhất
             const couponCode = `PHO${ach.threshold}WPM-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
             
+            // Tính toán ngày hết hạn (6 tháng kể từ bây giờ)
+            const expiryDate = new Date()
+            expiryDate.setMonth(expiryDate.getMonth() + 6)
+
             const { error: couponError } = await supabase
               .from('coupons')
               .insert({
@@ -79,7 +83,8 @@ export async function saveTypingScore(score: {
                 max_discount_amount: ach.maxAmount,
                 is_active: true,
                 usage_limit: 1,
-                description: `Thành tựu PhoType: Đạt ${ach.threshold} WPM`
+                end_date: expiryDate.toISOString(),
+                description: `Thành tựu PhoType: Đạt ${ach.threshold} WPM (Hạn dùng 6 tháng)`
               })
 
             if (!couponError) {
@@ -88,7 +93,7 @@ export async function saveTypingScore(score: {
                 user_id: user.id,
                 type: 'system',
                 title: `🎉 THÀNH TỰU MỚI: ${ach.title}!`,
-                content: `Chúc mừng bạn đạt ${ach.threshold} WPM! PhoGear tặng bạn mã giảm giá ${ach.discount}% (giảm tối đa ${ach.maxAmount.toLocaleString('vi-VN')}đ): ${couponCode}`,
+                content: `Chúc mừng bạn đạt ${ach.threshold} WPM! PhoGear tặng bạn mã giảm giá ${ach.discount}% (giảm tối đa ${ach.maxAmount.toLocaleString('vi-VN')}đ). Mã: ${couponCode}. Hạn sử dụng: ${expiryDate.toLocaleDateString('vi-VN')}`,
                 link: '/photype'
               })
               
