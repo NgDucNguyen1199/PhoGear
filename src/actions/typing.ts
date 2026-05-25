@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { TypingScore } from '@/types'
+import { createNotification } from './notifications'
 
 export async function saveTypingScore(score: {
   wpm: number
@@ -15,6 +16,7 @@ export async function saveTypingScore(score: {
 
   if (!user) return { error: 'Cần đăng nhập để lưu điểm.' }
 
+  // 1. Lưu điểm số bình thường
   const { error } = await supabase
     .from('typing_scores')
     .insert({
@@ -23,6 +25,65 @@ export async function saveTypingScore(score: {
     })
 
   if (error) return { error: error.message }
+
+  // 2. Kiểm tra thành tựu 100 WPM
+  if (score.wpm >= 100) {
+    const ACHIEVEMENT_KEY = 'WPM_100_REWARD'
+
+    // Kiểm tra xem đã nhận thưởng chưa
+    const { data: existingAchievement } = await supabase
+      .from('user_achievements')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('achievement_key', ACHIEVEMENT_KEY)
+      .maybeSingle()
+
+    if (!existingAchievement) {
+      // Đánh dấu đã nhận thưởng để không nhận lại lần 2
+      const { error: achievementError } = await supabase
+        .from('user_achievements')
+        .insert({
+          user_id: user.id,
+          achievement_key: ACHIEVEMENT_KEY
+        })
+
+      if (!achievementError) {
+        // Tạo mã giảm giá 10% độc nhất cho người dùng này
+        const couponCode = `PHO100WPM-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
+        
+        const { error: couponError } = await supabase
+          .from('coupons')
+          .insert({
+            code: couponCode,
+            type: 'percentage',
+            value: 10,
+            is_active: true,
+            usage_limit: 1, // Chỉ được dùng 1 lần
+            description: `Thành tựu PhoType: Đạt 100 WPM`
+          })
+
+        if (!couponError) {
+          // Gửi thông báo chúc mừng kèm mã giảm giá
+          await createNotification({
+            user_id: user.id,
+            type: 'system',
+            title: '🎉 THÀNH TỰU MỚI: SIÊU CẤP TỐC ĐỘ!',
+            content: `Chúc mừng bạn đã đạt mốc 100 WPM! PhoGear tặng bạn mã giảm giá 10%: ${couponCode}`,
+            link: '/photype'
+          })
+          
+          revalidatePath('/photype')
+          return { 
+            success: true, 
+            achievement: {
+              title: 'Siêu cấp tốc độ',
+              message: `Bạn đã nhận được mã giảm giá 10%: ${couponCode}`
+            } 
+          }
+        }
+      }
+    }
+  }
 
   revalidatePath('/photype')
   return { success: true }
