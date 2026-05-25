@@ -27,27 +27,41 @@ export function NotificationCenter() {
   }
 
   useEffect(() => {
-    fetchNotifs()
+    let channel: any
 
-    // Real-time subscription
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-        },
-        (payload) => {
-          setNotifications((prev) => [payload.new, ...prev])
-          setUnreadCount((c) => c + 1)
-        }
-      )
-      .subscribe()
+    const setupSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      fetchNotifs()
+
+      // Tạo một channel ID duy nhất cho lần mount này để tránh lỗi "after subscribe"
+      const channelId = `notifications-${user.id}-${Math.random().toString(36).substring(2, 9)}`
+      
+      channel = supabase
+        .channel(channelId)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            setNotifications((prev) => [payload.new, ...prev])
+            setUnreadCount((c) => c + 1)
+          }
+        )
+        .subscribe()
+    }
+
+    setupSubscription()
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
     }
   }, [supabase])
 

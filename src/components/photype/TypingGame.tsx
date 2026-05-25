@@ -151,13 +151,31 @@ export function TypingGame() {
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: [activeColors.main, '#ffffff'] })
     }
     setIsSaving(true)
-    await saveTypingScore({
-      wpm: finalStats?.wpm || 0,
-      accuracy: finalStats?.accuracy || 0,
-      mode: `${activeTab}_${language}`,
-      rank_name: finalStats?.rank || 'Rùa con'
-    })
-    setIsSaving(false)
+    console.log('Final Stats before saving:', finalStats)
+    try {
+      const result = await saveTypingScore({
+        wpm: finalStats?.wpm || 0,
+        accuracy: finalStats?.accuracy || 0,
+        mode: `${activeTab}_${language}`,
+        rank_name: finalStats?.rank || 'Rùa con'
+      })
+      console.log('Save Score Result:', result)
+
+      if (result?.error) {
+        toast.error('Lỗi lưu điểm: ' + result.error)
+      } else if (result?.achievement) {
+        console.log('ACHIEVEMENT UNLOCKED!', result.achievement)
+        toast.success(result.achievement.title, {
+          description: result.achievement.message,
+          duration: 10000,
+        })
+      }
+    } catch (e) {
+      console.error('Network/Action error:', e)
+      toast.error('Lỗi kết nối server khi lưu điểm')
+    } finally {
+      setIsSaving(false)
+    }
   }, [activeTab, language, activeColors.main])
 
   const startGame = useCallback(() => {

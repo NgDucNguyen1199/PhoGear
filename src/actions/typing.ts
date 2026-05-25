@@ -26,61 +26,89 @@ export async function saveTypingScore(score: {
 
   if (error) return { error: error.message }
 
-  // 2. Kiểm tra thành tựu 100 WPM
-  if (score.wpm >= 100) {
-    const ACHIEVEMENT_KEY = 'WPM_100_REWARD'
+  // 2. Kiểm tra các mốc thành tựu
+  const achievements = [
+    { 
+      threshold: 100, 
+      key: 'WPM_100_REWARD', 
+      discount: 10, 
+      maxAmount: 200000, 
+      title: 'SIÊU CẤP TỐC ĐỘ', 
+      rankName: 'Pho Master' 
+    },
+    { 
+      threshold: 50, 
+      key: 'WPM_50_REWARD', 
+      discount: 5, 
+      maxAmount: 100000, 
+      title: 'TAY ĐUA TỐC ĐỘ', 
+      rankName: 'Thần sấm' 
+    }
+  ]
 
-    // Kiểm tra xem đã nhận thưởng chưa
-    const { data: existingAchievement } = await supabase
-      .from('user_achievements')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('achievement_key', ACHIEVEMENT_KEY)
-      .maybeSingle()
+  for (const ach of achievements) {
+    if (score.wpm >= ach.threshold) {
+      try {
+        // Kiểm tra xem đã nhận thưởng mốc này chưa
+        const { data: existingAchievement } = await supabase
+          .from('user_achievements')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('achievement_key', ach.key)
+          .maybeSingle()
 
-    if (!existingAchievement) {
-      // Đánh dấu đã nhận thưởng để không nhận lại lần 2
-      const { error: achievementError } = await supabase
-        .from('user_achievements')
-        .insert({
-          user_id: user.id,
-          achievement_key: ACHIEVEMENT_KEY
-        })
+        if (!existingAchievement) {
+          // Đánh dấu đã nhận thưởng
+          const { error: achievementError } = await supabase
+            .from('user_achievements')
+            .insert({
+              user_id: user.id,
+              achievement_key: ach.key
+            })
 
-      if (!achievementError) {
-        // Tạo mã giảm giá 10% độc nhất cho người dùng này
-        const couponCode = `PHO100WPM-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
-        
-        const { error: couponError } = await supabase
-          .from('coupons')
-          .insert({
-            code: couponCode,
-            type: 'percentage',
-            value: 10,
-            is_active: true,
-            usage_limit: 1, // Chỉ được dùng 1 lần
-            description: `Thành tựu PhoType: Đạt 100 WPM`
-          })
+          if (!achievementError) {
+            // Tạo mã giảm giá độc nhất
+            const couponCode = `PHO${ach.threshold}WPM-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
+            
+            const { error: couponError } = await supabase
+              .from('coupons')
+              .insert({
+                code: couponCode,
+                type: 'percentage',
+                value: ach.discount,
+                max_discount_amount: ach.maxAmount,
+                is_active: true,
+                usage_limit: 1,
+                description: `Thành tựu PhoType: Đạt ${ach.threshold} WPM`
+              })
 
-        if (!couponError) {
-          // Gửi thông báo chúc mừng kèm mã giảm giá
-          await createNotification({
-            user_id: user.id,
-            type: 'system',
-            title: '🎉 THÀNH TỰU MỚI: SIÊU CẤP TỐC ĐỘ!',
-            content: `Chúc mừng bạn đã đạt mốc 100 WPM! PhoGear tặng bạn mã giảm giá 10%: ${couponCode}`,
-            link: '/photype'
-          })
-          
-          revalidatePath('/photype')
-          return { 
-            success: true, 
-            achievement: {
-              title: 'Siêu cấp tốc độ',
-              message: `Bạn đã nhận được mã giảm giá 10%: ${couponCode}`
-            } 
+            if (!couponError) {
+              // Gửi thông báo chúc mừng
+              await createNotification({
+                user_id: user.id,
+                type: 'system',
+                title: `🎉 THÀNH TỰU MỚI: ${ach.title}!`,
+                content: `Chúc mừng bạn đạt ${ach.threshold} WPM! PhoGear tặng bạn mã giảm giá ${ach.discount}% (giảm tối đa ${ach.maxAmount.toLocaleString('vi-VN')}đ): ${couponCode}`,
+                link: '/photype'
+              })
+              
+              revalidatePath('/photype')
+              // Nếu đạt mốc cao nhất thì trả về ngay để Frontend hiển thị mốc đó
+              if (ach.threshold === 100) {
+                  return { 
+                    success: true, 
+                    achievement: {
+                      title: ach.title,
+                      message: `Bạn nhận được mã giảm giá ${ach.discount}%: ${couponCode}`,
+                      code: couponCode
+                    } 
+                  }
+              }
+            }
           }
         }
+      } catch (err) {
+        console.error(`Error in achievement logic for ${ach.key}:`, err)
       }
     }
   }
