@@ -1,0 +1,22 @@
+services:
+  phogear-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    container_name: phogear-web
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=production
+    restart: always
+    # Cấu hình logging để tránh làm đầy ổ cứng
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

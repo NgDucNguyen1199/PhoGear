@@ -10,6 +10,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { OrderFilters } from '@/components/shop/OrderFilters'
 import { Suspense } from 'react'
+import ExportInvoiceButton from '@/components/shop/ExportInvoiceButton'
 
 const statusMap: Record<string, { label: string, color: string }> = {
   pending: { label: 'Chờ xử lý', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
@@ -155,6 +156,9 @@ async function OrderList({ searchParams }: { searchParams: any }) {
                     <div className="flex justify-between text-sm font-black uppercase tracking-widest text-primary">
                         <span>Tổng cộng:</span>
                         <span>{order.total_amount.toLocaleString('vi-VN')}đ</span>
+                    </div>
+                    <div className="flex justify-end pt-4 mt-2 border-t border-dashed border-muted-foreground/20">
+                        <ExportInvoiceButton orderId={order.id} />
                     </div>
                 </div>
             </div>

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Eye, Package, MapPin, Phone, User, Calendar, CreditCard, Ticket, ShoppingBag } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import Image from 'next/image'
+import ExportInvoiceButton from '../shop/ExportInvoiceButton'
 
 export function OrderDetailDialog({ order }: { order: any }) {
   const [open, setOpen] = useState(false)
@@ -127,6 +128,9 @@ export function OrderDetailDialog({ order }: { order: any }) {
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-black uppercase tracking-[0.2em] italic">Tổng cộng</span>
                   <span className="text-2xl font-black text-primary tracking-tighter">{formatPrice(order.total_amount)}</span>
+                </div>
+                <div className="flex justify-end pt-4 mt-4 border-t border-dashed border-primary/20">
+                    <ExportInvoiceButton orderId={order.id} variant="default" size="default" />
                 </div>
               </div>
             </div>
