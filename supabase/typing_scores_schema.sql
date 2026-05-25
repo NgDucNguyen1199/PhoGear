@@ -4,10 +4,13 @@ CREATE TABLE IF NOT EXISTS public.typing_scores (
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
     wpm NUMERIC NOT NULL,
     accuracy NUMERIC NOT NULL,
-    mode TEXT NOT NULL, -- e.g., 'time_30_vn', 'words_50_en'
-    rank_name TEXT NOT NULL, -- e.g., 'Thần tốc', 'Lão tướng'
+    mode TEXT NOT NULL, 
+    rank_name TEXT NOT NULL, 
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Note: In older versions, there was a CHECK constraint on 'mode'. 
+-- If you encounter errors, run: ALTER TABLE public.typing_scores DROP CONSTRAINT IF EXISTS typing_scores_mode_check;
 
 -- 2. Enable RLS
 ALTER TABLE public.typing_scores ENABLE ROW LEVEL SECURITY;
