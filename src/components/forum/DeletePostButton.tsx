@@ -46,7 +46,11 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
       <DialogTrigger
         render={
           <button 
-            className="flex items-center gap-1.5 hover:text-destructive transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            className="flex items-center gap-1.5 hover:text-destructive transition-colors relative z-20"
           >
             <Trash2 size={12} className="text-destructive/70" /> 
             <span className="text-destructive/70 group-hover:text-destructive text-[10px] font-black uppercase tracking-widest">Xóa</span>
