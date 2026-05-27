@@ -333,3 +333,41 @@ export async function adminModeratePost(postId: string, status: 'approved' | 're
   revalidatePath('/')
   return { success: `Đã ${status === 'approved' ? 'duyệt' : 'từ chối'} bài viết thành công!` }
 }
+
+/**
+ * Xóa bài viết (Tác giả hoặc Admin)
+ */
+export async function deletePost(postId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Bạn cần đăng nhập để thực hiện hành động này.' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+  const { data: post } = await supabase.from('posts').select('author_id, status').eq('id', postId).maybeSingle()
+
+  if (!post) return { error: 'Không tìm thấy bài viết.' }
+
+  const isOwner = post.author_id === user.id
+  const isAdmin = profile?.role === 'admin'
+
+  if (!isOwner && !isAdmin) {
+    return { error: 'Bạn không có quyền xóa bài viết này.' }
+  }
+
+  // Chặn user xóa bài đã được duyệt (chỉ Admin mới được xóa bài đã duyệt)
+  if (isOwner && post.status === 'approved' && !isAdmin) {
+    return { error: 'Bài viết đã được duyệt, bạn không thể tự xóa. Vui lòng liên hệ Admin.' }
+  }
+
+  const { error } = await supabase.from('posts').delete().eq('id', postId)
+
+  if (error) {
+    return { error: `Lỗi xóa bài viết: ${error.message}` }
+  }
+
+  revalidatePath('/forum')
+  revalidatePath('/admin/forum')
+  revalidatePath('/')
+  
+  return { success: 'Đã xóa bài viết thành công!' }
+}

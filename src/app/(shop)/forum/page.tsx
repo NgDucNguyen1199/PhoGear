@@ -8,6 +8,7 @@ import { PlusCircle, MessageSquare, Calendar, User, ArrowRight, Search, Lock } f
 import Link from 'next/link'
 import Image from 'next/image'
 import { LikeButton } from '@/components/forum/LikeButton'
+import { DeletePostButton } from '@/components/forum/DeletePostButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -111,6 +112,11 @@ export default async function ForumPage() {
                                                     )}
                                                     {post.status === 'rejected' && (
                                                         <Badge variant="destructive" className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Bị từ chối</Badge>
+                                                    )}
+                                                    
+                                                    {/* Delete Button for Author (Pending/Rejected) or Admin (Any) */}
+                                                    {(profile?.id === post.author_id || profile?.role === 'admin') && (
+                                                      <DeletePostButton postId={post.id} />
                                                     )}
                                                 </div>
                                                 <h3 className="text-3xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors uppercase italic">
