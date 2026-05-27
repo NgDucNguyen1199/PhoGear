@@ -43,14 +43,16 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button 
-          className="flex items-center gap-1.5 hover:text-destructive transition-colors"
-        >
-          <Trash2 size={12} className="text-destructive/70" /> 
-          <span className="text-destructive/70 group-hover:text-destructive text-[10px] font-black uppercase tracking-widest">Xóa</span>
-        </button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <button 
+            className="flex items-center gap-1.5 hover:text-destructive transition-colors"
+          >
+            <Trash2 size={12} className="text-destructive/70" /> 
+            <span className="text-destructive/70 group-hover:text-destructive text-[10px] font-black uppercase tracking-widest">Xóa</span>
+          </button>
+        }
+      />
       <DialogContent className="rounded-[2rem] sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="font-black uppercase tracking-tight italic text-xl">Xác nhận xóa bài viết?</DialogTitle>
@@ -59,8 +61,10 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 mt-4">
-          <DialogClose asChild>
-            <Button variant="outline" className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Hủy bỏ</Button>
+          <DialogClose 
+            render={<Button variant="outline" className="rounded-xl font-bold uppercase tracking-widest text-[10px]" />}
+          >
+            Hủy bỏ
           </DialogClose>
           <Button 
             onClick={handleDelete}
