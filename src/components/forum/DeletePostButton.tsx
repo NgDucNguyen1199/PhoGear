@@ -57,7 +57,7 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
         <DialogHeader>
           <DialogTitle className="font-black uppercase tracking-tight italic text-xl">Xác nhận xóa bài viết?</DialogTitle>
           <DialogDescription className="font-medium text-muted-foreground text-sm">
-            Hành động này không thể hoàn tác. Bài viết của bạn sẽ bị xóa vĩnh viễn khỏi hệ thống cộng đồng Pho Gear.
+            Hành động này không thể hoàn tác. Bài viết của bạn sẽ bị xóa vĩnh viễn khỏi hệ thống cộng đồng Pho Gear. (Bản cập nhật cuối)
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 mt-4">
