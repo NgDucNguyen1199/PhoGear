@@ -13,7 +13,15 @@ import { logAuditAction } from './audit'
 export async function getApprovedPosts(currentUserId?: string) {
   const supabase = await createClient()
   
-  console.log('[DEBUG] Fetching posts for user:', currentUserId)
+  // Lấy thông tin role của user hiện tại
+  const { data: { user: authUser } } = await supabase.auth.getUser()
+  let isAdmin = false
+  if (authUser) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', authUser.id).single()
+    isAdmin = profile?.role === 'admin'
+  }
+
+  console.log(`[DEBUG] Fetching posts. User: ${currentUserId}, IsAdmin: ${isAdmin}`)
   
   let query = supabase
     .from('posts')
@@ -25,11 +33,14 @@ export async function getApprovedPosts(currentUserId?: string) {
     `)
     .order('created_at', { ascending: false })
 
-  if (currentUserId) {
-    // Lấy bài đã duyệt HOẶC bài của chính user đó
+  if (isAdmin) {
+    // Admin thấy TẤT CẢ bài viết (God Mode)
+    console.log('[DEBUG] Admin God Mode activated for getApprovedPosts')
+  } else if (currentUserId) {
+    // User thấy bài đã duyệt HOẶC bài của chính mình
     query = query.or(`status.eq.approved,author_id.eq.${currentUserId}`)
   } else {
-    // Nếu không đăng nhập, chỉ lấy bài đã duyệt
+    // Khách vãng lai chỉ thấy bài đã duyệt
     query = query.eq('status', 'approved')
   }
 
@@ -40,11 +51,11 @@ export async function getApprovedPosts(currentUserId?: string) {
     return []
   }
 
-  console.log(`[DEBUG] Found ${data?.length || 0} posts`)
+  console.log(`[DEBUG] Query result: ${data?.length || 0} posts found`)
 
   if (!data) return []
 
-  // Lấy danh sách ID bài viết mà user hiện tại đã like (truy vấn riêng để tránh lỗi Inner Join)
+  // Lấy danh sách ID bài viết mà user hiện tại đã like
   let likedPostIds: string[] = []
   if (currentUserId && data.length > 0) {
     const { data: likesData } = await supabase
@@ -246,35 +257,46 @@ export async function addComment(postId: string, content: string) {
 export async function adminGetPendingPosts() {
   const supabase = await createClient()
   
-  // Kiểm tra quyền Admin
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
+  if (!user) {
+    console.log('[DEBUG] No user found in adminGetPendingPosts')
+    return []
+  }
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   
   if (profile?.role !== 'admin') {
-    console.warn('[DEBUG] Non-admin user attempted to access pending posts:', user.email)
+    console.warn('[DEBUG] User is NOT admin in profiles table:', user.email, 'Role:', profile?.role)
     return []
   }
 
-  console.log('[DEBUG] Admin fetching pending posts...')
+  console.log('[DEBUG] Admin confirmed, fetching pending posts (simplified query)...')
 
+  // Thử truy vấn đơn giản nhất không join để xem có dữ liệu không
   const { data, error } = await supabase
     .from('posts')
-    .select(`
-      *,
-      author:profiles (full_name, avatar_url)
-    `)
+    .select('*')
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
 
   if (error) {
-    console.error('[DEBUG] Error fetching pending posts:', error)
+    console.error('[DEBUG] Simple query error:', error)
     return []
   }
 
-  console.log(`[DEBUG] Found ${data?.length || 0} pending posts`)
-  return data as any[]
+  if (!data || data.length === 0) {
+    console.log('[DEBUG] No pending posts found even with simple query')
+    return []
+  }
+
+  // Nếu có dữ liệu, mới thử lấy thông tin author
+  const postsWithAuthor = await Promise.all(data.map(async (post) => {
+    const { data: authorData } = await supabase.from('profiles').select('full_name, avatar_url').eq('id', post.author_id).single()
+    return { ...post, author: authorData }
+  }))
+
+  console.log(`[DEBUG] Successfully fetched ${postsWithAuthor.length} pending posts`)
+  return postsWithAuthor as any[]
 }
 
 /**
