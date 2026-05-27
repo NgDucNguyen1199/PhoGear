@@ -21,6 +21,8 @@ import { redirect } from 'next/navigation'
 import { CommentSection } from './CommentSection'
 import { LikeButton } from '@/components/forum/LikeButton'
 
+export const dynamic = 'force-dynamic'
+
 export default async function PostDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params
   const profile = await getProfile()
@@ -64,15 +66,15 @@ export default async function PostDetailPage({ params }: { params: { id: string 
                 
                 <div className="flex items-center gap-4 p-6 bg-muted/20 rounded-[2rem] border border-white/5 w-fit">
                     <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl overflow-hidden border-2 border-primary/20">
-                        {post.profiles?.avatar_url ? (
-                            <Image src={post.profiles.avatar_url} alt="Author" width={48} height={48} className="object-cover" />
+                        {post.author?.avatar_url ? (
+                            <Image src={post.author.avatar_url} alt="Author" width={48} height={48} className="object-cover" />
                         ) : (
-                            post.profiles?.full_name?.charAt(0) || 'U'
+                            post.author?.full_name?.charAt(0) || 'U'
                         )}
                     </div>
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tác giả</p>
-                        <p className="font-black text-lg text-primary">{String(post.profiles?.full_name || 'Người dùng PhoGear')}</p>
+                        <p className="font-black text-lg text-primary">{String(post.author?.full_name || 'Người dùng PhoGear')}</p>
                     </div>
                 </div>
              </header>

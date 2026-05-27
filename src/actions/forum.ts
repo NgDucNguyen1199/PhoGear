@@ -138,21 +138,28 @@ export async function toggleLikePost(postId: string) {
 export async function getPostById(id: string) {
   const supabase = await createClient()
   
+  console.log('[DEBUG] Fetching post by ID:', id)
+  
   const { data, error } = await supabase
     .from('posts')
     .select(`
       *,
-      profiles (full_name, avatar_url),
+      author:profiles (full_name, avatar_url),
       comments (
         *,
-        profiles (full_name, avatar_url)
+        author:profiles (full_name, avatar_url)
       )
     `)
     .eq('id', id)
     .maybeSingle()
 
   if (error) {
-    console.error('Error fetching post detail:', error)
+    console.error('[DEBUG] Error fetching post detail:', error)
+    return null
+  }
+
+  if (!data) {
+    console.warn('[DEBUG] Post not found or no access:', id)
     return null
   }
 

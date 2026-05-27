@@ -82,15 +82,15 @@ export function CommentSection({ postId, comments, userId }: { postId: string, c
                 className="flex gap-6 p-8 rounded-[2.5rem] bg-muted/10 border border-white/5 relative group"
               >
                 <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl flex-shrink-0 overflow-hidden border-2 border-primary/20">
-                    {comment.profiles?.avatar_url ? (
-                        <Image src={comment.profiles.avatar_url} alt="User" width={48} height={48} className="object-cover" />
+                    {comment.author?.avatar_url ? (
+                        <Image src={comment.author.avatar_url} alt="User" width={48} height={48} className="object-cover" />
                     ) : (
-                        comment.profiles?.full_name?.charAt(0) || 'U'
+                        comment.author?.full_name?.charAt(0) || 'U'
                     )}
                 </div>
                 <div className="flex-1 space-y-3 text-left">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-black text-primary uppercase tracking-wider">{String(comment.profiles?.full_name || 'Người dùng PhoGear')}</h4>
+                    <h4 className="font-black text-primary uppercase tracking-wider">{String(comment.author?.full_name || 'Người dùng PhoGear')}</h4>
                     <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
                       <Clock size={10} /> {new Date(comment.created_at).toLocaleDateString('vi-VN')}
                     </span>
