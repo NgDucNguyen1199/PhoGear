@@ -6,16 +6,15 @@ import { Button } from '@/components/ui/button'
 import { deletePost } from '@/actions/forum'
 import { toast } from 'sonner'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 interface DeletePostButtonProps {
   postId: string
@@ -23,6 +22,7 @@ interface DeletePostButtonProps {
 
 export function DeletePostButton({ postId }: DeletePostButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [open, setOpen] = useState(false)
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -30,6 +30,7 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
       const result = await deletePost(postId)
       if (result.success) {
         toast.success(result.success)
+        setOpen(false)
       } else if (result.error) {
         toast.error(result.error)
       }
@@ -41,34 +42,36 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
   }
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <button 
-          onClick={(e) => e.preventDefault()}
           className="flex items-center gap-1.5 hover:text-destructive transition-colors"
         >
           <Trash2 size={12} className="text-destructive/70" /> 
-          <span className="text-destructive/70 group-hover:text-destructive">Xóa</span>
+          <span className="text-destructive/70 group-hover:text-destructive text-[10px] font-black uppercase tracking-widest">Xóa</span>
         </button>
-      </AlertDialogTrigger>
-      <AlertDialogContent className="rounded-[2rem]">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="font-black uppercase tracking-tight italic">Xác nhận xóa bài viết?</AlertDialogTitle>
-          <AlertDialogDescription className="font-medium text-muted-foreground">
-            Hành động này không thể hoàn tác. Bài viết của bạn sẽ bị xóa vĩnh viễn khỏi hệ thống.
+      </DialogTrigger>
+      <DialogContent className="rounded-[2rem] sm:max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle className="font-black uppercase tracking-tight italic text-xl">Xác nhận xóa bài viết?</DialogTitle>
+          <DialogDescription className="font-medium text-muted-foreground text-sm">
+            Hành động này không thể hoàn tác. Bài viết của bạn sẽ bị xóa vĩnh viễn khỏi hệ thống cộng đồng Pho Gear.
           </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Hủy bỏ</AlertDialogCancel>
-          <AlertDialogAction 
+        </DialogHeader>
+        <DialogFooter className="gap-2 mt-4">
+          <DialogClose asChild>
+            <Button variant="outline" className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Hủy bỏ</Button>
+          </DialogClose>
+          <Button 
             onClick={handleDelete}
             disabled={isDeleting}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+            variant="destructive"
+            className="rounded-xl font-bold uppercase tracking-widest text-[10px] min-w-[100px]"
           >
             {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Xác nhận xóa'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
