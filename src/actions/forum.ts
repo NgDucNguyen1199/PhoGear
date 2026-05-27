@@ -133,37 +133,60 @@ export async function toggleLikePost(postId: string) {
 }
 
 /**
- * Lấy chi tiết bài viết
+ * Lấy chi tiết bài viết (Bản sửa lỗi triệt để)
  */
 export async function getPostById(id: string) {
   const supabase = await createClient()
   
-  console.log('[DEBUG] Fetching post by ID:', id)
+  console.log('[SYSTEM-DEBUG] Fetching post detail for ID:', id)
   
-  const { data, error } = await supabase
+  // 1. Lấy dữ liệu cơ bản của bài viết
+  const { data: post, error: postError } = await supabase
     .from('posts')
-    .select(`
-      *,
-      author:profiles (full_name, avatar_url),
-      comments (
-        *,
-        author:profiles (full_name, avatar_url)
-      )
-    `)
+    .select('*')
     .eq('id', id)
     .maybeSingle()
 
-  if (error) {
-    console.error('[DEBUG] Error fetching post detail:', error)
+  if (postError) {
+    console.error('[SYSTEM-DEBUG] Error fetching post:', postError)
     return null
   }
 
-  if (!data) {
-    console.warn('[DEBUG] Post not found or no access:', id)
+  if (!post) {
+    console.warn('[SYSTEM-DEBUG] Post not found or no access (RLS):', id)
     return null
   }
 
-  return data as any
+  // 2. Lấy thông tin tác giả bài viết
+  const { data: author } = await supabase
+    .from('profiles')
+    .select('full_name, avatar_url')
+    .eq('id', post.author_id)
+    .maybeSingle()
+
+  // 3. Lấy danh sách bình luận kèm thông tin tác giả bình luận
+  const { data: commentsData } = await supabase
+    .from('comments')
+    .select('*')
+    .eq('post_id', id)
+    .order('created_at', { ascending: true })
+
+  const enrichedComments = commentsData ? await Promise.all(commentsData.map(async (c) => {
+    const { data: commentAuthor } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', c.author_id)
+      .maybeSingle()
+    return { ...c, author: commentAuthor }
+  })) : []
+
+  console.log(`[SYSTEM-DEBUG] Successfully fetched post detail for: ${post.title}`)
+
+  return {
+    ...post,
+    author,
+    comments: enrichedComments
+  }
 }
 
 /**
