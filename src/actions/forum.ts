@@ -22,11 +22,15 @@ export async function getApprovedPosts(currentUserId?: string) {
       likes:post_likes (count)
       ${currentUserId ? `, user_liked:post_likes!left(user_id)` : ''}
     `)
-    .eq('status', 'approved')
     .order('created_at', { ascending: false })
 
   if (currentUserId) {
+    // Nếu có user_id, lấy bài đã duyệt HOẶC bài của chính user đó
+    query = query.or(`status.eq.approved,author_id.eq.${currentUserId}`)
     query = query.eq('user_liked.user_id', currentUserId)
+  } else {
+    // Nếu không đăng nhập, chỉ lấy bài đã duyệt
+    query = query.eq('status', 'approved')
   }
 
   const { data, error } = await query
@@ -253,7 +257,7 @@ export async function adminGetPendingPosts() {
     .from('posts')
     .select(`
       *,
-      profiles (full_name, avatar_url)
+      author:profiles (full_name, avatar_url)
     `)
     .eq('status', 'pending')
     .order('created_at', { ascending: true })

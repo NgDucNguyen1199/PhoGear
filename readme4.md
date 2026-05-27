@@ -1,75 +1,51 @@
-# BÁO CÁO THUYẾT MINH KỸ THUẬT DỰ ÁN PHOGEAR
+# HƯỚNG DẪN SỬ DỤNG VÀ KHÁM PHÁ HỆ THỐNG PHOGEAR
 
-**TRƯỜNG ĐẠI HỌC ĐÀ LẠT**  
-**KHOA CÔNG NGHỆ THÔNG TIN**  
-
----
-
-## 📑 MỤC LỤC CHI TIẾT
-1. **PHẦN MỞ ĐẦU**
-   - 1.1. Lý do chọn đề tài
-   - 1.2. Mục tiêu nghiên cứu
-2. **CHƯƠNG I: KHẢO SÁT VÀ PHÂN TÍCH HỆ THỐNG**
-   - 2.1. Phân tích yêu cầu chức năng mở rộng
-   - 2.2. Xác định các thực thể mới (Inventory & Social)
-3. **CHƯƠNG II: THIẾT KẾ KIẾN TRÚC VÀ CÔNG NGHỆ**
-   - 3.1. Ứng dụng Real-time & Optimistic Updates
-   - 3.2. Giải pháp Deep Skeleton Loading
-4. **CHƯƠNG III: XÂY DỰNG VÀ CÀI ĐẶT HỆ THỐNG**
-   - 4.1. Hệ thống quản lý tồn kho biến thể (Variant-level Inventory)
-   - 4.2. Trung tâm thông báo tập trung (Notification Center)
-   - 4.3. Bảng xếp hạng PhoType đa chiều
-5. **CHƯƠNG IV: ĐÁNH GIÁ VÀ KẾT LUẬN**
-   - 5.1. Kết quả giải quyết bài toán hiệu suất & UX
-6. **TÀI LIỆU THAM KHẢO**
+Chào mừng bạn đến với **PhoGear** - Hệ sinh thái bàn phím cơ toàn diện. Dưới đây là hướng dẫn các tính năng chính dành cho người dùng và quản trị viên.
 
 ---
 
-## 2. CHƯƠNG I: KHẢO SÁT VÀ PHÂN TÍCH HỆ THỐNG
+## 🛍️ 1. Dành cho Khách hàng
 
-### 2.1. Phân tích yêu cầu chức năng mở rộng
-Hệ thống hiện tại đã được nâng cấp để hỗ trợ các quy trình nghiệp vụ phức tạp:
-- **Tồn kho chính xác:** Đảm bảo khi khách hàng chọn một switch cụ thể (VD: Red Switch), chỉ số lượng của biến thể đó bị giảm trừ trong kho.
-- **Tương tác xã hội:** Người dùng có thể thả tim bài viết, nhận thông báo đẩy (push notifications) khi Admin thay đổi trạng thái đơn hàng.
+### 1.1. Khám phá Sản phẩm
+- **Keyboard Finder:** Sử dụng công cụ tìm kiếm thông minh để lọc bàn phím theo kích thước (Layout), loại Switch và khoảng giá.
+- **Biến thể chi tiết:** Khi chọn sản phẩm, bạn có thể chọn chính xác loại Switch và màu sắc mong muốn. Hệ thống sẽ hiển thị tồn kho thực tế của từng lựa chọn.
 
----
+### 1.2. Mua sắm và Ưu đãi
+- **Flash Sales:** Theo dõi các sản phẩm đang giảm giá sốc tại trang chủ với đồng hồ đếm ngược.
+- **Mã giảm giá:** Nhập mã coupon tại trang thanh toán để nhận ưu đãi (Giảm tiền, % hoặc Freeship).
 
-## 3. CHƯƠNG II: THIẾT KẾ KIẾN TRÚC VÀ CÔNG NGHỆ
-
-### 3.1. Ứng dụng Real-time & Optimistic Updates
-Dự án áp dụng mô hình **Cập nhật tức thời**:
-- **Supabase Realtime:** Sử dụng WebSockets để truyền tải thay đổi dữ liệu từ Postgres đến trực tiếp trình duyệt người dùng mà không cần reload.
-- **Optimistic UI:** Khi người dùng thực hiện các thao tác nhẹ (like, add to cart), giao diện sẽ giả định thành công và cập nhật ngay lập tức, mang lại cảm giác mượt mà tuyệt đối.
-
-### 3.2. Giải pháp Deep Skeleton Loading
-Để đạt điểm số **Lighthouse Core Web Vitals** tối ưu, hệ thống sử dụng Skeletons khớp 1:1 với kích thước Product Card thật, giúp triệt tiêu chỉ số CLS (Cumulative Layout Shift) - một trong những tiêu chí đánh giá trải nghiệm người dùng quan trọng nhất của Google.
+### 1.3. Cộng đồng (Forum)
+- Tham gia thảo luận, chia sẻ kinh nghiệm về bàn phím cơ.
+- Sử dụng tính năng **Like** (thả tim) bài viết để ủng hộ tác giả.
 
 ---
 
-## 4. CHƯƠNG III: XÂY DỰNG VÀ CÀI ĐẶT HỆ THỐNG
+## ⌨️ 2. Trải nghiệm PhoType (Luyện gõ phím)
 
-### 4.1. Hệ thống quản lý tồn kho biến thể
-Logic trừ kho được thực hiện qua Server Action bảo mật:
-- Khi tạo đơn hàng (`createOrder`), hệ thống xác định `variant_id`.
-- Thực hiện cập nhật đồng thời ở bảng `products` (tổng kho) và `product_variants` (kho chi tiết).
-- Hỗ trợ hoàn kho tự động (`Smart Restoration`) khi đơn hàng chuyển sang trạng thái `cancelled`.
+### 2.1. Bắt đầu luyện tập
+- Truy cập module **PhoType** để kiểm tra tốc độ gõ (WPM) và độ chính xác.
+- Tùy chỉnh âm thanh gõ phím trong cài đặt để có trải nghiệm chân thực nhất.
 
-### 4.3. Bảng xếp hạng PhoType đa chiều
-Module PhoType được tái cấu trúc bố cục ngang theo phong cách **10fastfingers**, tập trung tối đa vào khu vực gõ. Bảng xếp hạng hỗ trợ:
-- Lọc theo thời gian: Tuần (Weekly), Tháng (Monthly), Tất cả (All-time).
-- Glassmorphism UI: Hiệu ứng làm mờ nền hiện đại, hỗ trợ hoàn hảo cho cả Light Mode và Dark Mode.
+### 2.2. Bảng xếp hạng (Leaderboard)
+- Cạnh tranh với người dùng khác trên toàn cầu.
+- Theo dõi tiến bộ cá nhân qua biểu đồ thống kê trong trang cá nhân.
 
 ---
 
-## 5. CHƯƠNG IV: ĐÁNH GIÁ VÀ KẾT LUẬN
+## 🛡️ 3. Dành cho Quản trị viên (Admin)
 
-### 5.1. Kết quả giải quyết bài toán hiệu suất & UX
-Hệ thống đã loại bỏ hoàn toàn các lỗi về Hydration và vượt ngưỡng giới hạn Payload (nâng lên 10MB). Trải nghiệm người dùng được nâng tầm nhờ vào sự kết hợp giữa Real-time và Optimistic Updates.
+### 3.1. Quản lý kho hàng
+- Thêm mới sản phẩm và các biến thể chi tiết.
+- Theo dõi lịch sử nhập xuất kho tự động.
+
+### 3.2. Xử lý đơn hàng
+- Cập nhật trạng thái đơn hàng (Đang xử lý, Đang giao, Đã giao).
+- Hệ thống sẽ tự động gửi thông báo đến người dùng khi trạng thái thay đổi.
 
 ---
 
-## 6. TÀI LIỆU THAM KHẢO
-1. Next.js Documentation (2026).
-2. Supabase Realtime & Postgres Replication Guide.
-3. React 19 useOptimistic API Reference.
-4. Google Search Central - Core Web Vitals Optimization.
+## 🛠️ 4. Hỗ trợ kỹ thuật
+Nếu gặp sự cố, vui lòng liên hệ đội ngũ phát triển hoặc tham khảo tệp [CHALLENGES.md](./readme1.md).
+
+---
+*© 2026 PhoGear Team - Mang lại trải nghiệm gõ phím đỉnh cao.*

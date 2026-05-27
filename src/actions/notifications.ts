@@ -74,5 +74,6 @@ export async function createNotification(notif: {
     return { error: error.message }
   }
 
+  revalidatePath('/')
   return { success: true }
 }

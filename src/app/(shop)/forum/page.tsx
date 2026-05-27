@@ -102,6 +102,12 @@ export default async function ForumPage() {
                                                         initialIsLiked={post.is_liked} 
                                                         userId={profile?.id} 
                                                     />
+                                                    {post.status === 'pending' && (
+                                                        <Badge variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/20 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Chờ duyệt</Badge>
+                                                    )}
+                                                    {post.status === 'rejected' && (
+                                                        <Badge variant="destructive" className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Bị từ chối</Badge>
+                                                    )}
                                                 </div>
                                                 <h3 className="text-3xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors uppercase italic">
                                                     {post.title}

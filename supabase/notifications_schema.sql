@@ -20,9 +20,9 @@ CREATE POLICY "Users can view own notifications" ON public.notifications
 CREATE POLICY "Users can update own notifications" ON public.notifications
     FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY "Admins can create notifications" ON public.notifications
+CREATE POLICY "Users can create notifications" ON public.notifications
     FOR INSERT WITH CHECK (
-        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+        auth.role() = 'authenticated'
     );
 
 -- 4. Enable Realtime

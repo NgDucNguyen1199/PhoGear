@@ -25,6 +25,9 @@ export async function login(formData: FormData) {
   })
 
   if (error) {
+    if (error.message === 'Invalid login credentials') {
+      return { error: 'Email hoặc mật khẩu không chính xác.' }
+    }
     return { error: error.message }
   }
 

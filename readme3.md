@@ -12,79 +12,70 @@
 
 ---
 
-**CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM**  
-**Độc lập - Tự do - Hạnh phúc**
-
----
-
 **THÔNG TIN CHUNG VỀ DỰ ÁN**
 - **Tên dự án:** PhoGear - Mechanical Keyboard Ecosystem.
-- **Sinh viên thực hiện:** Nguyễn Đức Nguyên (MSSV: 2212429).
-- **Đơn vị đào tạo:** Khoa Công nghệ Thông tin - Trường Đại học Đà Lạt.
+- **Sinh viên thực hiện:** Nguyễn Đức Nguyên.
 - **Thời gian hoàn thiện:** Năm 2026.
 
 ---
 
 ## **LỜI NÓI ĐẦU**
 
-Trong bối cảnh công nghệ Web không ngừng phát triển, việc xây dựng một nền tảng thương mại điện tử không chỉ dừng lại ở chức năng mua bán mà còn phải tích hợp các yếu tố tương tác thời gian thực (Real-time) và trải nghiệm cá nhân hóa. Dự án **PhoGear** được phát triển nhằm ứng dụng các công nghệ tiên tiến nhất của hệ sinh thái React/Next.js để giải quyết bài toán kinh doanh thiết bị ngoại vi chuyên biệt.
+Dự án **PhoGear** được phát triển nhằm ứng dụng các công nghệ hiện đại nhất trong hệ sinh thái Web để giải quyết bài toán kinh doanh thiết bị ngoại vi chuyên biệt. Không chỉ dừng lại ở thương mại điện tử, dự án còn tập trung vào việc xây dựng cộng đồng thông qua các tính năng tương tác thời gian thực và trò chơi hóa (Gamification).
 
 ---
 
 ## **CHƯƠNG I: TỔNG QUAN VỀ DỰ ÁN**
 
 ### **1.1. Mục tiêu và Phạm vi**
-Dự án tập trung vào việc tối ưu hóa quy trình từ khâu khám phá sản phẩm đến khâu hậu mãi, tích hợp các tính năng giải trí (Gamification) để giữ chân người dùng.
+- Xây dựng hệ thống bán hàng đa biến thể với quản lý tồn kho chính xác.
+- Tích hợp công cụ luyện gõ phím chuyên sâu để tăng tính tương tác.
+- Đảm bảo hiệu suất tối ưu và bảo mật dữ liệu người dùng.
 
-### **1.2. Các cải tiến kỹ thuật đột phá**
-- **Real-time Synchronization:** Sử dụng Supabase Realtime để đồng bộ hóa tồn kho và thông báo ngay lập tức.
-- **Optimistic UI Updates:** Áp dụng hook `useOptimistic` của React 19 để triệt tiêu độ trễ cảm nhận khi người dùng tương tác.
-- **Precision Inventory:** Hệ thống quản lý kho đa tầng cho cả sản phẩm chính và các biến thể chi tiết.
+### **1.2. Công nghệ chủ đạo**
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS 4.
+- **Backend:** Supabase (Auth, Realtime, Storage, Edge Functions).
+- **Database:** PostgreSQL với RLS (Row Level Security).
 
 ---
 
-## **CHƯƠNG II: KHẢO SÁT VÀ PHÂN TÍCH HỆ THỐNG**
+## **CHƯƠNG II: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG**
 
-### **2.1. Phân tích chức năng nâng cao**
-1. **Module Thương mại:** Đặt hàng, trừ kho thời gian thực, hoàn kho khi hủy đơn, áp dụng coupon linh hoạt.
-2. **Module Thông báo:** Hệ thống Notification Center thông báo trạng thái đơn hàng và tương tác cộng đồng 24/7.
-3. **Module PhoType:** Trình luyện gõ với bảng xếp hạng toàn cầu (Global Leaderboard) lọc theo Tuần/Tháng.
+### **2.1. Phân tích chức năng**
+1. **Module Thương mại:** Giỏ hàng thông minh, thanh toán, quản lý mã giảm giá, Flash Sales.
+2. **Module Cộng đồng:** Diễn đàn thảo luận, hệ thống Like và thông báo thời gian thực.
+3. **Module PhoType:** Typing Engine với âm thanh thực tế, bảng xếp hạng toàn cầu.
 
-### **2.2. Thiết kế Cơ sở dữ liệu mở rộng**
-- `notifications`: Lưu trữ thông báo người dùng.
-- `typing_scores`: Lưu trữ dữ liệu thi đấu tốc độ gõ.
-- `post_likes`: Quản lý tương tác bài viết diễn đàn.
+### **2.2. Thiết kế Cơ sở dữ liệu**
+Hệ thống sử dụng mô hình dữ liệu quan hệ chặt chẽ, hỗ trợ các quy trình nghiệp vụ phức tạp như trừ kho biến thể tự động và hoàn kho khi hủy đơn.
 
 ---
 
 ## **CHƯƠNG III: CÀI ĐẶT VÀ TRIỂN KHAI**
 
 ### **3.1. Quy trình thiết lập Database**
-Các kỹ sư cần thực thi các tệp SQL theo đúng trình tự sau để đảm bảo tính toàn vẹn dữ liệu:
-1. `schema.sql` -> 2. `coupons_schema.sql` -> 3. `forum_schema.sql` -> 4. `forum_likes.sql` -> 5. `typing_scores_schema.sql` -> 6. `notifications_schema.sql` -> 7. `add_variant_id_to_order_items.sql`.
+Thực thi các tệp SQL theo trình tự: `schema.sql` -> `variants_v2_schema.sql` -> `coupons_schema.sql` -> `forum_schema.sql` -> `typing_scores_schema.sql` -> `notifications_schema.sql`.
 
-### **3.2. Cấu hình Hiệu suất**
-- Thiết lập `bodySizeLimit: '10mb'` trong `next.config.ts` để hỗ trợ Server Actions tải ảnh lớn.
-- Tối ưu hóa CLS (Cumulative Layout Shift) bằng hệ thống **Deep Skeleton Loading**.
+### **3.2. Giải pháp tối ưu hóa**
+- **Deep Skeleton Loading:** Giảm thiểu CLS.
+- **Optimistic UI:** Tăng tốc độ phản hồi cảm nhận của người dùng.
+- **Server Actions Body Limit:** Hỗ trợ xử lý dữ liệu lớn.
 
 ---
 
-## **CHƯƠNG IV: KẾT LUẬN**
+## **CHƯƠNG IV: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN**
 
 ### **4.1. Kết quả đạt được**
-Hệ thống đã đạt được độ ổn định cao, hỗ trợ tốt cả Light & Dark Mode, và cung cấp trải nghiệm mua sắm - luyện tập liền mạch.
+Hệ thống hoạt động ổn định, đáp ứng tốt các yêu cầu về tính năng và trải nghiệm người dùng.
 
 ### **4.2. Hướng phát triển**
-- Tích hợp cổng thanh toán chính thức (Stripe/VNPAY).
-- Xây dựng mobile app native bằng công nghệ PWA nâng cao.
+- Tích hợp thanh toán điện tử (Stripe/VNPAY).
+- Mở rộng hệ thống gợi ý sản phẩm dựa trên AI.
 
 ---
 
 <div align="right">
-*Đà Lạt, ngày 21 tháng 05 năm 2026*  
+*Đà Lạt, năm 2026*  
 **Người lập báo cáo**  
-
-*(Đã ký)*  
-
 **Nguyễn Đức Nguyên**
 </div>

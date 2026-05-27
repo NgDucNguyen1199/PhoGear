@@ -68,13 +68,15 @@ export async function updateOrderStatus(orderId: string, status: string) {
     'cancelled': 'đã bị hủy'
   }
 
-  await createNotification({
+  const notificationResult = await createNotification({
     user_id: order.user_id,
     type: 'order_status',
     title: `Cập nhật đơn hàng #${orderId.slice(0, 8).toUpperCase()}`,
     content: `Đơn hàng của bạn hiện tại ${statusLabels[status] || status}.`,
     link: '/orders'
   })
+
+  console.log('Notification creation result:', notificationResult)
 
   // 4. Xử lý logic kho hàng dựa trên chuyển đổi trạng thái
   
