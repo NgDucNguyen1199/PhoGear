@@ -9,6 +9,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { LikeButton } from '@/components/forum/LikeButton'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Diễn đàn Cộng đồng Pho Gear | Chia sẻ kinh nghiệm build phím cơ',
 }
@@ -16,6 +18,8 @@ export const metadata = {
 export default async function ForumPage() {
   const profile = await getProfile()
   const posts = await getApprovedPosts(profile?.id)
+
+  console.log(`[CLIENT-DEBUG] ForumPage received ${posts.length} posts. User: ${profile?.email || 'Guest'}`)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

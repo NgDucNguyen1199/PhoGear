@@ -13,20 +13,19 @@ import { logAuditAction } from './audit'
 export async function getApprovedPosts(currentUserId?: string) {
   const supabase = await createClient()
   
+  console.log('[DEBUG] Fetching posts for user:', currentUserId)
+  
   let query = supabase
     .from('posts')
     .select(`
       *,
       author:profiles (full_name, avatar_url),
       comments (count),
-      likes:post_likes (count),
-      user_liked:post_likes (user_id)
+      likes:post_likes (count)
     `)
     .order('created_at', { ascending: false })
 
   if (currentUserId) {
-    // Lọc user_liked chỉ lấy like của user hiện tại
-    query = query.filter('user_liked.user_id', 'eq', currentUserId)
     // Lấy bài đã duyệt HOẶC bài của chính user đó
     query = query.or(`status.eq.approved,author_id.eq.${currentUserId}`)
   } else {
@@ -37,40 +36,32 @@ export async function getApprovedPosts(currentUserId?: string) {
   const { data, error } = await query
 
   if (error) {
-    const errorStr = `${error.message} ${error.details || ''} ${error.hint || ''}`.toLowerCase()
-    const isLikesError = errorStr.includes('post_likes')
-    
-    // Nếu bảng post_likes chưa được tạo hoặc quan hệ không tìm thấy, thử lấy bài viết không kèm likes
-    if (isLikesError) {
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from('posts')
-        .select(`
-          *,
-          author:profiles (full_name, avatar_url),
-          comments (count)
-        `)
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false })
-      
-      if (fallbackError || !fallbackData) return []
-      
-      return (fallbackData as any[]).map(post => ({
-        ...post,
-        likes_count: 0,
-        is_liked: false
-      }))
-    }
-    
-    console.error('Error fetching approved posts:', error.message, error.details, error.hint)
+    console.error('[DEBUG] Error fetching posts:', error)
     return []
   }
 
+  console.log(`[DEBUG] Found ${data?.length || 0} posts`)
+
   if (!data) return []
+
+  // Lấy danh sách ID bài viết mà user hiện tại đã like (truy vấn riêng để tránh lỗi Inner Join)
+  let likedPostIds: string[] = []
+  if (currentUserId && data.length > 0) {
+    const { data: likesData } = await supabase
+      .from('post_likes')
+      .select('post_id')
+      .eq('user_id', currentUserId)
+      .in('post_id', data.map(p => p.id))
+    
+    if (likesData) {
+      likedPostIds = likesData.map(l => l.post_id)
+    }
+  }
 
   return (data as any[]).map((post: any) => ({
     ...post,
     likes_count: post.likes?.[0]?.count || 0,
-    is_liked: currentUserId ? (post.user_liked && post.user_liked.length > 0) : false
+    is_liked: likedPostIds.includes(post.id)
   }))
 }
 
@@ -154,45 +145,54 @@ export async function getPostById(id: string) {
  * Tạo bài viết mới (Mặc định ở trạng thái pending)
  */
 export async function createPost(formData: FormData) {
-  // Check rate limit (max 2 posts per 5 minutes)
-  const isAllowed = await checkRateLimit('create_post', 2, 5)
-  if (!isAllowed) {
-    return { error: 'Bạn đang đăng bài quá nhanh. Vui lòng thử lại sau vài phút.' }
+  try {
+    // Check rate limit (Relaxed for debugging: max 10 posts per 1 minute)
+    const isAllowed = await checkRateLimit('create_post', 10, 1)
+    if (!isAllowed) {
+      return { error: 'Bạn đang đăng bài quá nhanh. Vui lòng thử lại sau vài phút.' }
+    }
+
+    const supabase = await createClient()
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return { error: `Lỗi xác thực: ${authError?.message || 'Bạn cần đăng nhập để đăng bài.'}` }
+    }
+
+    const title = formData.get('title') as string
+    const content = formData.get('content') as string
+    const images_url_str = formData.get('images_url') as string
+    
+    const images_url = images_url_str 
+      ? images_url_str.split(',').map(url => url.trim()).filter(Boolean)
+      : []
+
+    if (!title || !content) {
+      return { error: 'Vui lòng nhập đầy đủ tiêu đề và nội dung.' }
+    }
+
+    const { error: insertError } = await supabase
+      .from('posts')
+      .insert({
+        author_id: user.id,
+        title,
+        content,
+        images_url,
+        status: 'pending'
+      })
+
+    if (insertError) {
+      console.error('Database insert error:', insertError)
+      return { error: `Lỗi lưu bài viết: [${insertError.code}] ${insertError.message}` }
+    }
+
+    revalidatePath('/forum')
+    revalidatePath('/')
+    return { success: 'Bài viết của bạn đã được gửi và đang chờ Admin duyệt!' }
+  } catch (err: any) {
+    console.error('Unexpected error in createPost:', err)
+    return { error: `Đã xảy ra lỗi không xác định: ${err.message || 'Vui lòng thử lại sau.'}` }
   }
-
-  const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Bạn cần đăng nhập để đăng bài.' }
-
-  const title = formData.get('title') as string
-  const content = formData.get('content') as string
-  const images_url_str = formData.get('images_url') as string
-  
-  const images_url = images_url_str 
-    ? images_url_str.split(',').map(url => url.trim()).filter(Boolean)
-    : []
-
-  if (!title || !content) {
-    return { error: 'Vui lòng nhập đầy đủ tiêu đề và nội dung.' }
-  }
-
-  const { error } = await supabase
-    .from('posts')
-    .insert({
-      author_id: user.id,
-      title,
-      content,
-      images_url,
-      status: 'pending'
-    })
-
-  if (error) {
-    return { error: `Lỗi đăng bài: ${error.message}` }
-  }
-
-  revalidatePath('/forum')
-  return { success: 'Bài viết của bạn đã được gửi và đang chờ Admin duyệt!' }
 }
 
 /**
@@ -248,11 +248,16 @@ export async function adminGetPendingPosts() {
   
   // Kiểm tra quyền Admin
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id || '').single()
+  if (!user) return []
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   
   if (profile?.role !== 'admin') {
+    console.warn('[DEBUG] Non-admin user attempted to access pending posts:', user.email)
     return []
   }
+
+  console.log('[DEBUG] Admin fetching pending posts...')
 
   const { data, error } = await supabase
     .from('posts')
@@ -264,10 +269,11 @@ export async function adminGetPendingPosts() {
     .order('created_at', { ascending: true })
 
   if (error) {
-    console.error('Error fetching pending posts:', error)
+    console.error('[DEBUG] Error fetching pending posts:', error)
     return []
   }
 
+  console.log(`[DEBUG] Found ${data?.length || 0} pending posts`)
   return data as any[]
 }
 
