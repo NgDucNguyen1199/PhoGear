@@ -13,67 +13,74 @@ import { logAuditAction } from './audit'
 export async function getApprovedPosts(currentUserId?: string) {
   const supabase = await createClient()
   
-  // Lấy thông tin role của user hiện tại
+  // 1. Lấy role của user hiện tại một cách an toàn nhất
   const { data: { user: authUser } } = await supabase.auth.getUser()
   let isAdmin = false
   if (authUser) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', authUser.id).single()
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', authUser.id).maybeSingle()
     isAdmin = profile?.role === 'admin'
   }
 
-  console.log(`[DEBUG] Fetching posts. User: ${currentUserId}, IsAdmin: ${isAdmin}`)
+  console.log(`[SYSTEM-DEBUG] User: ${currentUserId}, AuthUser: ${authUser?.id}, IsAdmin: ${isAdmin}`)
   
-  let query = supabase
-    .from('posts')
-    .select(`
-      *,
-      author:profiles (full_name, avatar_url),
-      comments (count),
-      likes:post_likes (count)
-    `)
-    .order('created_at', { ascending: false })
+  // 2. Xây dựng truy vấn cơ bản (chỉ lấy bảng posts trước để đảm bảo không lỗi join)
+  let query = supabase.from('posts').select('*')
 
   if (isAdmin) {
-    // Admin thấy TẤT CẢ bài viết (God Mode)
-    console.log('[DEBUG] Admin God Mode activated for getApprovedPosts')
-  } else if (currentUserId) {
-    // User thấy bài đã duyệt HOẶC bài của chính mình
-    query = query.or(`status.eq.approved,author_id.eq.${currentUserId}`)
+    // Admin: Lấy tất cả, không lọc
+    console.log('[SYSTEM-DEBUG] God Mode: Fetching all posts')
+  } else if (authUser?.id) {
+    // Thành viên: Lấy bài đã duyệt HOẶC bài của chính mình
+    query = query.or(`status.eq.approved,author_id.eq.${authUser.id}`)
   } else {
-    // Khách vãng lai chỉ thấy bài đã duyệt
+    // Khách: Chỉ lấy bài đã duyệt
     query = query.eq('status', 'approved')
   }
 
-  const { data, error } = await query
+  // Sắp xếp mới nhất lên đầu
+  query = query.order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('[DEBUG] Error fetching posts:', error)
+  const { data: posts, error: postsError } = await query
+
+  if (postsError) {
+    console.error('[SYSTEM-DEBUG] Error fetching posts table:', postsError)
     return []
   }
 
-  console.log(`[DEBUG] Query result: ${data?.length || 0} posts found`)
-
-  if (!data) return []
-
-  // Lấy danh sách ID bài viết mà user hiện tại đã like
-  let likedPostIds: string[] = []
-  if (currentUserId && data.length > 0) {
-    const { data: likesData } = await supabase
-      .from('post_likes')
-      .select('post_id')
-      .eq('user_id', currentUserId)
-      .in('post_id', data.map(p => p.id))
-    
-    if (likesData) {
-      likedPostIds = likesData.map(l => l.post_id)
-    }
+  if (!posts || posts.length === 0) {
+    console.log('[SYSTEM-DEBUG] No posts found in database matching criteria')
+    return []
   }
 
-  return (data as any[]).map((post: any) => ({
-    ...post,
-    likes_count: post.likes?.[0]?.count || 0,
-    is_liked: likedPostIds.includes(post.id)
+  // 3. Bổ sung thông tin Author và Like (Làm riêng lẻ để tránh lỗi Join)
+  const enrichedPosts = await Promise.all(posts.map(async (post) => {
+    // Lấy author
+    const { data: author } = await supabase.from('profiles').select('full_name, avatar_url').eq('id', post.author_id).maybeSingle()
+    
+    // Lấy số like
+    const { count: likesCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id)
+    
+    // Lấy số bình luận
+    const { count: commentsCount } = await supabase.from('comments').select('*', { count: 'exact', head: true }).eq('post_id', post.id)
+    
+    // Kiểm tra xem user hiện tại đã like chưa
+    let isLiked = false
+    if (authUser?.id) {
+      const { data: like } = await supabase.from('post_likes').select('id').eq('post_id', post.id).eq('user_id', authUser.id).maybeSingle()
+      isLiked = !!like
+    }
+
+    return {
+      ...post,
+      author,
+      likes_count: likesCount || 0,
+      comments_count: commentsCount || 0,
+      is_liked: isLiked
+    }
   }))
+
+  console.log(`[SYSTEM-DEBUG] Successfully enriched ${enrichedPosts.length} posts`)
+  return enrichedPosts as any[]
 }
 
 /**
@@ -91,7 +98,7 @@ export async function toggleLikePost(postId: string) {
     .select('*')
     .eq('post_id', postId)
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
   if (existingLike) {
     const { error } = await supabase
@@ -110,7 +117,7 @@ export async function toggleLikePost(postId: string) {
     if (error) return { error: error.message }
     
     // Notify post author (async, don't wait)
-    const { data: post } = await supabase.from('posts').select('author_id, title').eq('id', postId).single()
+    const { data: post } = await supabase.from('posts').select('author_id, title').eq('id', postId).maybeSingle()
     if (post && post.author_id !== user.id) {
        createNotification({
          user_id: post.author_id,
@@ -142,7 +149,7 @@ export async function getPostById(id: string) {
       )
     `)
     .eq('id', id)
-    .single()
+    .maybeSingle()
 
   if (error) {
     console.error('Error fetching post detail:', error)
@@ -157,17 +164,17 @@ export async function getPostById(id: string) {
  */
 export async function createPost(formData: FormData) {
   try {
-    // Check rate limit (Relaxed for debugging: max 10 posts per 1 minute)
-    const isAllowed = await checkRateLimit('create_post', 10, 1)
+    // Check rate limit (Relaxed for debugging)
+    const isAllowed = await checkRateLimit('create_post', 20, 1)
     if (!isAllowed) {
-      return { error: 'Bạn đang đăng bài quá nhanh. Vui lòng thử lại sau vài phút.' }
+      return { error: 'Bạn đang thao tác quá nhanh. Vui lòng thử lại sau.' }
     }
 
     const supabase = await createClient()
     
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return { error: `Lỗi xác thực: ${authError?.message || 'Bạn cần đăng nhập để đăng bài.'}` }
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { error: 'Bạn cần đăng nhập để đăng bài.' }
     }
 
     const title = formData.get('title') as string
@@ -193,16 +200,17 @@ export async function createPost(formData: FormData) {
       })
 
     if (insertError) {
-      console.error('Database insert error:', insertError)
-      return { error: `Lỗi lưu bài viết: [${insertError.code}] ${insertError.message}` }
+      return { error: `Lỗi database [${insertError.code}]: ${insertError.message}` }
     }
 
-    revalidatePath('/forum')
+    // Quan trọng: Làm mới mọi cache có liên quan
     revalidatePath('/')
+    revalidatePath('/forum')
+    revalidatePath('/admin/forum')
+    
     return { success: 'Bài viết của bạn đã được gửi và đang chờ Admin duyệt!' }
   } catch (err: any) {
-    console.error('Unexpected error in createPost:', err)
-    return { error: `Đã xảy ra lỗi không xác định: ${err.message || 'Vui lòng thử lại sau.'}` }
+    return { error: `Lỗi hệ thống: ${err.message}` }
   }
 }
 
@@ -210,14 +218,12 @@ export async function createPost(formData: FormData) {
  * Gửi bình luận cho bài viết
  */
 export async function addComment(postId: string, content: string) {
-  // Check rate limit (max 5 comments per minute)
-  const isAllowed = await checkRateLimit('add_comment', 5, 1)
+  const isAllowed = await checkRateLimit('add_comment', 10, 1)
   if (!isAllowed) {
-    return { error: 'Bạn đang bình luận quá nhanh. Vui lòng thử lại sau.' }
+    return { error: 'Bạn đang bình luận quá nhanh.' }
   }
 
   const supabase = await createClient()
-  
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Bạn cần đăng nhập để bình luận.' }
 
@@ -231,12 +237,10 @@ export async function addComment(postId: string, content: string) {
       content
     })
 
-  if (error) {
-    return { error: `Lỗi bình luận: ${error.message}` }
-  }
+  if (error) return { error: `Lỗi bình luận: ${error.message}` }
 
   // Notify post author
-  const { data: post } = await supabase.from('posts').select('author_id, title').eq('id', postId).single()
+  const { data: post } = await supabase.from('posts').select('author_id, title').eq('id', postId).maybeSingle()
   if (post && post.author_id !== user.id) {
     await createNotification({
       user_id: post.author_id,
@@ -258,45 +262,28 @@ export async function adminGetPendingPosts() {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    console.log('[DEBUG] No user found in adminGetPendingPosts')
-    return []
-  }
+  if (!user) return []
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
   
   if (profile?.role !== 'admin') {
-    console.warn('[DEBUG] User is NOT admin in profiles table:', user.email, 'Role:', profile?.role)
     return []
   }
 
-  console.log('[DEBUG] Admin confirmed, fetching pending posts (simplified query)...')
-
-  // Thử truy vấn đơn giản nhất không join để xem có dữ liệu không
+  // Truy vấn đơn giản nhất
   const { data, error } = await supabase
     .from('posts')
     .select('*')
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
 
-  if (error) {
-    console.error('[DEBUG] Simple query error:', error)
-    return []
-  }
+  if (error || !data) return []
 
-  if (!data || data.length === 0) {
-    console.log('[DEBUG] No pending posts found even with simple query')
-    return []
-  }
-
-  // Nếu có dữ liệu, mới thử lấy thông tin author
-  const postsWithAuthor = await Promise.all(data.map(async (post) => {
-    const { data: authorData } = await supabase.from('profiles').select('full_name, avatar_url').eq('id', post.author_id).single()
-    return { ...post, author: authorData }
+  // Bổ sung author cho mỗi bài
+  return await Promise.all(data.map(async (post) => {
+    const { data: author } = await supabase.from('profiles').select('full_name, avatar_url').eq('id', post.author_id).maybeSingle()
+    return { ...post, author }
   }))
-
-  console.log(`[DEBUG] Successfully fetched ${postsWithAuthor.length} pending posts`)
-  return postsWithAuthor as any[]
 }
 
 /**
@@ -307,24 +294,22 @@ export async function adminModeratePost(postId: string, status: 'approved' | 're
 
   // Kiểm tra quyền Admin
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id || '').single()
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id || '').maybeSingle()
   
   if (profile?.role !== 'admin') {
     return { error: 'Bạn không có quyền thực hiện thao tác này.' }
   }
 
-  const { data: post } = await supabase.from('posts').select('author_id, title').eq('id', postId).single()
+  const { data: post } = await supabase.from('posts').select('author_id, title').eq('id', postId).maybeSingle()
   
   const { error } = await supabase
     .from('posts')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', postId)
 
-  if (error) {
-    return { error: `Lỗi cập nhật trạng thái: ${error.message}` }
-  }
+  if (error) return { error: `Lỗi database: ${error.message}` }
 
-  // Log audit action
+  // Log audit
   await logAuditAction({
     action: 'MODERATE_POST',
     target_type: 'post',
