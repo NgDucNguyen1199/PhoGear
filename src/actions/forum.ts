@@ -108,6 +108,10 @@ export async function toggleLikePost(postId: string) {
       .eq('user_id', user.id)
     
     if (error) return { error: error.message }
+    
+    revalidatePath('/forum')
+    revalidatePath('/')
+    revalidatePath(`/forum/${postId}`)
     return { success: 'Đã bỏ tim', action: 'removed' }
   } else {
     const { error } = await supabase
@@ -128,6 +132,9 @@ export async function toggleLikePost(postId: string) {
        })
     }
 
+    revalidatePath('/forum')
+    revalidatePath('/')
+    revalidatePath(`/forum/${postId}`)
     return { success: 'Đã thả tim', action: 'added' }
   }
 }
