@@ -84,8 +84,8 @@ export async function createOrder(formData: FormData, items: OrderItemInput[]) {
   const verifiedOrderItems = []
 
   // Lấy trạng thái Flash Sale hiện tại
-  const { data: settings } = await supabase.from('system_settings').select('is_flash_sale_active').single()
-  const isGlobalFlashSaleActive = settings?.is_flash_sale_active || false
+  const { data: settings } = await supabase.from('system_settings').select('flash_sale_enabled').single()
+  const isGlobalFlashSaleActive = settings?.flash_sale_enabled || false
 
   for (const item of items) {
     const { data: product } = await supabase

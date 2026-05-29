@@ -43,8 +43,8 @@ FOR UPDATE USING (
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
 
-CREATE POLICY "Users can delete own pending posts" ON public.posts
-FOR DELETE USING (auth.uid() = author_id AND status = 'pending');
+CREATE POLICY "Users can delete own non-approved posts" ON public.posts
+FOR DELETE USING (auth.uid() = author_id AND status != 'approved');
 
 CREATE POLICY "Admins can delete any post" ON public.posts
 FOR DELETE USING (

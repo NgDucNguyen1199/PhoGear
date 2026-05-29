@@ -46,9 +46,9 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
       <DialogTrigger
         render={
           <button 
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
-              e.preventDefault();
             }}
             className="flex items-center gap-1.5 hover:text-destructive transition-colors relative z-20"
           >

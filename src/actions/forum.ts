@@ -379,13 +379,31 @@ export async function deletePost(postId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Bạn cần đăng nhập để thực hiện hành động này.' }
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
-  const { data: post } = await supabase.from('posts').select('author_id, status').eq('id', postId).maybeSingle()
+  console.log(`[FORUM-DEBUG] User ${user.id} attempting to delete post ${postId}`)
 
-  if (!post) return { error: 'Không tìm thấy bài viết.' }
+  // Lấy thông tin bài viết và profile cùng lúc
+  const [postRes, profileRes] = await Promise.all([
+    supabase.from('posts').select('author_id, status').eq('id', postId).maybeSingle(),
+    supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+  ])
+
+  if (postRes.error) {
+    console.error('[FORUM-DEBUG] Error fetching post:', postRes.error)
+    return { error: 'Lỗi kiểm tra thông tin bài viết.' }
+  }
+
+  const post = postRes.data
+  const profile = profileRes.data
+
+  if (!post) {
+    console.warn(`[FORUM-DEBUG] Post ${postId} not found or not accessible by user`)
+    return { error: 'Không tìm thấy bài viết hoặc bạn không có quyền xem bài viết này.' }
+  }
 
   const isOwner = post.author_id === user.id
   const isAdmin = profile?.role === 'admin'
+
+  console.log(`[FORUM-DEBUG] IsOwner: ${isOwner}, IsAdmin: ${isAdmin}, PostStatus: ${post.status}`)
 
   if (!isOwner && !isAdmin) {
     return { error: 'Bạn không có quyền xóa bài viết này.' }
@@ -396,11 +414,14 @@ export async function deletePost(postId: string) {
     return { error: 'Bài viết đã được duyệt, bạn không thể tự xóa. Vui lòng liên hệ Admin.' }
   }
 
-  const { error } = await supabase.from('posts').delete().eq('id', postId)
+  const { error: deleteError } = await supabase.from('posts').delete().eq('id', postId)
 
-  if (error) {
-    return { error: `Lỗi xóa bài viết: ${error.message}` }
+  if (deleteError) {
+    console.error('[FORUM-DEBUG] Supabase delete error:', deleteError)
+    return { error: `Lỗi xóa bài viết: ${deleteError.message}. (Có thể do giới hạn quyền truy cập)` }
   }
+
+  console.log(`[FORUM-DEBUG] Successfully deleted post ${postId}`)
 
   revalidatePath('/forum')
   revalidatePath('/admin/forum')
